@@ -1,0 +1,27 @@
+#!/usr/bin/env node
+
+const DEFAULT_PARAS = 5
+
+var fs        = require('fs')
+  , EchoMunge = require('./')
+  , db        = new EchoMunge()
+  , paras, i
+
+if (process.argv.length <= 2) {
+  console.log('Usage: echomunge <filename> [paragraphs]')
+  return process.exit(-1)
+}
+
+db.recordText(fs.readFileSync(process.argv[2], 'utf8').toString())
+
+if (!db.hasData()) {
+  console.log('I couldn\'t find enough useful text in ' + process.argv[2])
+  return process.exit(-1)
+}
+
+paras = Number(process.argv[3])
+
+if (paras <= 0 || isNaN(paras)) paras = DEFAULT_PARAS
+
+for (i = 0; i < paras; i++)
+  console.log(db.makeText({ maxLength: 1000, terminate: true }) + '\n')

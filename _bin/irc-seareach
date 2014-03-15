@@ -1,0 +1,2 @@
+#!/bin/bash
+ssh -p 22 -L 6667:giantfriend.com:6667 root@giantfriend.com

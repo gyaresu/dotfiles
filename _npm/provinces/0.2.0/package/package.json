@@ -1,0 +1,32 @@
+{
+  "name": "provinces",
+  "version": "0.2.0",
+  "description": "state and province lists for countries",
+  "main": "index.js",
+  "dependencies": {
+    "chinesecities": "~0.0.2"
+  },
+  "devDependencies": {
+    "tape": "~1.0.4"
+  },
+  "scripts": {
+    "test": "tape test/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/substack/provinces.git"
+  },
+  "homepage": "https://github.com/substack/provinces",
+  "keywords": [
+    "state",
+    "province",
+    "geo",
+    "data"
+  ],
+  "author": {
+    "name": "James Halliday",
+    "email": "mail@substack.net",
+    "url": "http://substack.net"
+  },
+  "license": "MIT"
+}

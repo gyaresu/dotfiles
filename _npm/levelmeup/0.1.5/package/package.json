@@ -1,0 +1,25 @@
+{
+  "name": "levelmeup",
+  "version": "0.1.5",
+  "description": "Level Me Up Scotty! An intro to Node.js databases via a set of self-guided workshops.",
+  "author": "Rod Vagg <rod@vagg.org> (https://github.com/rvagg)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rvagg/levelmeup.git"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "workshopper": "~0.3.1",
+    "level": "~0.17.0",
+    "rimraf": "~2.2.2",
+    "after": "~0.8.1",
+    "echomunge": "~0.2.0",
+    "readable-stream": "~1.0.15",
+    "through2-map": "~1.1.0",
+    "through2": "~0.2.1",
+    "level-sublevel": "~5.1.1",
+    "multilevel": "~5.5.0"
+  },
+  "bin": "./levelmeup.js",
+  "preferGlobal": true
+}

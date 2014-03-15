@@ -1,0 +1,8 @@
+# pack-refs with: peeled fully-peeled 
+2bf4edad2205a05ebfe8fe1b836401120081ebc5 refs/heads/dir-replace
+3b412ab75f356e3ee63c6482b1c8fe1753ffb7bf refs/heads/false
+c4594e2538e29a68a73893b8c3d11bfc6f0ea7ce refs/heads/master
+3a8abad7320a7801e93d17f6cc986e82c7ccbc3e refs/heads/object-keys-fix
+80b5b14b20b3a7524effdbca9747e28de940bd16 refs/heads/package-filter
+ce781a70ccedeecbd4d1587dd00f617208a6ac6d refs/tags/v0.0.1
+^a7a758e6773021838c76b45942ef3500b329ad70

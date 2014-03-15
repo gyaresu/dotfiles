@@ -1,0 +1,52 @@
+{
+  "name": "configstore",
+  "version": "0.2.2",
+  "description": "Easily load and save config without having to think about where and how",
+  "keywords": [
+    "conf",
+    "config",
+    "configuration",
+    "settings",
+    "store",
+    "editable",
+    "yaml",
+    "yml"
+  ],
+  "homepage": "https://github.com/yeoman/configstore",
+  "bugs": "https://github.com/yeoman/configstore/issues",
+  "author": {
+    "name": "Sindre Sorhus",
+    "email": "sindresorhus@gmail.com",
+    "url": "http://sindresorhus.com"
+  },
+  "main": "configstore.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/yeoman/configstore.git"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "licenses": [
+    {
+      "type": "BSD"
+    }
+  ],
+  "dependencies": {
+    "mkdirp": "~0.3.5",
+    "js-yaml": "~3.0.1",
+    "osenv": "0.0.3",
+    "graceful-fs": "~2.0.1",
+    "uuid": "~1.4.1",
+    "object-assign": "~0.1.1"
+  },
+  "devDependencies": {
+    "mocha": "*"
+  },
+  "files": [
+    "configstore.js"
+  ]
+}

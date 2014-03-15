@@ -1,0 +1,21 @@
+{
+  "name": "chinesecities",
+  "version": "0.0.2",
+  "main": "index.js",
+  "dependencies": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/xuyannan/chinesecities.git"
+  },
+  "keywords": [
+    "chinese",
+    "cities"
+  ],
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "xuyannan",
+  "license": "MIT",
+  "readmeFilename": "README.md"
+} 
