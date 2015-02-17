@@ -13,7 +13,7 @@ class Heroku::Auth
 
     def api
       @api ||= begin
-        require("heroku-api")
+        debug "Using API with key: #{password[0,6]}..."
         api = Heroku::API.new(default_params.merge(:api_key => password))
 
         def api.request(params, &block)
@@ -54,12 +54,20 @@ class Heroku::Auth
       "heroku.com"
     end
 
+    def http_git_host
+      ENV['HEROKU_HTTP_GIT_HOST'] || "git.#{host}"
+    end
+
     def git_host
       ENV['HEROKU_GIT_HOST'] || host
     end
 
     def host
       ENV['HEROKU_HOST'] || default_host
+    end
+
+    def subdomains
+      %w(api git)
     end
 
     def reauthorize
@@ -74,10 +82,26 @@ class Heroku::Auth
       get_credentials[1]
     end
 
-    def api_key(user = get_credentials[0], password = get_credentials[1])
-      require("heroku-api")
-      api = Heroku::API.new(default_params)
+    def api_key(user=get_credentials[0], password=get_credentials[1], second_factor=nil)
+      params = default_params
+      if second_factor
+        params[:headers].merge!("Heroku-Two-Factor-Code" => second_factor)
+      end
+      api = Heroku::API.new(params)
       api.post_login(user, password).body["api_key"]
+    rescue Heroku::API::Errors::Forbidden => e
+      if e.response.headers.has_key?("Heroku-Two-Factor-Required")
+        second_factor = ask_for_second_factor
+        retry
+      end
+    rescue Heroku::API::Errors::Unauthorized => e
+      id = json_decode(e.response.body)["id"]
+      raise if id != "invalid_two_factor_code"
+      delete_credentials
+      display "Authentication failed due to an invalid two-factor code."
+      display "Please check your code was typed correctly and that your"
+      display "authenticator's time keeping is accurate."
+      exit 1
     end
 
     def get_credentials    # :nodoc:
@@ -89,8 +113,9 @@ class Heroku::Auth
         FileUtils.rm_f(legacy_credentials_path)
       end
       if netrc
-        netrc.delete("api.#{host}")
-        netrc.delete("code.#{host}")
+        subdomains.each do |sub|
+          netrc.delete("#{sub}.#{host}")
+        end
         netrc.save
       end
       @api, @client, @credentials = nil, nil
@@ -160,8 +185,9 @@ class Heroku::Auth
       unless running_on_windows?
         FileUtils.chmod(0600, netrc_path)
       end
-      netrc["api.#{host}"] = self.credentials
-      netrc["code.#{host}"] = self.credentials
+      subdomains.each do |sub|
+        netrc["#{sub}.#{host}"] = self.credentials
+      end
       netrc.save
     end
 
@@ -189,6 +215,20 @@ class Heroku::Auth
       [user, api_key(user, password)]
     end
 
+    def ask_for_second_factor
+      $stderr.print "Two-factor code: "
+      ask
+    end
+
+    def preauth
+      if Heroku.app_name
+        second_factor = ask_for_second_factor
+        api.request(:method => :put,
+                    :path => "/apps/#{Heroku.app_name}/pre-authorizations",
+                    :headers => {"Heroku-Two-Factor-Code" => second_factor})
+      end
+    end
+
     def ask_for_password_on_windows
       require "Win32API"
       char = nil
@@ -208,53 +248,58 @@ class Heroku::Auth
     end
 
     def ask_for_password
-      echo_off
-      password = ask
-      puts
-      echo_on
+      begin
+        echo_off
+        password = ask
+        puts
+      ensure
+        echo_on
+      end
       return password
     end
 
     def ask_for_and_save_credentials
-      require("heroku-api") # for the errors
-      begin
-        @credentials = ask_for_credentials
-        write_credentials
-        check
-      rescue Heroku::API::Errors::NotFound, Heroku::API::Errors::Unauthorized => e
-        delete_credentials
-        display "Authentication failed."
-        retry if retry_login?
-        exit 1
-      rescue Exception => e
-        delete_credentials
-        raise e
-      end
-      check_for_associated_ssh_key unless Heroku::Command.current_command == "keys:add"
+      @credentials = ask_for_credentials
+      debug "Logged in as #{@credentials[0]} with key: #{@credentials[1][0,6]}..."
+      write_credentials
+      check
       @credentials
-    end
-
-    def check_for_associated_ssh_key
-      if api.get_keys.body.empty?
-        associate_or_generate_ssh_key
-      end
+    rescue Heroku::API::Errors::NotFound, Heroku::API::Errors::Unauthorized => e
+      delete_credentials
+      display "Authentication failed."
+      retry if retry_login?
+      exit 1
+    rescue => e
+      delete_credentials
+      raise e
     end
 
     def associate_or_generate_ssh_key
-      public_keys = Dir.glob("#{home_directory}/.ssh/*.pub").sort
-
-      case public_keys.length
-      when 0 then
-        display "Could not find an existing public key."
+      unless File.exists?("#{home_directory}/.ssh/id_rsa.pub")
+        display "Could not find an existing public key at ~/.ssh/id_rsa.pub"
         display "Would you like to generate one? [Yn] ", false
-        unless ask.strip.downcase == "n"
+        unless ask.strip.downcase =~ /^n/
           display "Generating new SSH public key."
-          generate_ssh_key("id_rsa")
+          generate_ssh_key("#{home_directory}/.ssh/id_rsa")
           associate_key("#{home_directory}/.ssh/id_rsa.pub")
+          return
         end
-      when 1 then
-        display "Found existing public key: #{public_keys.first}"
-        associate_key(public_keys.first)
+      end
+
+      chosen = ssh_prompt
+      associate_key(chosen) if chosen
+    end
+
+    def ssh_prompt
+      public_keys = Dir.glob("#{home_directory}/.ssh/*.pub").sort
+      case public_keys.length
+      when 0
+        error("No SSH keys found")
+        return nil
+      when 1
+        display "Found an SSH public key at #{public_keys.first}"
+        display "Would you like to upload it to Heroku? [Yn] ", false
+        return ask.strip.downcase =~ /^n/ ? nil : public_keys.first
       else
         display "Found the following SSH public keys:"
         public_keys.each_with_index do |key, index|
@@ -266,19 +311,14 @@ class Heroku::Auth
         if choice == -1 || chosen.nil?
           error("Invalid choice")
         end
-        associate_key(chosen)
+        return chosen
       end
     end
 
     def generate_ssh_key(keyfile)
-      ssh_dir = File.join(home_directory, ".ssh")
-      unless File.exists?(ssh_dir)
-        FileUtils.mkdir_p ssh_dir
-        unless running_on_windows?
-          File.chmod(0700, ssh_dir)
-        end
-      end
-      output = `ssh-keygen -t rsa -N "" -f \"#{home_directory}/.ssh/#{keyfile}\" 2>&1`
+      ssh_dir = File.dirname(keyfile)
+      FileUtils.mkdir_p ssh_dir, :mode => 0700
+      output = `ssh-keygen -t rsa -N "" -f \"#{keyfile}\" 2>&1`
       if ! $?.success?
         error("Could not generate key: #{output}")
       end
@@ -326,9 +366,7 @@ class Heroku::Auth
     def default_params
       uri = URI.parse(full_host(host))
       {
-        :headers          => {
-          'User-Agent'    => Heroku.user_agent
-        },
+        :headers          => {'User-Agent' => Heroku.user_agent},
         :host             => uri.host,
         :port             => uri.port.to_s,
         :scheme           => uri.scheme,

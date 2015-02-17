@@ -4,9 +4,13 @@ set t_Co=256
 syntax on
 filetype plugin indent on
 
+" Write the fucking file as root!!!!!!!
+" cmap w!! %!sudo tee > /dev/null %
+
 " http://ethanschoonover.com/solarized/vim-colors-solarized
 set background=dark
 colorscheme gummybears
+" colorscheme monokai
 
 " osx copy/paste
 set clipboard=unnamed

@@ -1,5 +1,3 @@
-require "vendor/heroku/okjson"
-
 module Heroku
   module Helpers
 
@@ -22,8 +20,8 @@ module Heroku
         puts(msg)
       else
         print(msg)
-        $stdout.flush
       end
+      $stdout.flush
     end
 
     def redisplay(line, line_break = false)
@@ -34,14 +32,8 @@ module Heroku
       display "WARNING: #{message}"
     end
 
-    def confirm_billing
-      display
-      display "This action will cause your account to be billed at the end of the month"
-      display "For more information, see https://devcenter.heroku.com/articles/usage-and-billing"
-      if confirm
-        Heroku::Auth.client.confirm_billing
-        true
-      end
+    def debug(*args)
+      $stderr.puts(*args) if ENV['HEROKU_DEBUG']
     end
 
     def confirm(message="Are you sure you wish to continue? (y/n)")
@@ -129,6 +121,7 @@ module Heroku
     end
 
     def truncate(text, length)
+      return "" if text.nil?
       if text.size > length
         text[0, length - 2] + '..'
       else
@@ -152,11 +145,20 @@ module Heroku
       "%d %s" % [ num, num.to_i == 1 ? string : "#{string}s" ]
     end
 
+    def has_git_remote?(remote)
+      git('remote').split("\n").include?(remote) && $?.success?
+    end
+
     def create_git_remote(remote, url)
-      return if git('remote').split("\n").include?(remote)
-      return unless File.exists?(".git")
+      return if has_git_remote? remote
       git "remote add #{remote} #{url}"
-      display "Git remote #{remote} added"
+      display "Git remote #{remote} added" if $?.success?
+    end
+
+    def update_git_remote(remote, url)
+      return unless has_git_remote? remote
+      git "remote set-url #{remote} #{url}"
+      display "Git remote #{remote} updated" if $?.success?
     end
 
     def longest(items)
@@ -188,14 +190,14 @@ module Heroku
     end
 
     def json_encode(object)
-      Heroku::OkJson.encode(object)
-    rescue Heroku::OkJson::Error
+      MultiJson.dump(object)
+    rescue MultiJson::ParseError
       nil
     end
 
     def json_decode(json)
-      Heroku::OkJson.decode(json)
-    rescue Heroku::OkJson::Error
+      MultiJson.load(json)
+    rescue MultiJson::ParseError
       nil
     end
 
@@ -231,6 +233,7 @@ module Heroku
     ## DISPLAY HELPERS
 
     def action(message, options={})
+      message = "#{message} in organization #{org}" if options[:org]
       display("#{message}... ", false)
       Heroku::Helpers.error_with_failure = true
       ret = yield
@@ -513,5 +516,27 @@ module Heroku
       end
     end
 
+    def org_host
+      ENV["HEROKU_ORG_HOST"] || default_org_host
+    end
+
+    def default_org_host
+      "herokumanager.com"
+    end
+
+    def org? email
+      email =~ /^.*@#{org_host}$/
+    end
+
+    def app_owner email
+      org?(email) ? email.gsub(/^(.*)@#{org_host}$/,'\1') : email
+    end
+
+    def error_if_netrc_does_not_have_https_git
+      unless Auth.netrc && Auth.netrc["git.heroku.com"]
+        warn "ERROR: Incomplete credentials detected, git may not work with Heroku. Run `heroku login` to update your credentials. See documentation for details: https://devcenter.heroku.com/articles/http-git#authentication"
+        exit 1
+      end
+    end
   end
 end

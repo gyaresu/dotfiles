@@ -6,6 +6,7 @@ require 'heroku/command'
 require 'heroku/helpers'
 require 'heroku/version'
 require 'heroku/client/ssl_endpoint'
+require 'rest_client'
 
 # A Ruby class to call the Heroku REST API.  You might use this if you want to
 # manage your Heroku apps from within a Ruby program, such as Capistrano.
@@ -32,7 +33,6 @@ class Heroku::Client
   attr_accessor :host, :user, :password
 
   def initialize(user, password, host=Heroku::Auth.host)
-    require 'rest_client'
     @user = user
     @password = password
     @host = host
@@ -169,7 +169,7 @@ class Heroku::Client
   def list_domains(app_name)
     deprecate # 08/02/2012
     doc = xml(get("/apps/#{app_name}/domains").to_s)
-    doc.elements.to_a("//domain-names/*").map do |d|
+    doc.elements.to_a("//domains/*").map do |d|
       attrs = { :domain => d.elements['domain'].text }
       if cert = d.elements['cert']
         attrs[:cert] = {
@@ -225,7 +225,7 @@ class Heroku::Client
     delete("/user/keys").to_s
   end
 
-  # Retreive ps list for the given app name.
+  # Retrieve ps list for the given app name.
   def ps(app_name)
     deprecate # 07/31/2012
     json_decode get("/apps/#{app_name}/ps", :accept => 'application/json').to_s
@@ -349,7 +349,6 @@ class Heroku::Client
     attr_accessor :attached
 
     def initialize(client, app)
-      require 'rest_client'
       @client = client
       @app = app
     end
@@ -435,7 +434,6 @@ class Heroku::Client
   # support for console sessions
   class ConsoleSession
     def initialize(id, app, client)
-      require 'rest_client'
       @id = id; @app = app; @client = client
     end
     def run(cmd)
@@ -453,7 +451,7 @@ class Heroku::Client
     else
       run_console_command("/apps/#{app_name}/console", cmd)
     end
-  rescue RestClient::BadGateway => e
+  rescue RestClient::BadGateway
     raise(AppCrashed, <<-ERROR)
 Unable to attach to a dyno to open a console session.
 Your application may have crashed.
@@ -520,8 +518,10 @@ Check the output of "heroku ps" and "heroku logs" for more information.
 
       begin
         http.start do
-          http.request_get(uri.path + (uri.query ? "?" + uri.query : "")) do |request|
-            request.read_body do |chunk|
+          http.request_get(uri.path + (uri.query ? "?" + uri.query : "")) do |response|
+            error(response.message) if response.is_a? Net::HTTPServerError
+            response["Tail-warning"] && $stderr.puts(response["X-Heroku-Warning"])
+            response.read_body do |chunk|
               yield chunk
             end
           end
@@ -539,11 +539,11 @@ Check the output of "heroku ps" and "heroku logs" for more information.
   end
 
   def add_drain(app_name, url)
-    post("/apps/#{app_name}/logs/drains", "url=#{url}").to_s
+    post("/apps/#{app_name}/logs/drains", "url=#{CGI.escape(url)}").to_s
   end
 
   def remove_drain(app_name, url)
-    delete("/apps/#{app_name}/logs/drains?url=#{URI.escape(url)}").to_s
+    delete("/apps/#{app_name}/logs/drains?url=#{CGI.escape(url)}").to_s
   end
 
   def addons(filters = {})
@@ -570,20 +570,8 @@ Check the output of "heroku ps" and "heroku logs" for more information.
     configure_addon :uninstall, app_name, addon, options
   end
 
-  def database_session(app_name)
-    json_decode(post("/apps/#{app_name}/database/session2", '', :x_taps_version => ::Taps.version).to_s)
-  end
-
-  def database_reset(app_name)
-    post("/apps/#{app_name}/database/reset", '').to_s
-  end
-
   def httpcache_purge(app_name)
     delete("/apps/#{app_name}/httpcache").to_s
-  end
-
-  def confirm_billing
-    post("/user/#{escape(@user)}/confirm_billing").to_s
   end
 
   def on_warning(&blk)
@@ -599,7 +587,11 @@ Check the output of "heroku ps" and "heroku logs" for more information.
     when "https"
       https_proxy
     end
-    RestClient::Resource.new(realize_full_uri(uri), options.merge(:user => user, :password => password))
+    resource_options = options.merge(:user => user, :password => password)
+    if ENV["HEROKU_SSL_VERIFY"] == "disable"
+      resource_options.merge!(:verify_ssl => OpenSSL::SSL::VERIFY_NONE)
+    end
+    RestClient::Resource.new(realize_full_uri(uri), resource_options)
   end
 
   def get(uri, extra_headers={})    # :nodoc:
@@ -629,7 +621,7 @@ Check the output of "heroku ps" and "heroku logs" for more information.
     rescue Errno::ECONNREFUSED, Errno::ETIMEDOUT, SocketError
       host = URI.parse(realize_full_uri(uri)).host
       error "Unable to connect to #{host}"
-    rescue RestClient::SSLCertificateNotVerified => ex
+    rescue RestClient::SSLCertificateNotVerified
       host = URI.parse(realize_full_uri(uri)).host
       error "WARNING: Unable to verify SSL certificate for #{host}\nTo disable SSL verification, run with HEROKU_SSL_VERIFY=disable"
     end

@@ -1,4 +1,20 @@
-require "readline"
+begin
+  require "readline"
+rescue LoadError
+  module Readline
+    def self.readline(prompt)
+      print prompt
+      $stdout.flush
+      gets
+    end
+
+    module HISTORY
+      def self.push(cmd)
+        # dummy
+      end
+    end
+  end
+end
 require "heroku/command/base"
 require "heroku/helpers/log_displayer"
 
@@ -41,7 +57,7 @@ class Heroku::Command::Run < Heroku::Command::Base
     command = args.join(" ")
     error("Usage: heroku run COMMAND") if command.empty?
     opts = { :attach => false, :command => command }
-    opts[:size] = get_size if options[:size]
+    opts[:size] = options[:size] if options[:size]
 
     app_name = app
     process_data = action("Running `#{command}` detached", :success => "up") do
@@ -109,7 +125,7 @@ protected
   def run_attached(command)
     app_name = app
     opts = { :attach => true, :ps_env => get_terminal_environment }
-    opts[:size] = get_size if options[:size]
+    opts[:size] = options[:size] if options[:size]
 
     process_data = action("Running `#{command}` attached to terminal", :success => "up") do
       process_data = api.post_ps(app_name, command, opts).body
@@ -130,12 +146,12 @@ protected
         :output => $stdout)
       rendezvous.on_connect(&on_connect)
       rendezvous.start
-    rescue Timeout::Error
-      error "\nTimeout awaiting process"
+    rescue Timeout::Error, Errno::ETIMEDOUT
+      error "\nTimeout awaiting dyno, see https://devcenter.heroku.com/articles/one-off-dynos#timeout-awaiting-process"
     rescue OpenSSL::SSL::SSLError
       error "Authentication error"
     rescue Errno::ECONNREFUSED, Errno::ECONNRESET
-      error "\nError connecting to process"
+      error "\nError connecting to dyno, see https://devcenter.heroku.com/articles/one-off-dynos#timeout-awaiting-process"
     rescue Interrupt
     ensure
       set_buffer(true)
@@ -174,7 +190,7 @@ protected
     end
     history.each { |cmd| Readline::HISTORY.push(cmd) }
   rescue Errno::ENOENT
-  rescue Exception => ex
+  rescue => ex
     display "Error reading your console history: #{ex.message}"
     if confirm("Would you like to clear it? (y/N):")
       FileUtils.rm(console_history_file(app)) rescue nil
@@ -186,9 +202,4 @@ protected
     File.open(console_history_file(app), "a") { |f| f.puts cmd + "\n" }
   end
 
-  def get_size
-    size = options[:size].to_i
-    error("Must specify SIZE in format '1X' or '2X'.") if size <= 0
-    size
-  end
 end

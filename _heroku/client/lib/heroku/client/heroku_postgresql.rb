@@ -18,17 +18,16 @@ class Heroku::Client::HerokuPostgresql
   attr_reader :attachment
   def initialize(attachment)
     @attachment = attachment
-    require 'rest_client'
   end
 
   def heroku_postgresql_host
     if attachment.starter_plan?
-      ENV["HEROKU_POSTGRESQL_HOST"] || "postgres-starter-api"
+      determine_host(ENV["HEROKU_POSTGRESQL_HOST"], "postgres-starter-api.heroku.com")
     else
       if ENV['SHOGUN']
-        "shogun-#{ENV['SHOGUN']}"
+        "shogun-#{ENV['SHOGUN']}.herokuapp.com"
       else
-        ENV["HEROKU_POSTGRESQL_HOST"] || "postgres-api"
+        determine_host(ENV["HEROKU_POSTGRESQL_HOST"], "postgres-api.heroku.com")
       end
     end
   end
@@ -39,7 +38,7 @@ class Heroku::Client::HerokuPostgresql
 
   def heroku_postgresql_resource
     RestClient::Resource.new(
-      "https://#{heroku_postgresql_host}.heroku.com/client/v11/databases",
+      "https://#{heroku_postgresql_host}/client/v11/databases",
       :user => Heroku::Auth.user,
       :password => Heroku::Auth.password,
       :headers => self.class.headers
@@ -50,8 +49,16 @@ class Heroku::Client::HerokuPostgresql
     http_put "#{resource_name}/ingress"
   end
 
+  def metrics
+    http_get "#{resource_name}/metrics"
+  end
+
   def reset
     http_put "#{resource_name}/reset"
+  end
+
+  def connection_reset
+    http_post "#{resource_name}/connection_reset"
   end
 
   def rotate_credentials
@@ -69,6 +76,26 @@ class Heroku::Client::HerokuPostgresql
 
   def unfollow
     http_put "#{resource_name}/unfollow"
+  end
+
+  def upgrade
+    http_post "#{resource_name}/upgrade"
+  end
+
+  def upgrade_status
+    http_get "#{resource_name}/upgrade_status"
+  end
+
+  def maintenance_info
+    http_get "#{resource_name}/maintenance"
+  end
+
+  def maintenance_run
+    http_post "#{resource_name}/maintenance"
+  end
+
+  def maintenance_window_set(description)
+    http_put "#{resource_name}/maintenance_window", 'description' => description
   end
 
   protected
@@ -124,6 +151,16 @@ class Heroku::Client::HerokuPostgresql
       response = heroku_postgresql_resource[path].put(json_encode(payload))
       display_heroku_warning response
       sym_keys(json_decode(response.to_s))
+    end
+  end
+
+  private
+
+  def determine_host(value, default)
+    if value.nil?
+      default
+    else
+      "#{value}.herokuapp.com"
     end
   end
 end

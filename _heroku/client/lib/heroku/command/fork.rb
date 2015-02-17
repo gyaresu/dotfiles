@@ -1,4 +1,4 @@
-require "heroku/client/cisaurus"
+require "heroku/api/releases_v3"
 require "heroku/command/base"
 
 module Heroku::Command
@@ -16,27 +16,33 @@ module Heroku::Command
     # --region REGION      # specify a region
     #
     def index
-      
+      options[:ignore_no_org] = true
+
       from = app
       to = shift_argument || "#{from}-#{(rand*1000).to_i}"
+      if from == to
+        raise Heroku::Command::CommandFailed.new("Cannot fork to the same app.")
+      end
 
       from_info = api.get_app(from).body
 
-      to_info = action("Creating fork #{to}") do
-        api.post_app({
-          :name   => to,
-          :region => options[:region] || from_info["region"],
-          :stack  => options[:stack] || from_info["stack"],
-          :tier   => from_info["tier"] == "legacy" ? "production" : from_info["tier"]
-        }).body
+      to_info = action("Creating fork #{to}", :org => !!org) do
+        params = {
+          "name"    => to,
+          "region"  => options[:region] || from_info["region"],
+          "stack"   => options[:stack] || from_info["stack"],
+          "tier"    => from_info["tier"] == "legacy" ? "production" : from_info["tier"]
+        }
+
+        info = if org
+          org_api.post_app(params, org).body
+        else
+          api.post_app(params).body
+        end
       end
 
       action("Copying slug") do
-        job_location = cisaurus_client.copy_slug(from, to)
-        loop do
-          break if cisaurus_client.job_done?(job_location)
-          sleep 1
-        end
+        copy_slug(from_info, to_info)
       end
 
       from_config = api.get_config_vars(from).body
@@ -61,7 +67,7 @@ module Heroku::Command
           from_config.delete(from_var_name)
 
           plan = addon["name"].split(":").last
-          unless %w(dev basic).include? plan
+          unless %w(dev basic hobby-dev hobby-basic).include? plan
             wait_for_db to, to_addon
           end
 
@@ -82,13 +88,38 @@ module Heroku::Command
       end
 
       puts "Fork complete, view it at #{to_info['web_url']}"
+    rescue => e
+      raise if e.is_a?(Heroku::Command::CommandFailed)
+
+      puts "Failed to fork app #{from} to #{to}."
+      message = "WARNING: Potentially Destructive Action\nThis command will destroy #{to} (including all add-ons)."
+
+      if confirm_command(to, message)
+        action("Deleting #{to}") do
+          begin
+            api.delete_app(to)
+          rescue Heroku::API::Errors::NotFound
+          end
+        end
+      end
+      puts "Original exception below:"
+      raise e
     end
 
   private
 
-    def cisaurus_client
-      cisaurus_url = ENV["CISAURUS_HOST"] || "https://cisaurus.herokuapp.com"
-      @cisaurus_client ||= Heroku::Client::Cisaurus.new(cisaurus_url)
+    def copy_slug(from_info, to_info)
+      from = from_info["name"]
+      to = to_info["name"]
+      from_releases = api.get_releases_v3(from, 'version ..; order=desc,max=1;').body
+      raise Heroku::Command::CommandFailed.new("No releases on #{from}") if from_releases.empty?
+      from_slug = from_releases.first.fetch('slug', {})
+      raise Heroku::Command::CommandFailed.new("No slug on #{from}") unless from_slug
+      api.post_release_v3(to,
+                          from_slug["id"],
+                          :description => "Forked from #{from}",
+                          :deploy_type => "fork",
+                          :deploy_source => from_info["id"])
     end
 
     def check_for_pgbackups!(app)
@@ -102,26 +133,20 @@ module Heroku::Command
     def migrate_db(from_addon, from, to_addon, to)
       transfer = nil
 
-      action("Creating database backup from #{from} (this can take some time)") do
+      action("Transferring database (this can take some time)") do
         from_config = api.get_config_vars(from).body
         from_attachment = from_addon["attachment_name"]
-        pgb = Heroku::Client::Pgbackups.new(from_config["PGBACKUPS_URL"])
-        transfer = pgb.create_transfer(from_config["#{from_attachment}_URL"], from_attachment, nil, "BACKUP", :expire => "true")
-        error transfer["errors"].values.flatten.join("\n") if transfer["errors"]
-        loop do
-          transfer = pgb.get_transfer(transfer["id"])
-          error transfer["errors"].values.flatten.join("\n") if transfer["errors"]
-          break if transfer["finished_at"]
-          sleep 1
-        end
-        print " "
-      end
-
-      action("Restoring database backup to #{to} (this can take some time)") do
         to_config = api.get_config_vars(to).body
         to_attachment = to_addon["message"].match(/Attached as (\w+)_URL\n/)[1]
-        pgb = Heroku::Client::Pgbackups.new(to_config["PGBACKUPS_URL"])
-        transfer = pgb.create_transfer(transfer["public_url"], "EXTERNAL_BACKUP", to_config["#{to_attachment}_URL"], to_attachment)
+
+        pgb = Heroku::Client::Pgbackups.new(from_config["PGBACKUPS_URL"])
+        transfer = pgb.create_transfer(
+          from_config["#{from_attachment}_URL"],
+          from_attachment,
+          to_config["#{to_attachment}_URL"],
+          to_attachment,
+          :expire => "true")
+
         error transfer["errors"].values.flatten.join("\n") if transfer["errors"]
         loop do
           transfer = pgb.get_transfer(transfer["id"])
@@ -133,8 +158,9 @@ module Heroku::Command
       end
     end
 
-    def pg_api(starter=false)
-      host = starter ? "postgres-starter-api.heroku.com" : "postgres-api.heroku.com"
+    def pg_api
+      require "rest_client"
+      host = "postgres-api.heroku.com"
       RestClient::Resource.new "https://#{host}/client/v11/databases", Heroku::Auth.user, Heroku::Auth.password
     end
 

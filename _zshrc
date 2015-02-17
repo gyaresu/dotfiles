@@ -8,11 +8,17 @@ alias seareach='ssh seareach'
 fpath=($HOME/.zsh/func $fpath)
 typeset -U fpath
 
+# Gareth set PYTHONPATH
+#export PYTHONPATH="/usr/local/lib/python2.7/site-packages/:$PYTHONPATH"
+#export DYLD_FRAMEWORK_PATH="/usr/local/lib:$DYLD_FRAMEWORK_PATH"
+#export DYLD_LIBRARY_PATH=".:$DYLD_LIBRARY_PATH"
+
 # Set name of the theme to load.
 # Look in ~/.oh-my-zsh/themes/
 # Optionally, if you set this to "random", it'll load a random theme each
 # time that oh-my-zsh is loaded.
 ZSH_THEME="pygmalion"
+#ZSH_THEME="agnoster"
 
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
@@ -46,7 +52,9 @@ unsetopt correct_all
 # Customize to your needs...
 #export PATH=$HOME/.rvm/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/bin:/usr/sbin:/sbin:/usr/X11/bin:$PATH
 
-PATH=$PATH:$HOME/.rvm/bin # Add RVM to PATH for scripting
+# Gareth removed below for 10.9.4 ruby 2014-09-04
+#PATH=$PATH:$HOME/.rvm/bin # Add RVM to PATH for scripting
+#
 #export JAVA_HOME="$(/usr/libexec/java_home)"
 #export EC2_PRIVATE_KEY="$(/bin/ls "$HOME"/.ec2/pk-*.pem | /usr/bin/head -1)"
 #export EC2_CERT="$(/bin/ls "$HOME"/.ec2/cert-*.pem | /usr/bin/head -1)"
@@ -54,33 +62,35 @@ PATH=$PATH:$HOME/.rvm/bin # Add RVM to PATH for scripting
 #export EC2_HOME="/usr/local/Library/LinkedKegs/ec2-api-tools/jars"
 #export PATH="/usr/local/mysql/bin:$PATH"
 #export PATH="/Users/gyaresu/.bin:$PATH"
-export PATH="/usr/local/share/npm/bin:$PATH"
+export PATH="$HOME/.node/bin:$PATH"
+#export PATH="/usr/local/share/npm/bin:$PATH"
 export PATH="/usr/local/sbin:$PATH"
+export PYTHONPATH=/Library/Python/2.7/site-packages
 #export AWS_ACCESS_KEY_ID="AKIAJNMNMU7BG7DM6VWA"
 #export AWS_SECRET_ACCESS_KEY="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"
 #export PYTHONPATH="/usr/local/lib/python2.7/site-packages:$PYTHONPATH"
 export PATH=/usr/local/bin:$PATH
 #[[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm"  # This loads RVM 
 #export WORKON_HOME=~/programming/python_virtualenvs # set the home for virtualenvwrapper (pip)
-export PATH="/usr/local/Cellar/ruby/2.0.0-p247/bin:$PATH"
+#export PATH="/usr/local/Cellar/ruby/3.0.0-p247/bin:$PATH"
 # start up virtualenvwrapper
 #source /usr/local/opt/autoenv/activate.sh
 #source /usr/local/bin/virtualenvwrapper.sh
 
 # following script allows auto setting the virtual env on directory change
 # https://github.com/kennethreitz/autoenv/wiki/Cookbook
-use_env() {
-  typeset venv
-  venv="$1"
-  if [[ `basename "${VIRTUAL_ENV:t}"` != "$venv" ]]; then
-    if workon | grep $venv > /dev/null; then
-      workon "$venv"
-    else
-      echo -n "Create virtualenv $venv now? (Yn) "
-      read answer
-      if [[ "$answer" == "Y" ]]; then
-        mkvirtualenv "$venv"
-      fi
-    fi
-  fi
-}
+#use_env() {
+#  typeset venv
+#  venv="$1"
+#  if [[ `basename "${VIRTUAL_ENV:t}"` != "$venv" ]]; then
+#    if workon | grep $venv > /dev/null; then
+#      workon "$venv"
+#    else
+#      echo -n "Create virtualenv $venv now? (Yn) "
+#      read answer
+#      if [[ "$answer" == "Y" ]]; then
+#        mkvirtualenv "$venv"
+#      fi
+#    fi
+#  fi
+#}

@@ -103,6 +103,9 @@ module Heroku::Command
 
       args.each do |name|
         messages = nil
+        if name.start_with? "HEROKU_POSTGRESQL_"
+          name = name.chomp("_URL").freeze
+        end
         action("Removing #{name} on #{app}") do
           messages = addon_run { heroku.uninstall_addon(app, name, :confirm => app) }
         end
@@ -186,7 +189,7 @@ module Heroku::Command
     end
 
     def app_addon_url(addon)
-      "https://api.#{heroku.host}/apps/#{app}/addons/#{addon}"
+      "https://addons-sso.heroku.com/apps/#{app}/addons/#{addon}"
     end
 
     def partition_addons(addons)
@@ -246,26 +249,31 @@ module Heroku::Command
 
       status [ release, price ].compact.join(' ')
       { :attachment => attachment, :message => message }
-    rescue RestClient::ResourceNotFound => e
-      error Heroku::Command.extract_error(e.http_body) {
-        e.http_body =~ /^([\w\s]+ not found).?$/ ? $1 : "Resource not found"
-      }
-    rescue RestClient::Locked => ex
-      raise
-    rescue RestClient::RequestFailed => e
-      retry if e.http_code == 402 && confirm_billing
-      error Heroku::Command.extract_error(e.http_body)
     end
 
     def configure_addon(label, &install_or_upgrade)
       addon = args.shift
-      raise CommandFailed.new("Missing add-on name") if addon.nil? || ["--fork", "--follow"].include?(addon)
+      raise CommandFailed.new("Missing add-on name") if addon.nil? || %w{--fork --follow --rollback}.include?(addon)
 
       config = parse_options(args)
+      addon_name, plan = addon.split(':')
+
+      # For Heroku Postgres, if no plan is specified with fork/follow/rollback,
+      # default to the plan of the current postgresql plan
+      if addon_name =~ /heroku-postgresql/ then
+        hpg_flag  = %w{rollback fork follow}.select {|flag| config.keys.include? flag}.first
+        if plan.nil? &&  config[hpg_flag] =~ /^postgres:\/\// then
+          raise CommandFailed.new("Cross application database Forking/Following requires you specify a plan type")
+        elsif (hpg_flag && plan.nil?) then
+          resolver = Resolver.new(app, api)
+          addon = addon + ':' + resolver.resolve(config[hpg_flag]).plan
+        end
+      end
+
       config.merge!(:confirm => app) if app == options[:confirm]
       raise CommandFailed.new("Unexpected arguments: #{args.join(' ')}") unless args.empty?
 
-      hpg_translate_fork_and_follow(addon, config)
+      hpg_translate_db_opts_to_urls(addon, config)
 
       messages = nil
       action("#{label} #{addon} on #{app}") do
@@ -274,7 +282,7 @@ module Heroku::Command
       display(messages[:attachment]) unless messages[:attachment].to_s.strip == ""
       display(messages[:message]) unless messages[:message].to_s.strip == ""
 
-      display("Use `heroku addons:docs #{addon}` to view documentation.")
+      display("Use `heroku addons:docs #{addon_name}` to view documentation.")
     end
 
     #this will clean up when we officially deprecate

@@ -14,6 +14,7 @@ module Heroku
         require file
       end
       Heroku::Plugin.load!
+      unregister_commands_made_private_after_the_fact
     end
 
     def self.commands
@@ -34,6 +35,12 @@ module Heroku
 
     def self.register_command(command)
       commands[command[:command]] = command
+    end
+
+    def self.unregister_commands_made_private_after_the_fact
+      commands.values \
+        .select { |c| c[:klass].private_method_defined? c[:method] } \
+        .each   { |c| commands.delete c[:command] }
     end
 
     def self.register_namespace(namespace)
@@ -92,7 +99,7 @@ module Heroku
 
     def self.display_warnings
       unless warnings.empty?
-        $stderr.puts(warnings.map {|warning| " !    #{warning}"}.join("\n"))
+        $stderr.puts(warnings.uniq.map {|warning| " !    #{warning}"}.join("\n"))
       end
     end
 
@@ -104,6 +111,11 @@ module Heroku
     global_option :app, "-a", "--app APP" do |app|
       raise OptionParser::InvalidOption.new(app) if app == "pp"
     end
+
+    global_option :org, "-o", "--org ORG" do |org|
+      raise OptionParser::InvalidOption.new(org) if org == "rg"
+    end
+    global_option :personal, "-p", "--personal"
 
     global_option :confirm, "--confirm APP"
     global_option :help,    "-h", "--help"
@@ -201,21 +213,11 @@ module Heroku
     end
 
     def self.run(cmd, arguments=[])
-      begin
-        object, method = prepare_run(cmd, arguments.dup)
-        object.send(method)
-      rescue Interrupt, StandardError, SystemExit => error
-        # load likely error classes, as they may not be loaded yet due to defered loads
-        require 'heroku-api'
-        require 'rest_client'
-        raise(error)
-      end
-    rescue Heroku::API::Errors::Unauthorized, RestClient::Unauthorized
-      puts "Authentication failure"
-      unless ENV['HEROKU_API_KEY']
-        run "login"
-        retry
-      end
+      object, method = prepare_run(cmd, arguments.dup)
+      object.send(method)
+    rescue Heroku::API::Errors::Unauthorized, RestClient::Unauthorized => e
+      retry_login = handle_auth_error(e)
+      retry if retry_login
     rescue Heroku::API::Errors::VerificationRequired, RestClient::PaymentRequired => e
       retry if Heroku::Helpers.confirm_billing
     rescue Heroku::API::Errors::NotFound => e
@@ -240,22 +242,44 @@ module Heroku
       end
     rescue Heroku::API::Errors::Timeout, RestClient::RequestTimeout
       error "API request timed out. Please try again, or contact support@heroku.com if this issue persists."
+    rescue Heroku::API::Errors::Forbidden => e
+      if e.response.headers.has_key?("Heroku-Two-Factor-Required")
+        Heroku::Auth.preauth
+        retry
+      else
+        error extract_error(e.response.body)
+      end
     rescue Heroku::API::Errors::ErrorWithResponse => e
       error extract_error(e.response.body)
     rescue RestClient::RequestFailed => e
-      error extract_error(e.http_body)
+      if e.response.code == 403 && e.response.headers.has_key?(:heroku_two_factor_required)
+        Heroku::Auth.preauth
+        retry
+      else
+        error extract_error(e.http_body)
+      end
     rescue CommandFailed => e
       error e.message
     rescue OptionParser::ParseError
       commands[cmd] ? run("help", [cmd]) : run("help")
-    rescue Excon::Errors::SocketError => e
-      if e.message == 'getaddrinfo: nodename nor servname provided, or not known (SocketError)'
-        error("Unable to connect to Heroku API, please check internet connectivity and try again.")
-      else
-        raise(e)
-      end
+    rescue Excon::Errors::SocketError, SocketError => e
+      error("Unable to connect to Heroku API, please check internet connectivity and try again.")
     ensure
       display_warnings
+    end
+
+    def self.handle_auth_error(e)
+      if ENV['HEROKU_API_KEY']
+        puts "Authentication failure with HEROKU_API_KEY"
+        exit 1
+      elsif wrong_two_factor_code?(e)
+        puts "Invalid two-factor code"
+        false
+      else
+        puts "Authentication failure"
+        run "login"
+        true
+      end
     end
 
     def self.parse(cmd)
@@ -271,7 +295,7 @@ module Heroku
       xml_errors = REXML::Document.new(body).elements.to_a("//errors/error")
       msg = xml_errors.map { |a| a.text }.join(" / ")
       return msg unless msg.empty?
-    rescue Exception
+    rescue
     end
 
     def self.parse_error_json(body)
@@ -280,7 +304,7 @@ module Heroku
       when Array
         json.first.join(' ') # message like [['base', 'message']]
       when Hash
-        json['error']   # message like {'error' => 'message'}
+        json['error'] || json['error_message'] || json['message'] # message like {'error' => 'message'}
       else
         nil
       end
@@ -289,6 +313,14 @@ module Heroku
     def self.parse_error_plain(body)
       return unless body.respond_to?(:headers) && body.headers[:content_type].to_s.include?("text/plain")
       body.to_s
+    end
+
+    def self.wrong_two_factor_code?(e)
+      error = json_decode(e.response.body)
+
+      # the server could have responded with XML, in which case `error` will be
+      # `nil`
+      error && error["id"] == "invalid_two_factor_code"
     end
   end
 end

@@ -8,6 +8,10 @@ class Heroku::Command::Apps < Heroku::Command::Base
   #
   # list your apps
   #
+  # -o, --org ORG  # the org to list the apps for
+  # -A, --all      # list all apps in the org. Not just joined apps
+  # -p, --personal # list apps in personal account when a default org is set
+  #
   #Example:
   #
   # $ heroku apps
@@ -20,43 +24,51 @@ class Heroku::Command::Apps < Heroku::Command::Base
   #
   def index
     validate_arguments!
-    apps = api.get_apps.body
-    unless apps.empty?
-      my_apps, collaborated_apps = apps.partition do |app|
-        app["owner_email"] == Heroku::Auth.user
-      end
+    options[:ignore_no_org] = true
 
-      unless my_apps.empty?
-        non_legacy_apps = my_apps.select do |app|
-          app["tier"] != "legacy"
+    apps = if org
+      org_api.get_apps(org).body
+    else
+      api.get_apps.body.select { |app| options[:all] ? true : !org?(app["owner_email"]) }
+    end
+
+    unless apps.empty?
+      if org
+        joined, unjoined = apps.partition { |app| app['joined'] == true }
+
+        styled_header("Apps joined in organization #{org}")
+        unless joined.empty?
+          styled_array(joined.map {|app| regionized_app_name(app) + (app['locked'] ? ' (locked)' : '') })
+        else
+          display("You haven't joined any apps.")
+          display("Use --all to see unjoined apps.") unless options[:all]
+          display
         end
 
-        unless non_legacy_apps.empty?
-          production_basic_apps, dev_legacy_apps = my_apps.partition do |app|
-            ["production", "basic"].include?(app["tier"])
+        if options[:all]
+          styled_header("Apps available to join in organization #{org}")
+          unless unjoined.empty?
+            styled_array(unjoined.map {|app| regionized_app_name(app) + (app['locked'] ? ' (locked)' : '') })
+          else
+            display("There are no apps to join.")
+            display
           end
+        end
+      else
+        my_apps, collaborated_apps = apps.partition { |app| app["owner_email"] == Heroku::Auth.user }
 
-          unless production_basic_apps.empty?
-            styled_header("Basic & Production Apps")
-            styled_array(production_basic_apps.map { |app| regionized_app_name(app) })
-          end
-
-          unless dev_legacy_apps.empty?
-            styled_header("Dev & Legacy Apps")
-            styled_array(dev_legacy_apps.map { |app| regionized_app_name(app) })
-          end
-        else
+        unless my_apps.empty?
           styled_header("My Apps")
           styled_array(my_apps.map { |app| regionized_app_name(app) })
         end
-      end
 
-      unless collaborated_apps.empty?
-        styled_header("Collaborated Apps")
-        styled_array(collaborated_apps.map { |app| [regionized_app_name(app), app["owner_email"]] })
+        unless collaborated_apps.empty?
+          styled_header("Collaborated Apps")
+          styled_array(collaborated_apps.map { |app| [regionized_app_name(app), app_owner(app["owner_email"])] })
+        end
       end
     else
-      display("You have no apps.")
+      org ? display("There are no apps in organization #{org}.") : display("You have no apps.")
     end
   end
 
@@ -72,12 +84,12 @@ class Heroku::Command::Apps < Heroku::Command::Base
   #
   # $ heroku apps:info
   # === example
-  # Git URL:   git@heroku.com:example.git
+  # Git URL:   https://git.heroku.com/example.git
   # Repo Size: 5M
   # ...
   #
   # $ heroku apps:info --shell
-  # git_url=git@heroku.com:example.git
+  # git_url=https://git.heroku.com/example.git
   # repo_size=5000000
   # ...
   #
@@ -93,7 +105,13 @@ class Heroku::Command::Apps < Heroku::Command::Base
     collaborators_data = api.get_collaborators(app).body.map {|collaborator| collaborator["email"]}.sort
     collaborators_data.reject! {|email| email == app_data["owner_email"]}
 
+    if org? app_data['owner_email']
+      app_data['owner'] = app_owner(app_data['owner_email'])
+      app_data.delete("owner_email")
+    end
+
     if options[:shell]
+      app_data['git_url'] = git_url(app_data['name'])
       if app_data['domain_name']
         app_data['domain_name'] = app_data['domain_name']['domain']
       end
@@ -111,6 +129,10 @@ class Heroku::Command::Apps < Heroku::Command::Base
 
       unless addons_data.empty?
         data["Addons"] = addons_data
+      end
+
+      if app_data["archived_at"]
+        data["Archived At"] = format_date(app_data["archived_at"])
       end
 
       data["Collaborators"] = collaborators_data
@@ -131,7 +153,7 @@ class Heroku::Command::Apps < Heroku::Command::Base
         data["Database Size"] = format_bytes(app_data["database_size"])
       end
 
-      data["Git URL"] = app_data["git_url"]
+      data["Git URL"] = git_url(app_data['name'])
 
       if app_data["database_tables"]
         data["Database Size"].gsub!('(empty)', '0K') + " in #{quantify("table", app_data["database_tables"])}"
@@ -143,19 +165,12 @@ class Heroku::Command::Apps < Heroku::Command::Base
         end
       end
 
-      data["Owner Email"] = app_data["owner_email"]
-
-      if app_data["region"]
-        data["Region"] = app_data["region"]
-      end
-
-      if app_data["repo_size"]
-        data["Repo Size"] = format_bytes(app_data["repo_size"])
-      end
-
-      if app_data["slug_size"]
-        data["Slug Size"] = format_bytes(app_data["slug_size"])
-      end
+      data["Owner Email"] = app_data["owner_email"] if app_data["owner_email"]
+      data["Owner"] = app_data["owner"] if app_data["owner"]
+      data["Region"] = app_data["region"] if app_data["region"]
+      data["Repo Size"] = format_bytes(app_data["repo_size"]) if app_data["repo_size"]
+      data["Slug Size"] = format_bytes(app_data["slug_size"]) if app_data["slug_size"]
+      data["Cache Size"] = format_bytes(app_data["cache_size"]) if app_data["cache_size"]
 
       data["Stack"] = app_data["stack"]
       if data["Stack"] != "cedar"
@@ -163,10 +178,6 @@ class Heroku::Command::Apps < Heroku::Command::Base
       end
 
       data["Web URL"] = app_data["web_url"]
-
-      if app_data["tier"]
-        data["Tier"] = app_data["tier"].capitalize
-      end
 
       styled_hash(data)
     end
@@ -184,22 +195,25 @@ class Heroku::Command::Apps < Heroku::Command::Base
   # -r, --remote REMOTE        # the git remote to create, default "heroku"
   # -s, --stack STACK          # the stack on which to create the app
   #     --region REGION        # specify region for this app to run in
+  # -l, --locked               # lock the app
+  #     --ssh-git              # Use SSH git protocol
   # -t, --tier TIER            # HIDDEN: the tier for this app
+  #     --http-git             # HIDDEN: Use HTTP git protocol
   #
   #Examples:
   #
   # $ heroku apps:create
   # Creating floating-dragon-42... done, stack is cedar
-  # http://floating-dragon-42.heroku.com/ | git@heroku.com:floating-dragon-42.git
+  # http://floating-dragon-42.heroku.com/ | https://git.heroku.com/floating-dragon-42.git
   #
   # $ heroku apps:create -s bamboo
   # Creating floating-dragon-42... done, stack is bamboo-mri-1.9.2
-  # http://floating-dragon-42.herokuapp.com/ | git@heroku.com:floating-dragon-42.git
+  # http://floating-dragon-42.herokuapp.com/ | https://git.heroku.com/floating-dragon-42.git
   #
   # # specify a name
   # $ heroku apps:create example
   # Creating example... done, stack is cedar
-  # http://example.heroku.com/ | git@heroku.com:example.git
+  # http://example.heroku.com/ | https://git.heroku.com/example.git
   #
   # # create a staging app
   # $ heroku apps:create example-staging --remote staging
@@ -210,15 +224,23 @@ class Heroku::Command::Apps < Heroku::Command::Base
   def create
     name    = shift_argument || options[:app] || ENV['HEROKU_APP']
     validate_arguments!
+    options[:ignore_no_org] = true
 
-    info    = api.post_app({
+    params = {
       "name" => name,
       "region" => options[:region],
       "stack" => options[:stack],
-      "tier" => options[:tier]
-    }).body
+      "locked" => options[:locked]
+    }
+
+    info = if org
+      org_api.post_app(params, org).body
+    else
+      api.post_app(params).body
+    end
+
     begin
-      action("Creating #{info['name']}") do
+      action("Creating #{info['name']}", :org => !!org) do
         if info['create_status'] == 'creating'
           Timeout::timeout(options[:timeout].to_i) do
             loop do
@@ -227,10 +249,11 @@ class Heroku::Command::Apps < Heroku::Command::Base
             end
           end
         end
-        if info['region']
-          status("region is #{info['region']}")
+        if options[:region]
+          status("region is #{region_from_app(info)}")
         else
-          status("stack is #{info['stack']}")
+          stack = (info['stack'].is_a?(Hash) ? info['stack']["name"] : info['stack'])
+          status("stack is #{stack}")
         end
       end
 
@@ -246,26 +269,29 @@ class Heroku::Command::Apps < Heroku::Command::Base
         display("BUILDPACK_URL=#{buildpack}")
       end
 
-      hputs([ info["web_url"], info["git_url"] ].join(" | "))
+      hputs([ info["web_url"], git_url(info['name']) ].join(" | "))
     rescue Timeout::Error
       hputs("Timed Out! Run `heroku status` to check for known platform issues.")
     end
 
     unless options[:no_remote].is_a? FalseClass
-      create_git_remote(options[:remote] || "heroku", info["git_url"])
+      create_git_remote(options[:remote] || "heroku", git_url(info['name']))
     end
   end
 
   alias_command "create", "apps:create"
 
-  # apps:rename NEWNAME
+  # apps:rename NEWNAME --app APP
   #
   # rename the app
+  #
+  #     --ssh-git              # Use SSH git protocol
+  #     --http-git             # HIDDEN: Use HTTP git protocol
   #
   #Example:
   #
   # $ heroku apps:rename example-newname
-  # http://example-newname.herokuapp.com/ | git@heroku.com:example-newname.git
+  # http://example-newname.herokuapp.com/ | https://git.heroku.com/example-newname.git
   # Git remote heroku updated
   #
   def rename
@@ -280,13 +306,13 @@ class Heroku::Command::Apps < Heroku::Command::Base
     end
 
     app_data = api.get_app(newname).body
-    hputs([ app_data["web_url"], app_data["git_url"] ].join(" | "))
+    hputs([ app_data["web_url"], git_url(newname) ].join(" | "))
 
     if remotes = git_remotes(Dir.pwd)
       remotes.each do |remote_name, remote_app|
         next if remote_app != app
         git "remote rm #{remote_name}"
-        git "remote add #{remote_name} #{app_data["git_url"]}"
+        git "remote add #{remote_name} #{git_url(newname)}"
         hputs("Git remote #{remote_name} updated")
       end
     else
@@ -296,7 +322,7 @@ class Heroku::Command::Apps < Heroku::Command::Base
 
   alias_command "rename", "apps:rename"
 
-  # apps:open
+  # apps:open --app APP
   #
   # open the app in a web browser
   #
@@ -306,15 +332,18 @@ class Heroku::Command::Apps < Heroku::Command::Base
   # Opening example... done
   #
   def open
+    path = shift_argument
     validate_arguments!
 
     app_data = api.get_app(app).body
-    launchy("Opening #{app}", app_data['web_url'])
+
+    url = [app_data['web_url'], path].join
+    launchy("Opening #{app}", url)
   end
 
   alias_command "open", "apps:open"
 
-  # apps:destroy
+  # apps:destroy --app APP
   #
   # permanently destroy an app
   #
@@ -350,7 +379,77 @@ class Heroku::Command::Apps < Heroku::Command::Base
   alias_command "destroy", "apps:destroy"
   alias_command "apps:delete", "apps:destroy"
 
-  # apps:upgrade TIER
+  # apps:join --app APP
+  #
+  # add yourself to an organization app
+  #
+  # -a, --app APP  # the app
+  def join
+    begin
+      action("Joining application #{app}") do
+        org_api.join_app(app)
+      end
+    rescue Heroku::API::Errors::NotFound
+      error("Application does not exist or does not belong to an org that you have access to.")
+    end
+  end
+
+  alias_command "join", "apps:join"
+
+  # apps:leave --app APP
+  #
+  # remove yourself from an organization app
+  #
+  # -a, --app APP  # the app
+  def leave
+    begin
+      action("Leaving application #{app}") do
+        if org_from_app = extract_org_from_app
+          org_api.leave_app(app)
+        else
+          api.delete_collaborator(app, Heroku::Auth.user)
+        end
+      end
+    end
+  end
+
+  alias_command "leave", "apps:leave"
+
+  # apps:lock --app APP
+  #
+  # lock an organization app to restrict access
+  #
+  def lock
+    begin
+      action("Locking #{app}") {
+        org_api.lock_app(app)
+      }
+      display("Organization members must be invited this app.")
+    rescue Excon::Errors::NotFound
+      error("#{app} was not found")
+    end
+  end
+
+  alias_command "lock", "apps:lock"
+
+  # apps:unlock --app APP
+  #
+  # unlock an organization app so that any org member can join it
+  #
+  def unlock
+    begin
+      action("Unlocking #{app}") {
+        org_api.unlock_app(app)
+      }
+      display("All organization members can join this app.")
+    rescue Excon::Errors::NotFound
+      error("#{app} was not found")
+    end
+  end
+
+  alias_command "unlock", "apps:unlock"
+
+  # apps:upgrade TIER --app APP
   #
   # HIDDEN: upgrade an app's pricing tier
   #
@@ -366,7 +465,7 @@ class Heroku::Command::Apps < Heroku::Command::Base
 
   alias_command "upgrade", "apps:upgrade"
 
-  # apps:downgrade TIER
+  # apps:downgrade TIER --app APP
   #
   # HIDDEN: downgrade an app's pricing tier
   #
@@ -385,12 +484,18 @@ class Heroku::Command::Apps < Heroku::Command::Base
   private
 
   def regionized_app_name(app)
+    region = region_from_app(app)
+
     # temporary, show region for non-us apps
-    if app["region"] && app["region"] != 'us'
-      "#{app["name"]} (#{app["region"]})"
+    if app["region"] && region != 'us'
+      "#{app["name"]} (#{region})"
     else
       app["name"]
     end
+  end
+
+  def region_from_app app
+    region = app["region"].is_a?(Hash) ? app["region"]["name"] : app["region"]
   end
 
 end

@@ -21,7 +21,7 @@ module Heroku::Command
         next unless backup_types.member?(t['to_name']) && !t['error_at'] && !t['destroyed_at']
         backups << {
           'id'          => backup_name(t['to_url']),
-          'created_at'  => t['created_at'],
+          'started_at'  => t['started_at'],
           'status'      => transfer_status(t),
           'size'        => t['size'],
           'database'    => t['from_name']
@@ -33,7 +33,7 @@ module Heroku::Command
       else
         display_table(
           backups,
-          %w{ id created_at status size database },
+          %w{ id started_at status size database },
           ["ID", "Backup Time", "Status", "Size", "Database"]
         )
       end
@@ -71,7 +71,7 @@ module Heroku::Command
     # -e, --expire  # if no slots are available, destroy the oldest manual backup to make room
     #
     def capture
-      attachment = hpg_resolve(shift_argument, "DATABASE_URL")
+      attachment = resolve(shift_argument, "DATABASE_URL")
       validate_arguments!
 
       from_name = attachment.display_name
@@ -107,17 +107,17 @@ module Heroku::Command
     #
     def restore
       if 0 == args.size
-        attachment = hpg_resolve(nil, "DATABASE_URL")
+        attachment = resolve(nil, "DATABASE_URL")
         to_name = attachment.display_name
         to_url  = attachment.url
         backup_id = :latest
       elsif 1 == args.size
-        attachment = hpg_resolve(shift_argument)
+        attachment = resolve(shift_argument)
         to_name = attachment.display_name
         to_url  = attachment.url
         backup_id = :latest
       else
-        attachment = hpg_resolve(shift_argument)
+        attachment = resolve(shift_argument)
         to_name = attachment.display_name
         to_url  = attachment.url
         backup_id = shift_argument
@@ -187,6 +187,56 @@ module Heroku::Command
       end
     end
 
+    # pgbackups:transfer [SOURCE DATABASE] DESTINATION DATABASE
+    #
+    # direct database-to-database transfer
+    #
+    # If no DATABASE is specified, defaults to DATABASE_URL.
+    # The pgbackups add-on is required to use direct transfers
+    #
+    #Example:
+    #
+    #$ heroku pgbackups:transfer green teal --app example
+    #
+    # note that both the FROM and TO database must be accessible to the pgbackups service
+    #$ heroku pgbackups:transfer DATABASE postgres://user:password@host/dbname --app example
+    #
+    def transfer
+      db1 = shift_argument
+      db2 = shift_argument
+
+      if db1.nil?
+        error("pgbackups:transfer requires at least one argument")
+      end
+
+      if db2.nil?
+        db2 = db1
+        db1 = "DATABASE_URL"
+      end
+
+      from = resolve_transfer(db1)
+      to = resolve_transfer(db2)
+
+      validate_arguments!
+
+      if from.url == to.url
+        error("source and target database are the same")
+      end
+
+      opts       = {}
+      verify_app = to.app || app
+      if confirm_command(verify_app, "WARNING: Destructive Action\nTransferring data from #{from.name} to #{to.name}")
+        backup = transfer!(from.url, from.name, to.url, to.name, opts)
+        backup = poll_transfer!(backup)
+
+        if backup["error_at"]
+          message  =   "An error occurred and your backup did not finish."
+          message += "\nThe database is not yet online. Please try again." if backup['log'] =~ /Name or service not known/
+          message += "\nThe database credentials are incorrect."           if backup['log'] =~ /psql: FATAL:/
+          error(message)
+        end
+      end
+    end
     protected
 
     def transfer_status(t)
@@ -205,7 +255,7 @@ module Heroku::Command
     end
 
     def pgbackup_client
-      pgbackups_url = ENV["PGBACKUPS_URL"] || config_vars["PGBACKUPS_URL"]
+      pgbackups_url = config_vars["PGBACKUPS_URL"]
       error("Please add the pgbackups addon first via:\nheroku addons:add pgbackups") unless pgbackups_url
       @pgbackup_client ||= Heroku::Client::Pgbackups.new(pgbackups_url)
     end
@@ -238,14 +288,18 @@ You can also watch progress with `heroku logs --tail --ps pgbackups -a #{app}`
         abort
       end
 
+      transfer_id = transfer["id"]
+
       while true
-        update_display(transfer)
-        break if transfer["finished_at"]
+        unless transfer.nil?
+          update_display(transfer)
+          break if transfer["finished_at"]
+        end
 
         sleep_time = 1
         begin
           sleep(sleep_time)
-          transfer = pgbackup_client.get_transfer(transfer["id"])
+          transfer = pgbackup_client.get_transfer(transfer_id)
         rescue
           if sleep_time > 300
             poll_error(app)
@@ -312,6 +366,24 @@ You can also watch progress with `heroku logs --tail --ps pgbackups -a #{app}`
     end
 
     private
+
+    TransferEndpoint = Struct.new(:url, :name, :app)
+
+    #
+    # resolve the given database identifier
+    def resolve_transfer(db)
+      if /^postgres:/ =~ db
+        uri = URI.parse(db)
+        TransferEndpoint.new(uri, "Database on #{uri.host}:#{uri.port || 5432}#{uri.path}")
+      else
+        attachment = resolve(db)
+        TransferEndpoint.new(attachment.url, db.upcase, attachment.app)
+      end
+    end
+
+    def resolve(identifer, default=nil)
+      Resolver.new(app, api).resolve(identifer, default)
+    end
 
     def no_backups_error!
       error("No backups. Capture one with `heroku pgbackups:capture`.")
