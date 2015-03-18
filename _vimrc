@@ -1,3 +1,7 @@
+" http://learnvimscriptthehardway.stevelosh.com/chapters/10.html
+" https://danielmiessler.com/blog/enhancements-to-shell-and-vim-productivity/
+inoremap jj <ESC>
+
 " https://github.com/tpope/vim-pathogen
 call pathogen#infect()
 set t_Co=256
