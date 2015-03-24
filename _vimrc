@@ -7,25 +7,48 @@ set runtimepath+=~/.vim/bundle/vundle
 call vundle#rc()
 
 Bundle 'gmarik/vundle'
-
 Bundle 'davidhalter/jedi-vim'
-
 Bundle 'scrooloose/nerdtree'
-Bundle 'myusuf3/numbers'
+Bundle "myusuf3/numbers.vim"
 Bundle 'rodjek/vim-puppet'
 Bundle 'scrooloose/syntastic'
 Bundle 'godlygeek/tabular'
-Bundle 'altercation/vim-colors-solarized'
-Bundle 'jelera/vim-gummybears-colorscheme'
+"Bundle 'altercation/vim-colors-solarized'
+"Bundle 'dbb/vim-gummybears-colorscheme'
+Bundle 'nanotech/jellybeans.vim'
 Bundle 'jelera/vim-javascript-syntax'
 Bundle 'Lokaltog/vim-powerline'
 Bundle 'tpope/vim-surround'
 
+"" START SirVer/ultisnips
+ 
+" Track the engine.
+Plugin 'SirVer/ultisnips'
+
+" Snippets are separated from the engine. Add this if you want them:
+Plugin 'honza/vim-snippets'
+
+" Trigger configuration. Do not use <tab> if you use https://github.com/Valloric/YouCompleteMe.
+let g:UltiSnipsExpandTrigger="<tab>"
+let g:UltiSnipsJumpForwardTrigger="<c-b>"
+let g:UltiSnipsJumpBackwardTrigger="<c-z>"
+
+" If you want :UltiSnipsEdit to split your window.
+let g:UltiSnipsEditSplit="vertical"
+
+"" END SirVer/ultisnips
+
+" Plugins
+Plugin 'elzr/vim-json'
+
 " http://learnvimscriptthehardway.stevelosh.com/chapters/10.html
 " https://danielmiessler.com/blog/enhancements-to-shell-and-vim-productivity/
 inoremap jj <ESC>
+"
 " https://github.com/tpope/vim-pathogen
-call pathogen#infect()
+"call pathogen#infect()
+
+"This bellow is to support 256 color terminal with syntax highlighting
 set t_Co=256
 syntax on
 filetype plugin indent on
@@ -35,8 +58,9 @@ filetype plugin indent on
 
 " http://ethanschoonover.com/solarized/vim-colors-solarized
 set background=dark
-colorscheme gummybears
-" colorscheme monokai
+colorscheme jellybeans
+"colorscheme gummybears
+"colorscheme monokai
 
 " osx copy/paste
 set clipboard=unnamed
