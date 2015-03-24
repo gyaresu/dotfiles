@@ -1,7 +1,29 @@
+" Of course
+set nocompatible
+
+" Required Vundle setup
+filetype off
+set runtimepath+=~/.vim/bundle/vundle
+call vundle#rc()
+
+Bundle 'gmarik/vundle'
+
+Bundle 'davidhalter/jedi-vim'
+
+Bundle 'scrooloose/nerdtree'
+Bundle 'myusuf3/numbers'
+Bundle 'rodjek/vim-puppet'
+Bundle 'scrooloose/syntastic'
+Bundle 'godlygeek/tabular'
+Bundle 'altercation/vim-colors-solarized'
+Bundle 'jelera/vim-gummybears-colorscheme'
+Bundle 'jelera/vim-javascript-syntax'
+Bundle 'Lokaltog/vim-powerline'
+Bundle 'tpope/vim-surround'
+
 " http://learnvimscriptthehardway.stevelosh.com/chapters/10.html
 " https://danielmiessler.com/blog/enhancements-to-shell-and-vim-productivity/
 inoremap jj <ESC>
-
 " https://github.com/tpope/vim-pathogen
 call pathogen#infect()
 set t_Co=256
@@ -23,7 +45,6 @@ set clipboard=unnamed
 set number
 
 " vim-powerline configs
-set nocompatible
 set guifont=Menlo\ for\ Powerline:h14
 let g:Powerline_symbols = 'fancy'
 
@@ -102,8 +123,10 @@ set noswapfile
 set expandtab
 "set softtabstop=4 " makes the spaces feel like real tabs
 set smarttab
-set shiftwidth=2
-set tabstop=2
+"set shiftwidth=2
+"set tabstop=2
+set shiftwidth=4
+set tabstop=4
 set lbr
 set tw=500
 set ai "Auto indent
