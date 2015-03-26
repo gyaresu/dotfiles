@@ -20,6 +20,11 @@ Bundle 'jelera/vim-javascript-syntax'
 Bundle 'Lokaltog/vim-powerline'
 Bundle 'tpope/vim-surround'
 
+" Let's figure fuzzyfinder and it's deps out later
+"Bundle 'L9'
+"Bundle 'FuzzyFinder'
+"Bundle 'Align'
+
 "" START SirVer/ultisnips
  
 " Track the engine.
@@ -52,6 +57,9 @@ inoremap jj <ESC>
 set t_Co=256
 syntax on
 filetype plugin indent on
+
+" Enable mouse in the terminal
+set mouse=a
 
 " Write the fucking file as root!!!!!!!
 " cmap w!! %!sudo tee > /dev/null %
