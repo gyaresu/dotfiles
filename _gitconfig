@@ -1,7 +1,6 @@
 [user]
 	email = me@gareth.com.au
-	name = gyaresu
-	username = gyaresu
+	name = Gareth
 [credential]
 	helper = osxkeychain
 [alias]
