@@ -1,4 +1,5 @@
 require "heroku/command/base"
+require "heroku/command/stack"
 
 # manage apps (create, destroy)
 #
@@ -95,13 +96,14 @@ class Heroku::Command::Apps < Heroku::Command::Base
   #
   def info
     validate_arguments!
+    requires_preauth
     app_data = api.get_app(app).body
 
     unless options[:shell]
       styled_header(app_data["name"])
     end
 
-    addons_data = api.get_addons(app).body.map {|addon| addon['name']}.sort
+    addons_data = api.get_addons(app).body.map {|addon| addon['name']}.sort rescue {}
     collaborators_data = api.get_collaborators(app).body.map {|collaborator| collaborator["email"]}.sort
     collaborators_data.reject! {|email| email == app_data["owner_email"]}
 
@@ -172,8 +174,8 @@ class Heroku::Command::Apps < Heroku::Command::Base
       data["Slug Size"] = format_bytes(app_data["slug_size"]) if app_data["slug_size"]
       data["Cache Size"] = format_bytes(app_data["cache_size"]) if app_data["cache_size"]
 
-      data["Stack"] = app_data["stack"]
-      if data["Stack"] != "cedar"
+      data["Stack"] = Heroku::Command::Stack::Codex.out(app_data["stack"])
+      if data["Stack"] != "cedar-10"
         data.merge!("Dynos" => app_data["dynos"], "Workers" => app_data["workers"])
       end
 
@@ -206,9 +208,10 @@ class Heroku::Command::Apps < Heroku::Command::Base
   # Creating floating-dragon-42... done, stack is cedar
   # http://floating-dragon-42.heroku.com/ | https://git.heroku.com/floating-dragon-42.git
   #
-  # $ heroku apps:create -s bamboo
-  # Creating floating-dragon-42... done, stack is bamboo-mri-1.9.2
-  # http://floating-dragon-42.herokuapp.com/ | https://git.heroku.com/floating-dragon-42.git
+  # # specify a stack
+  # $ heroku create -s cedar
+  # Creating stormy-garden-5052... done, stack is cedar
+  # https://stormy-garden-5052.herokuapp.com/ | https://git.heroku.com/stormy-garden-5052.git
   #
   # # specify a name
   # $ heroku apps:create example
@@ -229,7 +232,7 @@ class Heroku::Command::Apps < Heroku::Command::Base
     params = {
       "name" => name,
       "region" => options[:region],
-      "stack" => options[:stack],
+      "stack" => Heroku::Command::Stack::Codex.in(options[:stack]),
       "locked" => options[:locked]
     }
 
@@ -253,7 +256,7 @@ class Heroku::Command::Apps < Heroku::Command::Base
           status("region is #{region_from_app(info)}")
         else
           stack = (info['stack'].is_a?(Hash) ? info['stack']["name"] : info['stack'])
-          status("stack is #{stack}")
+          status("stack is #{Heroku::Command::Stack::Codex.out(stack)}")
         end
       end
 
@@ -265,8 +268,8 @@ class Heroku::Command::Apps < Heroku::Command::Base
       end
 
       if buildpack = options[:buildpack]
-        api.put_config_vars(info["name"], "BUILDPACK_URL" => buildpack)
-        display("BUILDPACK_URL=#{buildpack}")
+        api.put_app_buildpacks_v3(info['name'], {:updates => [{:buildpack => buildpack}]})
+        display "Buildpack set. Next release on #{info['name']} will use #{buildpack}."
       end
 
       hputs([ info["web_url"], git_url(info['name']) ].join(" | "))

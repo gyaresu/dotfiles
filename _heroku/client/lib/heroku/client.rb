@@ -1,4 +1,3 @@
-require 'rexml/document'
 require 'uri'
 require 'time'
 require 'heroku/auth'
@@ -6,7 +5,6 @@ require 'heroku/command'
 require 'heroku/helpers'
 require 'heroku/version'
 require 'heroku/client/ssl_endpoint'
-require 'rest_client'
 
 # A Ruby class to call the Heroku REST API.  You might use this if you want to
 # manage your Heroku apps from within a Ruby program, such as Capistrano.
@@ -480,6 +478,7 @@ Check the output of "heroku ps" and "heroku logs" for more information.
   def read_logs(app_name, options=[])
     query = "&" + options.join("&") unless options.empty?
     url = get("/apps/#{app_name}/logs?logplex=true#{query}").to_s
+    debug "Reading logs from: #{url}"
     if url == 'Use old logs'
       puts get("/apps/#{app_name}/logs").to_s
     else
@@ -526,7 +525,8 @@ Check the output of "heroku ps" and "heroku logs" for more information.
             end
           end
         end
-      rescue Errno::ECONNREFUSED, Errno::ETIMEDOUT, SocketError
+      rescue Errno::ECONNREFUSED, Errno::ETIMEDOUT, SocketError => exception
+        debug "Error connecting to logging service: #{exception}"
         error("Could not connect to logging service")
       rescue Timeout::Error, EOFError
         error("\nRequest timed out")
@@ -652,6 +652,7 @@ Check the output of "heroku ps" and "heroku logs" for more information.
   end
 
   def xml(raw)   # :nodoc:
+    require 'rexml/document'
     REXML::Document.new(raw)
   end
 

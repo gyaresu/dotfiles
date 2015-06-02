@@ -1,4 +1,6 @@
 require "heroku/command/base"
+require "shellwords"
+
 
 # manage app config vars
 #
@@ -40,7 +42,8 @@ class Heroku::Command::Config < Heroku::Command::Base
       vars.each {|key, value| vars[key] = value.to_s}
       if options[:shell]
         vars.keys.sort.each do |key|
-          display(%{#{key}=#{vars[key]}})
+          out = $stdout.tty? ? Shellwords.shellescape(vars[key]) : vars[key]
+          display(%{#{key}=#{out}})
         end
       else
         styled_header("#{app} Config Vars")
@@ -65,14 +68,15 @@ class Heroku::Command::Config < Heroku::Command::Base
   # B: two
   #
   def set
+    requires_preauth
     unless args.size > 0 and args.all? { |a| a.include?('=') }
       error("Usage: heroku config:set KEY1=VALUE1 [KEY2=VALUE2 ...]\nMust specify KEY and VALUE to set.")
     end
 
-    vars = args.inject({}) do |vars, arg|
+    vars = args.inject({}) do |v, arg|
       key, value = arg.split('=', 2)
-      vars[key] = value
-      vars
+      v[key] = value
+      v
     end
 
     action("Setting config vars and restarting #{app}") do
@@ -82,7 +86,7 @@ class Heroku::Command::Config < Heroku::Command::Base
         if release = api.get_release(app, 'current').body
           release['name']
         end
-      rescue Heroku::API::Errors::RequestFailed => e
+      rescue Heroku::API::Errors::RequestFailed
       end
     end
 
@@ -95,6 +99,8 @@ class Heroku::Command::Config < Heroku::Command::Base
   # config:get KEY
   #
   # display a config value for an app
+  #
+  # -s, --shell  # output config var in shell format
   #
   #Examples:
   #
@@ -109,7 +115,12 @@ class Heroku::Command::Config < Heroku::Command::Base
 
     vars = api.get_config_vars(app).body
     key, value = vars.detect {|k,v| k == key}
-    display(value.to_s)
+    if options[:shell] && value
+      out = $stdout.tty? ? Shellwords.shellescape(value) : value
+      display("#{key}=#{out}")
+    else
+      display(value.to_s)
+    end
   end
 
   # config:unset KEY1 [KEY2 ...]
@@ -124,6 +135,7 @@ class Heroku::Command::Config < Heroku::Command::Base
   # Unsetting B and restarting example... done, v124
   #
   def unset
+    requires_preauth
     if args.empty?
       error("Usage: heroku config:unset KEY1 [KEY2 ...]\nMust specify KEY to unset.")
     end
@@ -136,7 +148,7 @@ class Heroku::Command::Config < Heroku::Command::Base
           if release = api.get_release(app, 'current').body
             release['name']
           end
-        rescue Heroku::API::Errors::RequestFailed => e
+        rescue Heroku::API::Errors::RequestFailed
         end
       end
     end

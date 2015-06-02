@@ -17,6 +17,9 @@ class Heroku::Command::Update < Heroku::Command::Base
   def index
     validate_arguments!
     update_from_url(false)
+    if Heroku::JSPlugin.setup?
+      Heroku::JSPlugin.update
+    end
   end
 
   # update:beta
@@ -31,17 +34,10 @@ class Heroku::Command::Update < Heroku::Command::Base
     update_from_url(true)
   end
 
-private
+  private
 
   def update_from_url(prerelease)
     Heroku::Updater.check_disabled!
-    action("Updating") do
-      if new_version = Heroku::Updater.update(prerelease)
-        status("#{Heroku::VERSION} updated to #{new_version}")
-      else
-        status("nothing to update")
-      end
-    end
+    Heroku::Updater.update(prerelease)
   end
-
 end

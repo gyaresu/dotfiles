@@ -1,10 +1,17 @@
+# encoding: utf-8
+
 module Heroku
   module Helpers
 
     extend self
 
     def home_directory
-      running_on_windows? ? ENV['USERPROFILE'].gsub("\\","/") : ENV['HOME']
+      if running_on_windows?
+        # https://bugs.ruby-lang.org/issues/10126
+        Dir.home.force_encoding('cp775')
+      else
+        Dir.home
+      end
     end
 
     def running_on_windows?
@@ -33,7 +40,19 @@ module Heroku
     end
 
     def debug(*args)
-      $stderr.puts(*args) if ENV['HEROKU_DEBUG']
+      $stderr.puts(*args) if debugging?
+    end
+
+    def stderr_puts(*args)
+      $stderr.puts(*args)
+    end
+
+    def stderr_print(*args)
+      $stderr.print(*args)
+    end
+
+    def debugging?
+      ENV['HEROKU_DEBUG']
     end
 
     def confirm(message="Are you sure you wish to continue? (y/n)")
@@ -120,6 +139,15 @@ module Heroku
       message
     end
 
+    def time_remaining(from, to)
+      secs = (to - from).to_i
+      mins  = secs / 60
+      hours = mins / 60
+      return "#{hours}h #{mins % 60}m" if hours > 0
+      return "#{mins}m #{secs % 60}s" if mins > 0
+      return "#{secs}s" if secs >= 0
+    end
+
     def truncate(text, length)
       return "" if text.nil?
       if text.size > length
@@ -155,12 +183,6 @@ module Heroku
       display "Git remote #{remote} added" if $?.success?
     end
 
-    def update_git_remote(remote, url)
-      return unless has_git_remote? remote
-      git "remote set-url #{remote} #{url}"
-      display "Git remote #{remote} updated" if $?.success?
-    end
-
     def longest(items)
       items.map { |i| i.to_s.length }.sort.last
     end
@@ -190,14 +212,12 @@ module Heroku
     end
 
     def json_encode(object)
-      MultiJson.dump(object)
-    rescue MultiJson::ParseError
-      nil
+      JSON.generate(object)
     end
 
     def json_decode(json)
-      MultiJson.load(json)
-    rescue MultiJson::ParseError
+      JSON.parse(json)
+    rescue JSON::ParserError
       nil
     end
 
@@ -261,12 +281,14 @@ module Heroku
       display(format_with_bang(message), new_line)
     end
 
-    def error(message)
+    def error(message, report=false)
       if Heroku::Helpers.error_with_failure
         display("failed")
         Heroku::Helpers.error_with_failure = false
       end
       $stderr.puts(format_with_bang(message))
+      rollbar_id = Rollbar.error(message) if report
+      $stderr.puts("Error ID: #{rollbar_id}") if rollbar_id
       exit(1)
     end
 
@@ -374,20 +396,13 @@ module Heroku
       display
     end
 
-    def format_error(error, message='Heroku client internal error.')
+    def format_error(error, message='Heroku client internal error.', rollbar_id=nil)
       formatted_error = []
       formatted_error << " !    #{message}"
       formatted_error << ' !    Search for help at: https://help.heroku.com'
       formatted_error << ' !    Or report a bug at: https://github.com/heroku/heroku/issues/new'
       formatted_error << ''
       formatted_error << "    Error:       #{error.message} (#{error.class})"
-      formatted_error << "    Backtrace:   #{error.backtrace.first}"
-      error.backtrace[1..-1].each do |line|
-        formatted_error << "                 #{line}"
-      end
-      if error.backtrace.length > 1
-        formatted_error << ''
-      end
       command = ARGV.map do |arg|
         if arg.include?(' ')
           arg = %{"#{arg}"}
@@ -418,6 +433,9 @@ module Heroku
         end
       end
       formatted_error << "    Version:     #{Heroku.user_agent}"
+      formatted_error << "    Error ID:    #{rollbar_id}" if rollbar_id
+      formatted_error << "\n"
+      formatted_error << "    More information in #{error_log_path}"
       formatted_error << "\n"
       formatted_error.join("\n")
     end
@@ -427,7 +445,20 @@ module Heroku
         display("failed")
         Heroku::Helpers.error_with_failure = false
       end
-      $stderr.puts(format_error(error, message))
+      rollbar_id = Rollbar.error(error)
+      $stderr.puts(format_error(error, message, rollbar_id))
+      error_log(message, error.message, error.backtrace.join("\n"))
+    end
+
+    def error_log(*obj)
+      FileUtils.mkdir_p(File.dirname(error_log_path))
+      File.open(error_log_path, 'a') do |file|
+        file.write(obj.join("\n") + "\n")
+      end
+    end
+
+    def error_log_path
+      File.join(home_directory, '.heroku', 'error.log')
     end
 
     def styled_header(header)
@@ -532,11 +563,12 @@ module Heroku
       org?(email) ? email.gsub(/^(.*)@#{org_host}$/,'\1') : email
     end
 
-    def error_if_netrc_does_not_have_https_git
-      unless Auth.netrc && Auth.netrc["git.heroku.com"]
-        warn "ERROR: Incomplete credentials detected, git may not work with Heroku. Run `heroku login` to update your credentials. See documentation for details: https://devcenter.heroku.com/articles/http-git#authentication"
-        exit 1
-      end
+    def has_http_git_entry_in_netrc
+      Auth.netrc && Auth.netrc[Auth.http_git_host]
+    end
+
+    def warn_if_using_jruby
+      stderr_puts "WARNING: jruby is known to cause issues when used with the toolbelt." if RUBY_PLATFORM == "java"
     end
   end
 end

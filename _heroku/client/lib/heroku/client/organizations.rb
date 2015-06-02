@@ -84,24 +84,6 @@ class Heroku::Client::Organizations
       end
     end
 
-    def remove_default_org
-      api.request(
-        :expects => 204,
-        :method => :delete,
-        :path => "/v1/user/default-organization"
-      )
-    end
-
-    def set_default_org(org)
-      api.request(
-        :expects => 200,
-        :method => :post,
-        :path => "/v1/user/default-organization",
-        :body => Heroku::Helpers.json_encode( { "default_organization" => org } ),
-        :headers => {"Content-Type" => "application/json"}
-      )
-    end
-
     # Apps
     #################################
     def get_apps(org)
@@ -230,7 +212,7 @@ class Heroku::Client::Organizations
     end
 
     def manager_url
-      ENV['HEROKU_MANAGER_URL'] || "https://api.heroku.com"
+      Heroku::Auth.full_host
     end
 
   end

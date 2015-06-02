@@ -8,16 +8,21 @@ module Heroku
     class ErrorUpdatingSymlinkPlugin < StandardError; end
 
     DEPRECATED_PLUGINS = %w(
+      heroku-addon-attachments
       heroku-cedar
       heroku-certs
       heroku-credentials
       heroku-dyno-size
+      heroku-dyno-types
+      heroku-fork
       heroku-kill
       heroku-labs
       heroku-logging
       heroku-netrc
+      heroku-orgs
       heroku-pgdumps
       heroku-postgresql
+      heroku-push
       heroku-releases
       heroku-shared-postgresql
       heroku-sql-console
@@ -28,8 +33,6 @@ module Heroku
       heroku-two-factor
       pgbackups-automate
       pgcmd
-      heroku-fork
-      heroku-orgs
     )
 
     attr_reader :name, :uri
@@ -59,6 +62,13 @@ module Heroku
         load "#{folder}/init.rb" if File.exists?  "#{folder}/init.rb"
       rescue ScriptError, StandardError => error
         styled_error(error, "Unable to load plugin #{plugin}.")
+        action("Updating #{plugin}") do
+          begin
+            Heroku::Plugin.new(plugin).update
+          rescue => e
+            $stderr.puts(format_with_bang(e.to_s))
+          end
+        end
         false
       end
     end
@@ -123,10 +133,10 @@ module Heroku
           unless git('config --get branch.master.remote').empty?
             message = git("pull")
             unless $?.success?
-              error("Unable to update #{name}.\n" + message)
+              raise "Unable to update #{name}.\n" + message
             end
           else
-            error(<<-ERROR)
+            raise <<-ERROR
 #{name} is a legacy plugin installation.
 Enable updating by reinstalling with `heroku plugins:install`.
 ERROR

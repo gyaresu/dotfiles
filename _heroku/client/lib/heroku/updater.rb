@@ -4,6 +4,7 @@ require "heroku/helpers"
 
 module Heroku
   module Updater
+    extend Heroku::Helpers
 
     def self.error(message)
       raise Heroku::Command::CommandFailed.new(message)
@@ -49,6 +50,10 @@ module Heroku
       compare_versions(latest_version, latest_local_version) > 0
     end
 
+    def self.needs_minor_update?
+      latest_version[0..3] != latest_local_version[0..3]
+    end
+
     def self.client_version_from_path(path)
       version_file = File.join(path, "lib/heroku/version.rb")
       if File.exists?(version_file)
@@ -85,12 +90,28 @@ module Heroku
       FileUtils.rm_f path
     end
 
-    def self.update(prerelease)
+    def self.autoupdate
+      # if we've updated in the last hour, don't try again
+      if File.exists?(last_autoupdate_path)
+        return if (Time.now.to_i - File.mtime(last_autoupdate_path).to_i) < 60*60
+      end
+      FileUtils.mkdir_p File.dirname(last_autoupdate_path)
+      FileUtils.touch last_autoupdate_path
+      return warn_if_out_of_date if disable
+      update
+    end
+
+    def self.warn_if_out_of_date
+      $stderr.puts "WARNING: Toolbelt v#{latest_version} update available." if needs_minor_update?
+    end
+
+    def self.update(prerelease=false)
       return unless prerelease || needs_update?
 
+      stderr_print 'updating Heroku CLI...'
       wait_for_lock do
         require "tmpdir"
-        require "zip/zip"
+        require "zip"
 
         Dir.mktmpdir do |download_dir|
           zip_filename = "#{download_dir}/heroku.zip"
@@ -112,12 +133,13 @@ module Heroku
           version = client_version_from_path(download_dir)
 
           # do not replace beta version if it is old
-          return if version < latest_local_version
+          return if compare_versions(version, latest_local_version) < 0
 
           FileUtils.rm_rf updated_client_path
           FileUtils.mkdir_p File.dirname(updated_client_path)
           FileUtils.cp_r  download_dir, updated_client_path
 
+          stderr_puts "done. Updated to #{version}"
           version
         end
       end
@@ -130,11 +152,11 @@ module Heroku
     end
 
     def self.extract_zip(filename, dir)
-      Zip::ZipFile.open(filename) do |zip|
+      Zip::File.open(filename) do |zip|
         zip.each do |entry|
           target = File.join(dir, entry.to_s)
           FileUtils.mkdir_p File.dirname(target)
-          zip.extract(entry, target) { true }
+          entry.extract(target) { true }
         end
       end
     end
@@ -155,31 +177,14 @@ module Heroku
         end
         load('heroku/updater.rb') # reload updated updater
       end
-
-      background_update!
     end
 
     def self.last_autoupdate_path
       File.join(Heroku::Helpers.home_directory, ".heroku", "autoupdate.last")
     end
 
-    def self.background_update!
-      # if we've updated in the last 10 minutes, don't try again
-      if File.exists?(last_autoupdate_path)
-        return if (Time.now.to_i - File.mtime(last_autoupdate_path).to_i) < 60*10
-      end
-      log_path = File.join(Heroku::Helpers.home_directory, '.heroku', 'autoupdate.log')
-      FileUtils.mkdir_p File.dirname(log_path)
-      pid = if defined?(RUBY_VERSION) and RUBY_VERSION =~ /^1\.8\.\d+/
-        fork do
-          exec("heroku update &> #{log_path} 2>&1")
-        end
-      else
-        spawn("heroku update", {:err => log_path, :out => log_path})
-      end
-      Process.detach(pid)
-      FileUtils.mkdir_p File.dirname(last_autoupdate_path)
-      FileUtils.touch last_autoupdate_path
+    def self.warn_if_updating
+      warn "WARNING: Toolbelt is currently updating" if File.exists?(updating_lock_path)
     end
   end
 end
