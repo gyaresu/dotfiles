@@ -1,29 +1,33 @@
 " Of course
 set nocompatible
+syntax on
+filetype off
 
 " Required Vundle setup
-filetype off
-set runtimepath+=~/.vim/bundle/vundle
-call vundle#rc()
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
 
-Bundle 'gmarik/vundle'
-Bundle 'davidhalter/jedi-vim'
-Bundle 'scrooloose/nerdtree'
-Bundle "myusuf3/numbers.vim"
-Bundle 'rodjek/vim-puppet'
-Bundle 'scrooloose/syntastic'
-Bundle 'godlygeek/tabular'
-"Bundle 'altercation/vim-colors-solarized'
-"Bundle 'dbb/vim-gummybears-colorscheme'
-Bundle 'nanotech/jellybeans.vim'
-Bundle 'jelera/vim-javascript-syntax'
-Bundle 'Lokaltog/vim-powerline'
-Bundle 'tpope/vim-surround'
+" let Vundle manage Vundle, required
+Plugin 'VundleVim/Vundle.vim'
+
+" Plugin 'gmarik/Vundle.vim'
+Plugin 'davidhalter/jedi-vim'
+Plugin 'scrooloose/nerdtree'
+Plugin 'myusuf3/numbers.vim'
+Plugin 'rodjek/vim-puppet'
+Plugin 'scrooloose/syntastic'
+Plugin 'godlygeek/tabular'
+"Plugin 'altercation/vim-colors-solarized'
+"Plugin 'dbb/vim-gummybears-colorscheme'
+Plugin 'nanotech/jellybeans.vim'
+Plugin 'jelera/vim-javascript-syntax'
+Plugin 'Lokaltog/vim-powerline'
+Plugin 'tpope/vim-surround'
 
 " Let's figure fuzzyfinder and it's deps out later
-"Bundle 'L9'
-"Bundle 'FuzzyFinder'
-"Bundle 'Align'
+"Plugin 'L9'
+"Plugin 'FuzzyFinder'
+"Plugin 'Align'
 
 "" START SirVer/ultisnips
  
@@ -55,7 +59,8 @@ inoremap jj <ESC>
 
 "This bellow is to support 256 color terminal with syntax highlighting
 set t_Co=256
-syntax on
+
+call vundle#end()
 filetype plugin indent on
 
 " Enable mouse in the terminal
