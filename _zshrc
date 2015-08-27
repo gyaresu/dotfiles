@@ -5,6 +5,16 @@ alias tmux="TERM=screen-256color-bce tmux"
 alias duf='du -sk * | sort -nr | perl -ne '\''($s,$f)=split(m{\t});for (qw(K M G)) {if($s<1024) {printf("%.1f",$s);print "$_\t$f"; last};$s=$s/1024}'\'''
 alias zaphod='ssh zaphod'
 alias seareach='ssh seareach'
+alias textual='ssh textual'
+
+# https://github.com/rupa/z/
+#. `brew --prefix`/etc/profile.d/z.sh
+
+# pretty looking `cat`
+alias ccat='pygmentize -g'
+
+# list all long reverse time human
+alias lt='ls -alrth'
 
 # offline npm from cache
 alias npmoffline='npm --cache-min 9999999'
@@ -27,8 +37,9 @@ export PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig
 # Look in ~/.oh-my-zsh/themes/
 # Optionally, if you set this to "random", it'll load a random theme each
 # time that oh-my-zsh is loaded.
-ZSH_THEME="pygmalion"
-#ZSH_THEME="agnoster"
+#ZSH_THEME="pygmalion"
+#ZSH_THEME="cobalt2"
+ZSH_THEME="Soliah"
 
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
@@ -52,29 +63,36 @@ ZSH_THEME="pygmalion"
 # Which plugins would you like to load? (plugins can be found in ~/.oh-my-zsh/plugins/*)
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
-plugins=(git brew node github heroku npm osx python rake)
+# Gareth removed `brew` from below
+plugins=(git node github heroku npm osx python rake)
 
 source $ZSH/oh-my-zsh.sh
 
 # unset the autocorrect feature - gyaresu
 unsetopt correct_all
 
-# Customize to your needs...
-#export PATH=$HOME/.rvm/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/bin:/usr/sbin:/sbin:/usr/X11/bin:$PATH
+# Set go path
+GOPATH=~/gocode
 
-# Gareth removed below for 10.9.4 ruby 2014-09-04
-#PATH=$PATH:$HOME/.rvm/bin # Add RVM to PATH for scripting
-#
+# Macports path
+export PATH=/opt/local/bin:/opt/local/sbin:$PATH
+
+# Hombrew path
+# #export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+# # export MANPATH="/usr/local/man:$MANPATH"
+
+# Gareth's binaries
+#export PATH="/Users/gyaresu/.bin:$PATH"
+
 #export JAVA_HOME="$(/usr/libexec/java_home)"
 #export EC2_PRIVATE_KEY="$(/bin/ls "$HOME"/.ec2/pk-*.pem | /usr/bin/head -1)"
 #export EC2_CERT="$(/bin/ls "$HOME"/.ec2/cert-*.pem | /usr/bin/head -1)"
 #export EC2_AMITOOL_HOME="/usr/local/Library/LinkedKegs/ec2-ami-tools/jars"
 #export EC2_HOME="/usr/local/Library/LinkedKegs/ec2-api-tools/jars"
 #export PATH="/usr/local/mysql/bin:$PATH"
-export PATH=/usr/texbin:"$PATH"
-export PATH="/Users/gyaresu/.bin:$PATH"
-export PATH="/usr/local/sbin:$PATH"
-export PYTHONPATH=/Library/Python/2.7/site-packages
-export PATH=/usr/local/bin:$PATH
+#export PATH=/usr/texbin:"$PATH"
+#export PATH="/usr/local/sbin:$PATH"
+#export PYTHONPATH=/Library/Python/2.7/site-packages
+#export PATH=/usr/local/bin:$PATH
 
 unalias gm 
