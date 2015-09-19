@@ -7,11 +7,19 @@ alias zaphod='ssh zaphod'
 alias seareach='ssh seareach'
 alias textual='ssh textual'
 
+# Unload Kext for Apple FTDI driver
+# Yosemite specific.
+# https://learn.sparkfun.com/tutorials/how-to-install-ftdi-drivers/all#yosemite
+alias unloadftdi='sudo kextunload -b com.apple.driver.AppleUSBFTDI'
+
 # https://github.com/rupa/z/
 #. `brew --prefix`/etc/profile.d/z.sh
 
+# macports location for z
+. /opt/local/etc/profile.d
+
 # pretty looking `cat`
-alias ccat='pygmentize -g'
+alias ccat='pygmentize-2.7 -g'
 
 # list all long reverse time human
 alias lt='ls -alrth'
@@ -28,18 +36,14 @@ typeset -U fpath
 # https://github.com/selaux/node-sprite-generator/issues/23
 export PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig
 
-# Gareth set PYTHONPATH
-#export PYTHONPATH="/usr/local/lib/python2.7/site-packages/:$PYTHONPATH"
-#export DYLD_FRAMEWORK_PATH="/usr/local/lib:$DYLD_FRAMEWORK_PATH"
-#export DYLD_LIBRARY_PATH=".:$DYLD_LIBRARY_PATH"
-
 # Set name of the theme to load.
 # Look in ~/.oh-my-zsh/themes/
 # Optionally, if you set this to "random", it'll load a random theme each
 # time that oh-my-zsh is loaded.
-#ZSH_THEME="pygmalion"
+ZSH_THEME="pygmalion"
 #ZSH_THEME="cobalt2"
-ZSH_THEME="Soliah"
+#ZSH_THEME="Soliah"
+#ZSH_THEME="rkj"
 
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
@@ -71,8 +75,13 @@ source $ZSH/oh-my-zsh.sh
 # unset the autocorrect feature - gyaresu
 unsetopt correct_all
 
+# Gareth's binaries
+export PATH=~/.bin/:$PATH
+
 # Set go path
-GOPATH=~/gocode
+export GOPATH=~/gocode/bin
+export PATH=~/gocode/bin:$PATH
+alias git='hub'
 
 # Macports path
 export PATH=/opt/local/bin:/opt/local/sbin:$PATH
@@ -81,8 +90,6 @@ export PATH=/opt/local/bin:/opt/local/sbin:$PATH
 # #export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 # # export MANPATH="/usr/local/man:$MANPATH"
 
-# Gareth's binaries
-#export PATH="/Users/gyaresu/.bin:$PATH"
 
 #export JAVA_HOME="$(/usr/libexec/java_home)"
 #export EC2_PRIVATE_KEY="$(/bin/ls "$HOME"/.ec2/pk-*.pem | /usr/bin/head -1)"

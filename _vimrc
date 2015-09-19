@@ -9,20 +9,47 @@ call vundle#begin()
 
 " let Vundle manage Vundle, required
 Plugin 'VundleVim/Vundle.vim'
-
-" Plugin 'gmarik/Vundle.vim'
 Plugin 'davidhalter/jedi-vim'
 Plugin 'scrooloose/nerdtree'
+Plugin 'jistr/vim-nerdtree-tabs'
 Plugin 'myusuf3/numbers.vim'
 Plugin 'rodjek/vim-puppet'
 Plugin 'scrooloose/syntastic'
 Plugin 'godlygeek/tabular'
-"Plugin 'altercation/vim-colors-solarized'
-"Plugin 'dbb/vim-gummybears-colorscheme'
 Plugin 'nanotech/jellybeans.vim'
-Plugin 'jelera/vim-javascript-syntax'
 Plugin 'Lokaltog/vim-powerline'
 Plugin 'tpope/vim-surround'
+Plugin 'elzr/vim-json'
+" https://github.com/chriskempson/base16-vim/
+Plugin 'chriskempson/base16-vim'
+
+call vundle#end()
+filetype plugin indent on
+
+" --- General Settings ---
+
+" NERDTree and NERDTree tabs
+" https://github.com/jez/vim-as-an-ide/commit/b7ff90c6ca88c97398fd9457ae7ffcab41a079e9
+let g:airline#extensions#tabline#enabled = 1
+let g:nerdtree_tabs_open_on_console_startup = 1
+
+" Javascript Syntax
+"let g:syntastic_javascript_checkers='jshint'
+
+" --- scrooloose/syntastic settings ---
+let g:syntastic_error_symbol = '✘'
+let g:syntastic_warning_symbol = "▲"
+augroup mySyntastic
+  au!
+  au FileType tex let b:syntastic_mode = "passive"
+augroup END
+
+function! ESLintArgs()
+    let rules = findfile('.eslintrules', '.;')
+    return rules != '' ? '--rulesdir ' . shellescape(fnamemodify(rules, ':p:h')) : ''
+endfunction
+
+autocmd FileType javascript let b:syntastic_javascript_eslint_args = ESLintArgs()
 
 " Let's figure fuzzyfinder and it's deps out later
 "Plugin 'L9'
@@ -47,21 +74,15 @@ let g:UltiSnipsEditSplit="vertical"
 
 "" END SirVer/ultisnips
 
-" Plugins
-Plugin 'elzr/vim-json'
-
 " http://learnvimscriptthehardway.stevelosh.com/chapters/10.html
 " https://danielmiessler.com/blog/enhancements-to-shell-and-vim-productivity/
 inoremap jj <ESC>
-"
+
 " https://github.com/tpope/vim-pathogen
 "call pathogen#infect()
 
 "This bellow is to support 256 color terminal with syntax highlighting
 set t_Co=256
-
-call vundle#end()
-filetype plugin indent on
 
 " Enable mouse in the terminal
 set mouse=a
@@ -71,9 +92,7 @@ set mouse=a
 
 " http://ethanschoonover.com/solarized/vim-colors-solarized
 set background=dark
-colorscheme jellybeans
-"colorscheme gummybears
-"colorscheme monokai
+colorscheme base16-default
 
 " osx copy/paste
 set clipboard=unnamed
