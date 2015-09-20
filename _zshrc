@@ -90,6 +90,14 @@ export PATH=/opt/local/bin:/opt/local/sbin:$PATH
 # #export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 # # export MANPATH="/usr/local/man:$MANPATH"
 
+# https://github.com/jez/vim-superman
+ vman() {
+   vim -c "SuperMan $*"
+
+   if [ "$?" != "0" ]; then
+     echo "No manual entry for $*"
+   fi
+ }
 
 #export JAVA_HOME="$(/usr/libexec/java_home)"
 #export EC2_PRIVATE_KEY="$(/bin/ls "$HOME"/.ec2/pk-*.pem | /usr/bin/head -1)"
@@ -103,3 +111,5 @@ export PATH=/opt/local/bin:/opt/local/sbin:$PATH
 #export PATH=/usr/local/bin:$PATH
 
 unalias gm 
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh

@@ -20,18 +20,55 @@ Plugin 'nanotech/jellybeans.vim'
 Plugin 'Lokaltog/vim-powerline'
 Plugin 'tpope/vim-surround'
 Plugin 'elzr/vim-json'
-" https://github.com/chriskempson/base16-vim/
 Plugin 'chriskempson/base16-vim'
-
+" plugin for opening header files automatically
+" Simply type :AT to open up the alternate file
+" (i.e., cache.h)
+Plugin 'vim-scripts/a.vim'
+" https://github.com/jez/vim-as-an-ide/commit/1e5757e2e76acda61d02d27af38d8c6b531cbc05
+" git add                  --> :Gwrite
+" git commit               --> :Gcommit
+" git push                 --> :Gpush
+" git checkout <file name> --> :Gread
+" git blame                --> :Gblame
+Plugin 'airblade/vim-gitgutter'
+Plugin 'tpope/vim-fugitive'
+Plugin 'Raimondi/delimitMate'
+Plugin 'jez/vim-superman'
+Plugin 'christoomey/vim-tmux-navigator'
+Plugin 'sheerun/vim-polyglot'
 call vundle#end()
 filetype plugin indent on
 
 " --- General Settings ---
 
+" ----- jez/vim-superman settings -----
+" better man page support
+noremap K :SuperMan <cword><CR>
+
+" --- delimitMate settings ---
+let delimitMate_expand_cr = 1
+augroup mydelimitMate
+  au!
+  au FileType markdown let b:delimitMate_nesting_quotes = ["`"]
+  au FileType tex let b:delimitMate_quotes = ""
+  au FileType tex let b:delimitMate_matchpairs = "(:),[:],{:},`:'"
+  au FileType python let b:delimitMate_nesting_quotes = ['"', "'"]
+augroup END
+
 " NERDTree and NERDTree tabs
 " https://github.com/jez/vim-as-an-ide/commit/b7ff90c6ca88c97398fd9457ae7ffcab41a079e9
 let g:airline#extensions#tabline#enabled = 1
-let g:nerdtree_tabs_open_on_console_startup = 1
+let g:nerdtree_tabs_open_on_console_startup = 0
+
+" Uncomment to open tagbar automatically whenever possible
+" autocmd BufEnter * nested :call tagbar#autoopen(0)
+
+" ----- airblade/vim-gitgutter settings -----
+" Required after having changed the colorscheme
+hi clear SignColumn
+" In vim-airline, only display "hunks" if the diff is non-zero
+let g:airline#extensions#hunks#non_zero_only = 1
 
 " Javascript Syntax
 "let g:syntastic_javascript_checkers='jshint'
