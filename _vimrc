@@ -46,6 +46,9 @@ filetype plugin indent on
 " better man page support
 noremap K :SuperMan <cword><CR>
 
+" https://github.com/junegunn/fzf
+set rtp+=~/.fzf
+
 " --- delimitMate settings ---
 let delimitMate_expand_cr = 1
 augroup mydelimitMate
