@@ -37,6 +37,7 @@ Plugin 'Raimondi/delimitMate'
 Plugin 'jez/vim-superman'
 Plugin 'christoomey/vim-tmux-navigator'
 Plugin 'sheerun/vim-polyglot'
+Plugin 'Valloric/YouCompleteMe'
 call vundle#end()
 filetype plugin indent on
 

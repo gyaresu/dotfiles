@@ -15,6 +15,10 @@ alias unloadftdi='sudo kextunload -b com.apple.driver.AppleUSBFTDI'
 # https://github.com/rupa/z/
 #. `brew --prefix`/etc/profile.d/z.sh
 
+# Git alias
+alias gll="git log --graph --date=short --pretty=format:'%Cgreen%h %Cblue%cd (%cr) %Cred%an%C(yellow)%d%Creset: %s'"
+alias glll="git log --graph --stat --date=short --pretty=format:'%Cgreen%h %Cblue%cd (%cr) %Cred%an%C(yellow)%d%Creset: %s'"
+
 # macports location for z
 . /opt/local/etc/profile.d
 
