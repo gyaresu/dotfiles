@@ -19,6 +19,10 @@ alias unloadftdi='sudo kextunload -b com.apple.driver.AppleUSBFTDI'
 alias gll="git log --graph --date=short --pretty=format:'%Cgreen%h %Cblue%cd (%cr) %Cred%an%C(yellow)%d%Creset: %s'"
 alias glll="git log --graph --stat --date=short --pretty=format:'%Cgreen%h %Cblue%cd (%cr) %Cred%an%C(yellow)%d%Creset: %s'"
 
+# Python Libraries
+export PYTHONPATH="/opt/local/lib/python2.7/site-packages"
+export PATH="/opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin:$PATH"
+
 # macports location for z
 . /opt/local/etc/profile.d
 
