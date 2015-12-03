@@ -6,6 +6,7 @@ alias duf='du -sk * | sort -nr | perl -ne '\''($s,$f)=split(m{\t});for (qw(K M G
 alias zaphod='ssh zaphod'
 alias seareach='ssh seareach'
 alias textual='ssh textual'
+#alias inspectrum='/Users/gyaresu/programming/inspectrum/build/inspectrum'
 
 # Unload Kext for Apple FTDI driver
 # Yosemite specific.

@@ -1,6 +1,7 @@
 [user]
 	email = me@gareth.codes
 	name = Gareth
+	username = =
 [credential]
 	helper = osxkeychain
 [alias]
