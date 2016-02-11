@@ -6,6 +6,7 @@ alias duf='du -sk * | sort -nr | perl -ne '\''($s,$f)=split(m{\t});for (qw(K M G
 alias zaphod='ssh zaphod'
 alias seareach='ssh seareach'
 alias textual='ssh textual'
+alias now='date +"%Y-%m-%d-%H%M"'
 #alias inspectrum='/Users/gyaresu/programming/inspectrum/build/inspectrum'
 
 # Unload Kext for Apple FTDI driver
@@ -13,8 +14,8 @@ alias textual='ssh textual'
 # https://learn.sparkfun.com/tutorials/how-to-install-ftdi-drivers/all#yosemite
 alias unloadftdi='sudo kextunload -b com.apple.driver.AppleUSBFTDI'
 
-# https://github.com/rupa/z/
-#. `brew --prefix`/etc/profile.d/z.sh
+# Now via macports
+. /opt/local/etc/profile.d/z.sh
 
 # Git alias
 alias gll="git log --graph --date=short --pretty=format:'%Cgreen%h %Cblue%cd (%cr) %Cred%an%C(yellow)%d%Creset: %s'"
@@ -25,7 +26,7 @@ export PYTHONPATH="/opt/local/lib/python2.7/site-packages"
 export PATH="/opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin:$PATH"
 
 # macports location for z
-. /opt/local/etc/profile.d
+#. /opt/local/etc/profile.d
 
 # pretty looking `cat`
 alias ccat='pygmentize-2.7 -g'

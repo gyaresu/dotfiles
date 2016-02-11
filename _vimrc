@@ -21,6 +21,7 @@ Plugin 'Lokaltog/vim-powerline'
 Plugin 'tpope/vim-surround'
 Plugin 'elzr/vim-json'
 Plugin 'chriskempson/base16-vim'
+Plugin 'rizzatti/dash.vim' " https://github.com/rizzatti/dash.vim#readme
 " plugin for opening header files automatically
 " Simply type :AT to open up the alternate file
 " (i.e., cache.h)
