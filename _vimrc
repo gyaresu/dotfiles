@@ -39,6 +39,7 @@ Plugin 'jez/vim-superman'
 Plugin 'christoomey/vim-tmux-navigator'
 Plugin 'sheerun/vim-polyglot'
 Plugin 'Valloric/YouCompleteMe'
+Plugin 'Solarized'
 call vundle#end()
 filetype plugin indent on
 
@@ -134,7 +135,8 @@ set mouse=a
 
 " http://ethanschoonover.com/solarized/vim-colors-solarized
 set background=dark
-colorscheme base16-default
+colorscheme base16-default-dark
+"colorscheme Solarized
 
 " osx copy/paste
 set clipboard=unnamed

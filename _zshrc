@@ -7,7 +7,6 @@ alias zaphod='ssh zaphod'
 alias seareach='ssh seareach'
 alias textual='ssh textual'
 alias now='date +"%Y-%m-%d-%H%M"'
-#alias inspectrum='/Users/gyaresu/programming/inspectrum/build/inspectrum'
 
 # Unload Kext for Apple FTDI driver
 # Yosemite specific.
@@ -24,6 +23,10 @@ alias glll="git log --graph --stat --date=short --pretty=format:'%Cgreen%h %Cblu
 # Python Libraries
 export PYTHONPATH="/opt/local/lib/python2.7/site-packages"
 export PATH="/opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin:$PATH"
+export PYTHON_LIBRARIES="/opt/local/Library/Frameworks/Python.framework/Versions/2.7/Python"
+export PYTHON_LIBRARY="/opt/local/Library/Frameworks/Python.framework/Versions/2.7/Python"
+export PYTHON_INCLUDE_DIR="/opt/local/Library/Frameworks/Python.framework/Versions/2.7/Headers"
+export GR_PYTHON_DIR="/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages"
 
 # macports location for z
 #. /opt/local/etc/profile.d
@@ -50,10 +53,12 @@ export PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig
 # Look in ~/.oh-my-zsh/themes/
 # Optionally, if you set this to "random", it'll load a random theme each
 # time that oh-my-zsh is loaded.
-ZSH_THEME="pygmalion"
+#####ZSH_THEME="pygmalion"
 #ZSH_THEME="cobalt2"
-#ZSH_THEME="Soliah"
-#ZSH_THEME="rkj"
+ZSH_THEME="Soliah"
+#
+# Current
+#ZSH_THEME="sonicradish"
 
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
@@ -96,6 +101,9 @@ alias git='hub'
 # Macports path
 export PATH=/opt/local/bin:/opt/local/sbin:$PATH
 
+# Ruby - install gems with `--user-install`
+export PATH=/Users/gyaresu/.gem/ruby/2.0.0/bin:$PATH
+
 # Hombrew path
 # #export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 # # export MANPATH="/usr/local/man:$MANPATH"
@@ -108,6 +116,9 @@ export PATH=/opt/local/bin:/opt/local/sbin:$PATH
      echo "No manual entry for $*"
    fi
  }
+
+compdef vman="man"
+# --- /vim-superman ---
 
 #export JAVA_HOME="$(/usr/libexec/java_home)"
 #export EC2_PRIVATE_KEY="$(/bin/ls "$HOME"/.ec2/pk-*.pem | /usr/bin/head -1)"
