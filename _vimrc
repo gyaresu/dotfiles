@@ -45,6 +45,9 @@ filetype plugin indent on
 
 " --- General Settings ---
 
+" --- YouCompleteMe Settings ---
+let g:ycm_global_ycm_extra_conf = '~/.ycm_extra_conf.py'
+
 " ----- jez/vim-superman settings -----
 " better man page support
 noremap K :SuperMan <cword><CR>
@@ -119,7 +122,7 @@ let g:UltiSnipsEditSplit="vertical"
 
 " http://learnvimscriptthehardway.stevelosh.com/chapters/10.html
 " https://danielmiessler.com/blog/enhancements-to-shell-and-vim-productivity/
-inoremap jj <ESC>
+inoremap jk <ESC>
 
 " https://github.com/tpope/vim-pathogen
 "call pathogen#infect()
