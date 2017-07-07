@@ -92,10 +92,16 @@ unsetopt correct_all
 # Gareth's binaries
 export PATH=~/.bin/:$PATH
 
+# Haskell Paths
+export PATH="$HOME/Library/Haskell/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
+
 # Set go path
 export GOPATH=~/go/
 export PATH=~/go/bin:$PATH
 alias git='hub'
+alias lr='ls -alrth'
+alias c='clear'
 
 # Macports path
 export PATH=/opt/local/bin:/opt/local/sbin:$PATH
