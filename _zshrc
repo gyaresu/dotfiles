@@ -40,6 +40,9 @@ alias lt='ls -alrth'
 # offline npm from cache
 alias npmoffline='npm --cache-min 9999999'
 
+# npm path
+export NODE_PATH='/Users/gyaresu/.node/lib/node_modules'
+
 # http://termbin.com/
 alias tb="nc termbin.com 9999"
 
@@ -96,6 +99,8 @@ export PATH=~/.bin/:$PATH
 export PATH="$HOME/Library/Haskell/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 
+# tiny-care-terminal environment variables
+
 # Set go path
 export GOPATH=~/go/
 export PATH=~/go/bin:$PATH
@@ -103,6 +108,8 @@ alias git='hub'
 alias lr='ls -alrth'
 alias c='clear'
 
+# Streisand VPN shorcut
+alias streisand='~/programming/sshuttle/run --dns -r forward@streisand 0/0 -vv'
 # Macports path
 export PATH=/opt/local/bin:/opt/local/sbin:$PATH
 
