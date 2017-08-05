@@ -39,11 +39,17 @@ Plugin 'jez/vim-superman'
 Plugin 'christoomey/vim-tmux-navigator'
 Plugin 'sheerun/vim-polyglot'
 Plugin 'Valloric/YouCompleteMe'
-Plugin 'Solarized'
+"Plugin 'Solarized'
+Plugin 'altercation/vim-colors-solarized'
+Plugin 'vim-airline/vim-airline'
+Plugin 'vim-airline/vim-airline-themes'
 call vundle#end()
 filetype plugin indent on
 
 " --- General Settings ---
+
+" --- Airline Themes ---
+let g:airline_theme='powerlineish'
 
 " --- YouCompleteMe Settings ---
 let g:ycm_global_ycm_extra_conf = '~/.ycm_extra_conf.py'
@@ -138,6 +144,7 @@ set mouse=a
 
 " http://ethanschoonover.com/solarized/vim-colors-solarized
 set background=dark
+"colorscheme solarized
 colorscheme base16-default-dark
 "colorscheme Solarized
 
