@@ -6,7 +6,7 @@ alias duf='du -sk * | sort -nr | perl -ne '\''($s,$f)=split(m{\t});for (qw(K M G
 alias zaphod='ssh zaphod'
 alias seareach='ssh seareach'
 alias textual='ssh textual'
-alias now='date +"%Y-%m-%d-%H%M"'
+#alias now='date +"%Y-%m-%d-%H%M"'
 
 # Unload Kext for Apple FTDI driver
 # Yosemite specific.
@@ -14,25 +14,28 @@ alias now='date +"%Y-%m-%d-%H%M"'
 alias unloadftdi='sudo kextunload -b com.apple.driver.AppleUSBFTDI'
 
 # sudo port install z
-. /opt/local/etc/profile.d/z.sh
+#. /opt/local/etc/profile.d/z.sh
 
 # Git alias
 alias gll="git log --graph --date=short --pretty=format:'%Cgreen%h %Cblue%cd (%cr) %Cred%an%C(yellow)%d%Creset: %s'"
 alias glll="git log --graph --stat --date=short --pretty=format:'%Cgreen%h %Cblue%cd (%cr) %Cred%an%C(yellow)%d%Creset: %s'"
 
 # Python Libraries
-export PYTHONPATH="/opt/local/lib/python2.7/site-packages"
-export PATH="/opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin:$PATH"
-export PYTHON_LIBRARIES="/opt/local/Library/Frameworks/Python.framework/Versions/2.7/Python"
-export PYTHON_LIBRARY="/opt/local/Library/Frameworks/Python.framework/Versions/2.7/Python"
-export PYTHON_INCLUDE_DIR="/opt/local/Library/Frameworks/Python.framework/Versions/2.7/Headers"
-export GR_PYTHON_DIR="/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages"
+#export PYTHONPATH="/opt/local/lib/python2.7/site-packages"
+#export PATH="/opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin:$PATH"
+#export PYTHON_LIBRARIES="/opt/local/Library/Frameworks/Python.framework/Versions/2.7/Python"
+#export PYTHON_LIBRARY="/opt/local/Library/Frameworks/Python.framework/Versions/2.7/Python"
+#export PYTHON_INCLUDE_DIR="/opt/local/Library/Frameworks/Python.framework/Versions/2.7/Headers"
+#export GR_PYTHON_DIR="/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages"
 
 # macports location for z
 #. /opt/local/etc/profile.d
 
 # pretty looking `cat`
-alias ccat='pygmentize-2.7 -g'
+## Macports
+#alias ccat='pygmentize-2.7 -g'
+## Hombrew `pip install Pygments`
+alias ccat='pygmentize -g'
 
 # list all long reverse time human
 alias lt='ls -alrth'
@@ -93,15 +96,17 @@ source $ZSH/oh-my-zsh.sh
 unsetopt correct_all
 
 # Gareth's binaries
-export PATH=~/.bin/:$PATH
+export PATH=~/bin:$PATH
 
 # Haskell Paths
 export PATH="$HOME/Library/Haskell/bin:$PATH"
 export PATH="$HOME/.local/bin:$PATH"
 
+# AWS cli https://github.com/aws/aws-cli/
+#source /opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin/aws_zsh_completer.sh
 
 # Set go path
-export GOPATH=~/go/
+export GOPATH=~/go
 export PATH=~/go/bin:$PATH
 alias git='hub'
 alias lr='ls -alrth'
@@ -110,15 +115,18 @@ alias c='clear'
 # Streisand VPN shorcut
 alias streisand='~/programming/sshuttle/run --dns -r forward@streisand 0/0 -vv'
 # Macports path
-export PATH=/opt/local/bin:/opt/local/sbin:$PATH
+#export PATH=/opt/local/bin:/opt/local/sbin:$PATH
 
 # Ruby - install gems with `--user-install`
 # might need to fix this
 #export PATH=/Users/gyaresu/.gem/ruby/2.0.0/bin:$PATH
 
 # Hombrew path
-# #export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
-# # export MANPATH="/usr/local/man:$MANPATH"
+export PATH="/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin:$PATH"
+export MANPATH="/usr/local/man:$MANPATH"
+
+# homebrew python
+export PATH="/usr/local/opt/python/libexec/bin:/$PATH"
 
 # https://github.com/jez/vim-superman
  vman() {
