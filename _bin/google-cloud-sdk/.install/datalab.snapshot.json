@@ -1,0 +1,39 @@
+{
+  "components": [
+    {
+      "data": {
+        "contents_checksum": "67cc01be44f0214b95cc18c21d6ee6bc6f6b8ca0062d919dfb98af5c1ca148ae", 
+        "source": "", 
+        "type": "tar"
+      }, 
+      "dependencies": [
+        "alpha", 
+        "beta", 
+        "core", 
+        "datalab-nix", 
+        "datalab-win", 
+        "gcloud"
+      ], 
+      "details": {
+        "description": "Provides the datalab tool for managing Google Cloud Datalab instances.", 
+        "display_name": "Cloud Datalab Command Line Tool"
+      }, 
+      "id": "datalab", 
+      "is_configuration": false, 
+      "is_hidden": false, 
+      "is_required": false, 
+      "platform": {}, 
+      "version": {
+        "build_number": 20180216183902, 
+        "version_string": "20180213"
+      }
+    }
+  ], 
+  "revision": 20180309150215, 
+  "schema_version": {
+    "no_update": false, 
+    "url": "https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz", 
+    "version": 3
+  }, 
+  "version": "193.0.0"
+}

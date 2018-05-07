@@ -13,14 +13,17 @@ alias textual='ssh textual'
 # https://learn.sparkfun.com/tutorials/how-to-install-ftdi-drivers/all#yosemite
 alias unloadftdi='sudo kextunload -b com.apple.driver.AppleUSBFTDI'
 
-# sudo port install z
+# macports option for z
 #. /opt/local/etc/profile.d/z.sh
+#
+# homebrew option for z
+. /usr/local/etc/profile.d/z.sh
 
 # Git alias
 alias gll="git log --graph --date=short --pretty=format:'%Cgreen%h %Cblue%cd (%cr) %Cred%an%C(yellow)%d%Creset: %s'"
 alias glll="git log --graph --stat --date=short --pretty=format:'%Cgreen%h %Cblue%cd (%cr) %Cred%an%C(yellow)%d%Creset: %s'"
 
-# Python Libraries
+# Python Libraries - Macports
 #export PYTHONPATH="/opt/local/lib/python2.7/site-packages"
 #export PATH="/opt/local/Library/Frameworks/Python.framework/Versions/2.7/bin:$PATH"
 #export PYTHON_LIBRARIES="/opt/local/Library/Frameworks/Python.framework/Versions/2.7/Python"
@@ -112,6 +115,25 @@ alias git='hub'
 alias lr='ls -alrth'
 alias c='clear'
 
+# added by Miniconda2 installer
+#export PATH="/Users/gyaresu/miniconda2/bin:$PATH"
+
+# added by Miniconda3 installer
+export PATH="/Users/gyaresu/miniconda3/bin:$PATH"
+
+# conda python setup alias
+ml () {
+  cd ~/programming/insights
+  source activate ml
+  jupyter lab
+}
+
+test () {
+  echo "one"
+  echo "two"
+  echo "three"
+}
+
 # Streisand VPN shorcut
 alias streisand='~/programming/sshuttle/run --dns -r forward@streisand 0/0 -vv'
 # Macports path
@@ -122,11 +144,8 @@ alias streisand='~/programming/sshuttle/run --dns -r forward@streisand 0/0 -vv'
 #export PATH=/Users/gyaresu/.gem/ruby/2.0.0/bin:$PATH
 
 # Hombrew path
-export PATH="/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin:$PATH"
+export PATH="/usr/local/opt/python/libexec/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin:$PATH"
 export MANPATH="/usr/local/man:$MANPATH"
-
-# homebrew python
-export PATH="/usr/local/opt/python/libexec/bin:/$PATH"
 
 # https://github.com/jez/vim-superman
  vman() {
@@ -151,6 +170,34 @@ compdef vman="man"
 #export PYTHONPATH=/Library/Python/2.7/site-packages
 #export PATH=/usr/local/bin:$PATH
 
-unalias gm 
+unalias gm
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+# tabtab source for serverless package
+# uninstall by removing these lines or running `tabtab uninstall serverless`
+[[ -f /Users/gyaresu/.node/lib/node_modules/serverless/node_modules/tabtab/.completions/serverless.zsh ]] && . /Users/gyaresu/.node/lib/node_modules/serverless/node_modules/tabtab/.completions/serverless.zsh
+# tabtab source for sls package
+# uninstall by removing these lines or running `tabtab uninstall sls`
+[[ -f /Users/gyaresu/.node/lib/node_modules/serverless/node_modules/tabtab/.completions/sls.zsh ]] && . /Users/gyaresu/.node/lib/node_modules/serverless/node_modules/tabtab/.completions/sls.zsh
+
+# Why the fuck did I leave the Google Cloud SDK in Downloads?! TODO
+
+# Google Cloud Service account json auth file
+# Let's see if we can open it from within the application
+export GOOGLE_APPLICATION_CREDENTIALS="/Users/gyaresu/.api_keys/insights-auth.json"
+
+# Facebook API key for Greenpeace Canada
+export GP_CANADA_FB="EAACEdEose0cBAJsMCaIhD2rwk5VooCyat3vGDmyAkNF9ZADVpYFgA1JxqgZA7iB2XHBZC4eEuFlowaWTijYN9e3oSnGTpIw5VYCypQqYQbwM6eiZAsgqo663Fk6vbFbSsZB9HWIO7AOpaaoRZBG5jyaZCEJRD29vxJVgdDPDMj8famZAPksnLmVSiuvFgkcLpUs1Y8WZBh8irGwZDZD"
+
+# Facebook API key for Greenpeace International
+export GP_GPI_FB="EAACEdEose0cBABlbiJhLKYP1Qx5RfvJGRUKFQoTiXXLbKQEXZCkvH4d6wVhiQZA6fLPkI48LDCmiBfVZAJZA2vCHAknHi2XDXZAZBreItqHSyr3veZAv0bijFEGzzpyzqUZCzwZCRpb6bb1sTdqKE2ZCiNKxKzqYAFhTFQ1iKmL2pKYEnkZC2j7cZBKDtwyViRSEvQ8NaHIOL9tCigZDZD"
+
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f '/Users/gyaresu/.bin/google-cloud-sdk/path.zsh.inc' ]; then source '/Users/gyaresu/.bin/google-cloud-sdk/path.zsh.inc'; fi
+
+# The next line enables shell command completion for gcloud.
+if [ -f '/Users/gyaresu/.bin/google-cloud-sdk/completion.zsh.inc' ]; then source '/Users/gyaresu/.bin/google-cloud-sdk/completion.zsh.inc'; fi
+
+# The path for MacTex which was installed by homebrew (but it just grabs the native installer)
+export PATH=$PATH:/Library/TeX/Distributions/.DefaultTeX/Contents/Programs/texbin
