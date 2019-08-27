@@ -13,6 +13,8 @@
 # limitations under the License.
 """Command to add a Cloud CDN Signed URL key to a backend service."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import file_utils
 from googlecloudsdk.api_lib.compute.operations import poller
@@ -23,7 +25,7 @@ from googlecloudsdk.command_lib.compute import signed_url_flags
 from googlecloudsdk.command_lib.compute.backend_services import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class AddSignedUrlKey(base.UpdateCommand):
   """Add Cloud CDN Signed URL key to a backend service.
 

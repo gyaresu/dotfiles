@@ -52,7 +52,7 @@ class BaseRepresenter(object):
             #self.represented_objects[alias_key] = None
             self.object_keeper.append(data)
         data_types = type(data).__mro__
-        if type(data) is types.InstanceType:
+        if type(data) is getattr(types, 'InstanceType', None):
             data_types = self.get_classobj_bases(data.__class__)+list(data_types)
         if data_types[0] in self.yaml_representers:
             node = self.yaml_representers[data_types[0]](self, data)
@@ -140,7 +140,9 @@ class BaseRepresenter(object):
 class SafeRepresenter(BaseRepresenter):
 
     def ignore_aliases(self, data):
-        if data in [None, ()]:
+        if data is None:
+            return True
+        if isinstance(data, tuple) and data == ():
             return True
         if isinstance(data, (str, unicode, bool, int, float)):
             return True

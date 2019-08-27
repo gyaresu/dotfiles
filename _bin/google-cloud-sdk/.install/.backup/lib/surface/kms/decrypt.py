@@ -13,6 +13,8 @@
 # limitations under the License.
 """Decrypt a ciphertext file using a key."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -51,9 +53,7 @@ class Decrypt(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.AddLocationFlag(parser)
-    flags.AddKeyRingFlag(parser)
-    flags.AddCryptoKeyFlag(parser, 'The key to use for decryption.')
+    flags.AddKeyResourceFlags(parser, 'The key to use for decryption.')
     flags.AddCiphertextFileFlag(parser, 'to decrypt')
     flags.AddPlaintextFileFlag(parser, 'to output')
     flags.AddAadFileFlag(parser)

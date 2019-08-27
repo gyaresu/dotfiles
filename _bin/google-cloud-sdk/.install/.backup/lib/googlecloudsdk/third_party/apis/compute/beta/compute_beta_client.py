@@ -24,7 +24,7 @@ class ComputeBeta(base_api.BaseApiClient):
                get_credentials=True, http=None, model=None,
                log_request=False, log_response=False,
                credentials_args=None, default_global_params=None,
-               additional_http_headers=None):
+               additional_http_headers=None, response_encoding=None):
     """Create a new compute handle."""
     url = url or self.BASE_URL
     super(ComputeBeta, self).__init__(
@@ -33,7 +33,8 @@ class ComputeBeta(base_api.BaseApiClient):
         log_request=log_request, log_response=log_response,
         credentials_args=credentials_args,
         default_global_params=default_global_params,
-        additional_http_headers=additional_http_headers)
+        additional_http_headers=additional_http_headers,
+        response_encoding=response_encoding)
     self.acceleratorTypes = self.AcceleratorTypesService(self)
     self.addresses = self.AddressesService(self)
     self.autoscalers = self.AutoscalersService(self)
@@ -61,6 +62,9 @@ class ComputeBeta(base_api.BaseApiClient):
     self.licenses = self.LicensesService(self)
     self.machineTypes = self.MachineTypesService(self)
     self.networks = self.NetworksService(self)
+    self.nodeGroups = self.NodeGroupsService(self)
+    self.nodeTemplates = self.NodeTemplatesService(self)
+    self.nodeTypes = self.NodeTypesService(self)
     self.projects = self.ProjectsService(self)
     self.regionAutoscalers = self.RegionAutoscalersService(self)
     self.regionBackendServices = self.RegionBackendServicesService(self)
@@ -101,7 +105,7 @@ class ComputeBeta(base_api.BaseApiClient):
           }
 
     def AggregatedList(self, request, global_params=None):
-      """Retrieves an aggregated list of accelerator types.
+      r"""Retrieves an aggregated list of accelerator types.
 
       Args:
         request: (ComputeAcceleratorTypesAggregatedListRequest) input message
@@ -127,7 +131,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified accelerator type. Get a list of available accelerator types by making a list() request.
+      r"""Returns the specified accelerator type.
 
       Args:
         request: (ComputeAcceleratorTypesGetRequest) input message
@@ -153,7 +157,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      """Retrieves a list of accelerator types available to the specified project.
+      r"""Retrieves a list of accelerator types available to the specified project.
 
       Args:
         request: (ComputeAcceleratorTypesListRequest) input message
@@ -189,7 +193,7 @@ class ComputeBeta(base_api.BaseApiClient):
           }
 
     def AggregatedList(self, request, global_params=None):
-      """Retrieves an aggregated list of addresses.
+      r"""Retrieves an aggregated list of addresses.
 
       Args:
         request: (ComputeAddressesAggregatedListRequest) input message
@@ -215,7 +219,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified address resource.
+      r"""Deletes the specified address resource.
 
       Args:
         request: (ComputeAddressesDeleteRequest) input message
@@ -241,7 +245,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified address resource.
+      r"""Returns the specified address resource.
 
       Args:
         request: (ComputeAddressesGetRequest) input message
@@ -267,7 +271,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Insert(self, request, global_params=None):
-      """Creates an address resource in the specified project using the data included in the request.
+      r"""Creates an address resource in the specified project using the data included in the request.
 
       Args:
         request: (ComputeAddressesInsertRequest) input message
@@ -293,7 +297,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      """Retrieves a list of addresses contained within the specified region.
+      r"""Retrieves a list of addresses contained within the specified region.
 
       Args:
         request: (ComputeAddressesListRequest) input message
@@ -319,7 +323,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def SetLabels(self, request, global_params=None):
-      """Sets the labels on an Address. To learn more about labels, read the Labeling Resources documentation.
+      r"""Sets the labels on an Address. To learn more about labels, read the Labeling Resources documentation.
 
       Args:
         request: (ComputeAddressesSetLabelsRequest) input message
@@ -345,7 +349,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeAddressesTestIamPermissionsRequest) input message
@@ -381,7 +385,7 @@ class ComputeBeta(base_api.BaseApiClient):
           }
 
     def AggregatedList(self, request, global_params=None):
-      """Retrieves an aggregated list of autoscalers.
+      r"""Retrieves an aggregated list of autoscalers.
 
       Args:
         request: (ComputeAutoscalersAggregatedListRequest) input message
@@ -407,7 +411,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified autoscaler.
+      r"""Deletes the specified autoscaler.
 
       Args:
         request: (ComputeAutoscalersDeleteRequest) input message
@@ -433,7 +437,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified autoscaler resource. Get a list of available autoscalers by making a list() request.
+      r"""Returns the specified autoscaler resource. Gets a list of available autoscalers by making a list() request.
 
       Args:
         request: (ComputeAutoscalersGetRequest) input message
@@ -459,7 +463,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Insert(self, request, global_params=None):
-      """Creates an autoscaler in the specified project using the data included in the request.
+      r"""Creates an autoscaler in the specified project using the data included in the request.
 
       Args:
         request: (ComputeAutoscalersInsertRequest) input message
@@ -485,7 +489,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      """Retrieves a list of autoscalers contained within the specified zone.
+      r"""Retrieves a list of autoscalers contained within the specified zone.
 
       Args:
         request: (ComputeAutoscalersListRequest) input message
@@ -511,7 +515,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      """Updates an autoscaler in the specified project using the data included in the request. This method supports PATCH semantics and uses the JSON merge patch format and processing rules.
+      r"""Updates an autoscaler in the specified project using the data included in the request. This method supports PATCH semantics and uses the JSON merge patch format and processing rules.
 
       Args:
         request: (ComputeAutoscalersPatchRequest) input message
@@ -537,7 +541,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeAutoscalersTestIamPermissionsRequest) input message
@@ -563,7 +567,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Update(self, request, global_params=None):
-      """Updates an autoscaler in the specified project using the data included in the request.
+      r"""Updates an autoscaler in the specified project using the data included in the request.
 
       Args:
         request: (ComputeAutoscalersUpdateRequest) input message
@@ -599,7 +603,7 @@ class ComputeBeta(base_api.BaseApiClient):
           }
 
     def AddSignedUrlKey(self, request, global_params=None):
-      """Adds the given Signed URL Key to the backend bucket.
+      r"""Adds the given Signed URL Key to the backend bucket.
 
       Args:
         request: (ComputeBackendBucketsAddSignedUrlKeyRequest) input message
@@ -625,7 +629,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified BackendBucket resource.
+      r"""Deletes the specified BackendBucket resource.
 
       Args:
         request: (ComputeBackendBucketsDeleteRequest) input message
@@ -651,7 +655,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def DeleteSignedUrlKey(self, request, global_params=None):
-      """Deletes the given Signed URL Key from the backend bucket.
+      r"""Deletes the given Signed URL Key from the backend bucket.
 
       Args:
         request: (ComputeBackendBucketsDeleteSignedUrlKeyRequest) input message
@@ -677,7 +681,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified BackendBucket resource. Get a list of available backend buckets by making a list() request.
+      r"""Returns the specified BackendBucket resource. Gets a list of available backend buckets by making a list() request.
 
       Args:
         request: (ComputeBackendBucketsGetRequest) input message
@@ -703,7 +707,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Insert(self, request, global_params=None):
-      """Creates a BackendBucket resource in the specified project using the data included in the request.
+      r"""Creates a BackendBucket resource in the specified project using the data included in the request.
 
       Args:
         request: (ComputeBackendBucketsInsertRequest) input message
@@ -729,7 +733,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      """Retrieves the list of BackendBucket resources available to the specified project.
+      r"""Retrieves the list of BackendBucket resources available to the specified project.
 
       Args:
         request: (ComputeBackendBucketsListRequest) input message
@@ -755,7 +759,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      """Updates the specified BackendBucket resource with the data included in the request. This method supports PATCH semantics and uses the JSON merge patch format and processing rules.
+      r"""Updates the specified BackendBucket resource with the data included in the request. This method supports PATCH semantics and uses the JSON merge patch format and processing rules.
 
       Args:
         request: (ComputeBackendBucketsPatchRequest) input message
@@ -781,7 +785,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Update(self, request, global_params=None):
-      """Updates the specified BackendBucket resource with the data included in the request.
+      r"""Updates the specified BackendBucket resource with the data included in the request.
 
       Args:
         request: (ComputeBackendBucketsUpdateRequest) input message
@@ -817,7 +821,7 @@ class ComputeBeta(base_api.BaseApiClient):
           }
 
     def AddSignedUrlKey(self, request, global_params=None):
-      """Adds the given Signed URL Key to the specified backend service.
+      r"""Adds the given Signed URL Key to the specified backend service.
 
       Args:
         request: (ComputeBackendServicesAddSignedUrlKeyRequest) input message
@@ -843,7 +847,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def AggregatedList(self, request, global_params=None):
-      """Retrieves the list of all BackendService resources, regional and global, available to the specified project.
+      r"""Retrieves the list of all BackendService resources, regional and global, available to the specified project.
 
       Args:
         request: (ComputeBackendServicesAggregatedListRequest) input message
@@ -869,7 +873,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified BackendService resource.
+      r"""Deletes the specified BackendService resource.
 
       Args:
         request: (ComputeBackendServicesDeleteRequest) input message
@@ -895,7 +899,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def DeleteSignedUrlKey(self, request, global_params=None):
-      """Deletes the given Signed URL Key from the specified backend service.
+      r"""Deletes the given Signed URL Key from the specified backend service.
 
       Args:
         request: (ComputeBackendServicesDeleteSignedUrlKeyRequest) input message
@@ -921,7 +925,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified BackendService resource. Get a list of available backend services by making a list() request.
+      r"""Returns the specified BackendService resource. Gets a list of available backend services by making a list() request.
 
       Args:
         request: (ComputeBackendServicesGetRequest) input message
@@ -947,7 +951,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def GetHealth(self, request, global_params=None):
-      """Gets the most recent health check results for this BackendService.
+      r"""Gets the most recent health check results for this BackendService.
 
       Args:
         request: (ComputeBackendServicesGetHealthRequest) input message
@@ -973,7 +977,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Insert(self, request, global_params=None):
-      """Creates a BackendService resource in the specified project using the data included in the request. There are several restrictions and guidelines to keep in mind when creating a backend service. Read  Restrictions and Guidelines for more information.
+      r"""Creates a BackendService resource in the specified project using the data included in the request. There are several restrictions and guidelines to keep in mind when creating a backend service. Read  Restrictions and Guidelines for more information.
 
       Args:
         request: (ComputeBackendServicesInsertRequest) input message
@@ -999,7 +1003,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      """Retrieves the list of BackendService resources available to the specified project.
+      r"""Retrieves the list of BackendService resources available to the specified project.
 
       Args:
         request: (ComputeBackendServicesListRequest) input message
@@ -1025,7 +1029,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      """Patches the specified BackendService resource with the data included in the request. There are several restrictions and guidelines to keep in mind when updating a backend service. Read  Restrictions and Guidelines for more information. This method supports PATCH semantics and uses the JSON merge patch format and processing rules.
+      r"""Patches the specified BackendService resource with the data included in the request. There are several restrictions and guidelines to keep in mind when updating a backend service. Read  Restrictions and Guidelines for more information. This method supports PATCH semantics and uses the JSON merge patch format and processing rules.
 
       Args:
         request: (ComputeBackendServicesPatchRequest) input message
@@ -1051,7 +1055,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def SetSecurityPolicy(self, request, global_params=None):
-      """Sets the security policy for the specified backend service.
+      r"""Sets the security policy for the specified backend service.
 
       Args:
         request: (ComputeBackendServicesSetSecurityPolicyRequest) input message
@@ -1077,7 +1081,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeBackendServicesTestIamPermissionsRequest) input message
@@ -1103,7 +1107,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Update(self, request, global_params=None):
-      """Updates the specified BackendService resource with the data included in the request. There are several restrictions and guidelines to keep in mind when updating a backend service. Read  Restrictions and Guidelines for more information.
+      r"""Updates the specified BackendService resource with the data included in the request. There are several restrictions and guidelines to keep in mind when updating a backend service. Read  Restrictions and Guidelines for more information.
 
       Args:
         request: (ComputeBackendServicesUpdateRequest) input message
@@ -1139,7 +1143,7 @@ class ComputeBeta(base_api.BaseApiClient):
           }
 
     def AggregatedList(self, request, global_params=None):
-      """Retrieves an aggregated list of disk types.
+      r"""Retrieves an aggregated list of disk types.
 
       Args:
         request: (ComputeDiskTypesAggregatedListRequest) input message
@@ -1165,7 +1169,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified disk type. Get a list of available disk types by making a list() request.
+      r"""Returns the specified disk type. Gets a list of available disk types by making a list() request.
 
       Args:
         request: (ComputeDiskTypesGetRequest) input message
@@ -1191,7 +1195,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      """Retrieves a list of disk types available to the specified project.
+      r"""Retrieves a list of disk types available to the specified project.
 
       Args:
         request: (ComputeDiskTypesListRequest) input message
@@ -1227,7 +1231,7 @@ class ComputeBeta(base_api.BaseApiClient):
           }
 
     def AggregatedList(self, request, global_params=None):
-      """Retrieves an aggregated list of persistent disks.
+      r"""Retrieves an aggregated list of persistent disks.
 
       Args:
         request: (ComputeDisksAggregatedListRequest) input message
@@ -1253,7 +1257,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def CreateSnapshot(self, request, global_params=None):
-      """Creates a snapshot of a specified persistent disk.
+      r"""Creates a snapshot of a specified persistent disk.
 
       Args:
         request: (ComputeDisksCreateSnapshotRequest) input message
@@ -1279,7 +1283,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified persistent disk. Deleting a disk removes its data permanently and is irreversible. However, deleting a disk does not delete any snapshots previously made from the disk. You must separately delete snapshots.
+      r"""Deletes the specified persistent disk. Deleting a disk removes its data permanently and is irreversible. However, deleting a disk does not delete any snapshots previously made from the disk. You must separately delete snapshots.
 
       Args:
         request: (ComputeDisksDeleteRequest) input message
@@ -1305,7 +1309,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      """Returns a specified persistent disk. Get a list of available persistent disks by making a list() request.
+      r"""Returns a specified persistent disk. Gets a list of available persistent disks by making a list() request.
 
       Args:
         request: (ComputeDisksGetRequest) input message
@@ -1331,7 +1335,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Insert(self, request, global_params=None):
-      """Creates a persistent disk in the specified project using the data in the request. You can create a disk with a sourceImage, a sourceSnapshot, or create an empty 500 GB data disk by omitting all properties. You can also create a disk that is larger than the default size by specifying the sizeGb property.
+      r"""Creates a persistent disk in the specified project using the data in the request. You can create a disk with a sourceImage, a sourceSnapshot, or create an empty 500 GB data disk by omitting all properties. You can also create a disk that is larger than the default size by specifying the sizeGb property.
 
       Args:
         request: (ComputeDisksInsertRequest) input message
@@ -1357,7 +1361,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      """Retrieves a list of persistent disks contained within the specified zone.
+      r"""Retrieves a list of persistent disks contained within the specified zone.
 
       Args:
         request: (ComputeDisksListRequest) input message
@@ -1383,7 +1387,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Resize(self, request, global_params=None):
-      """Resizes the specified persistent disk. You can only increase the size of the disk.
+      r"""Resizes the specified persistent disk. You can only increase the size of the disk.
 
       Args:
         request: (ComputeDisksResizeRequest) input message
@@ -1409,7 +1413,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def SetLabels(self, request, global_params=None):
-      """Sets the labels on a disk. To learn more about labels, read the Labeling Resources documentation.
+      r"""Sets the labels on a disk. To learn more about labels, read the Labeling Resources documentation.
 
       Args:
         request: (ComputeDisksSetLabelsRequest) input message
@@ -1435,7 +1439,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeDisksTestIamPermissionsRequest) input message
@@ -1471,7 +1475,7 @@ class ComputeBeta(base_api.BaseApiClient):
           }
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified firewall.
+      r"""Deletes the specified firewall.
 
       Args:
         request: (ComputeFirewallsDeleteRequest) input message
@@ -1497,7 +1501,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified firewall.
+      r"""Returns the specified firewall.
 
       Args:
         request: (ComputeFirewallsGetRequest) input message
@@ -1523,7 +1527,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Insert(self, request, global_params=None):
-      """Creates a firewall rule in the specified project using the data included in the request.
+      r"""Creates a firewall rule in the specified project using the data included in the request.
 
       Args:
         request: (ComputeFirewallsInsertRequest) input message
@@ -1549,7 +1553,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      """Retrieves the list of firewall rules available to the specified project.
+      r"""Retrieves the list of firewall rules available to the specified project.
 
       Args:
         request: (ComputeFirewallsListRequest) input message
@@ -1575,7 +1579,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      """Updates the specified firewall rule with the data included in the request. This method supports PATCH semantics and uses the JSON merge patch format and processing rules.
+      r"""Updates the specified firewall rule with the data included in the request. This method supports PATCH semantics and uses the JSON merge patch format and processing rules.
 
       Args:
         request: (ComputeFirewallsPatchRequest) input message
@@ -1601,7 +1605,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeFirewallsTestIamPermissionsRequest) input message
@@ -1627,7 +1631,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Update(self, request, global_params=None):
-      """Updates the specified firewall rule with the data included in the request. The PUT method can only update the following fields of firewall rule: allowed, description, sourceRanges, sourceTags, targetTags.
+      r"""Updates the specified firewall rule with the data included in the request. The PUT method can only update the following fields of firewall rule: allowed, description, sourceRanges, sourceTags, targetTags.
 
       Args:
         request: (ComputeFirewallsUpdateRequest) input message
@@ -1663,7 +1667,7 @@ class ComputeBeta(base_api.BaseApiClient):
           }
 
     def AggregatedList(self, request, global_params=None):
-      """Retrieves an aggregated list of forwarding rules.
+      r"""Retrieves an aggregated list of forwarding rules.
 
       Args:
         request: (ComputeForwardingRulesAggregatedListRequest) input message
@@ -1689,7 +1693,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified ForwardingRule resource.
+      r"""Deletes the specified ForwardingRule resource.
 
       Args:
         request: (ComputeForwardingRulesDeleteRequest) input message
@@ -1715,7 +1719,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified ForwardingRule resource.
+      r"""Returns the specified ForwardingRule resource.
 
       Args:
         request: (ComputeForwardingRulesGetRequest) input message
@@ -1741,7 +1745,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Insert(self, request, global_params=None):
-      """Creates a ForwardingRule resource in the specified project and region using the data included in the request.
+      r"""Creates a ForwardingRule resource in the specified project and region using the data included in the request.
 
       Args:
         request: (ComputeForwardingRulesInsertRequest) input message
@@ -1767,7 +1771,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      """Retrieves a list of ForwardingRule resources available to the specified project and region.
+      r"""Retrieves a list of ForwardingRule resources available to the specified project and region.
 
       Args:
         request: (ComputeForwardingRulesListRequest) input message
@@ -1793,7 +1797,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def SetLabels(self, request, global_params=None):
-      """Sets the labels on the specified resource. To learn more about labels, read the Labeling Resources documentation.
+      r"""Sets the labels on the specified resource. To learn more about labels, read the Labeling Resources documentation.
 
       Args:
         request: (ComputeForwardingRulesSetLabelsRequest) input message
@@ -1819,7 +1823,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def SetTarget(self, request, global_params=None):
-      """Changes target URL for forwarding rule. The new target should be of the same type as the old target.
+      r"""Changes target URL for forwarding rule. The new target should be of the same type as the old target.
 
       Args:
         request: (ComputeForwardingRulesSetTargetRequest) input message
@@ -1845,7 +1849,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeForwardingRulesTestIamPermissionsRequest) input message
@@ -1881,7 +1885,7 @@ class ComputeBeta(base_api.BaseApiClient):
           }
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified address resource.
+      r"""Deletes the specified address resource.
 
       Args:
         request: (ComputeGlobalAddressesDeleteRequest) input message
@@ -1907,7 +1911,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified address resource. Get a list of available addresses by making a list() request.
+      r"""Returns the specified address resource. Gets a list of available addresses by making a list() request.
 
       Args:
         request: (ComputeGlobalAddressesGetRequest) input message
@@ -1933,7 +1937,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Insert(self, request, global_params=None):
-      """Creates an address resource in the specified project using the data included in the request.
+      r"""Creates an address resource in the specified project using the data included in the request.
 
       Args:
         request: (ComputeGlobalAddressesInsertRequest) input message
@@ -1959,7 +1963,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      """Retrieves a list of global addresses.
+      r"""Retrieves a list of global addresses.
 
       Args:
         request: (ComputeGlobalAddressesListRequest) input message
@@ -1985,7 +1989,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def SetLabels(self, request, global_params=None):
-      """Sets the labels on a GlobalAddress. To learn more about labels, read the Labeling Resources documentation.
+      r"""Sets the labels on a GlobalAddress. To learn more about labels, read the Labeling Resources documentation.
 
       Args:
         request: (ComputeGlobalAddressesSetLabelsRequest) input message
@@ -2011,7 +2015,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeGlobalAddressesTestIamPermissionsRequest) input message
@@ -2047,7 +2051,7 @@ class ComputeBeta(base_api.BaseApiClient):
           }
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified GlobalForwardingRule resource.
+      r"""Deletes the specified GlobalForwardingRule resource.
 
       Args:
         request: (ComputeGlobalForwardingRulesDeleteRequest) input message
@@ -2073,7 +2077,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified GlobalForwardingRule resource. Get a list of available forwarding rules by making a list() request.
+      r"""Returns the specified GlobalForwardingRule resource. Gets a list of available forwarding rules by making a list() request.
 
       Args:
         request: (ComputeGlobalForwardingRulesGetRequest) input message
@@ -2099,7 +2103,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Insert(self, request, global_params=None):
-      """Creates a GlobalForwardingRule resource in the specified project using the data included in the request.
+      r"""Creates a GlobalForwardingRule resource in the specified project using the data included in the request.
 
       Args:
         request: (ComputeGlobalForwardingRulesInsertRequest) input message
@@ -2125,7 +2129,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      """Retrieves a list of GlobalForwardingRule resources available to the specified project.
+      r"""Retrieves a list of GlobalForwardingRule resources available to the specified project.
 
       Args:
         request: (ComputeGlobalForwardingRulesListRequest) input message
@@ -2151,7 +2155,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def SetLabels(self, request, global_params=None):
-      """Sets the labels on the specified resource. To learn more about labels, read the Labeling Resources documentation.
+      r"""Sets the labels on the specified resource. To learn more about labels, read the Labeling Resources documentation.
 
       Args:
         request: (ComputeGlobalForwardingRulesSetLabelsRequest) input message
@@ -2177,7 +2181,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def SetTarget(self, request, global_params=None):
-      """Changes target URL for the GlobalForwardingRule resource. The new target should be of the same type as the old target.
+      r"""Changes target URL for the GlobalForwardingRule resource. The new target should be of the same type as the old target.
 
       Args:
         request: (ComputeGlobalForwardingRulesSetTargetRequest) input message
@@ -2203,7 +2207,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeGlobalForwardingRulesTestIamPermissionsRequest) input message
@@ -2239,7 +2243,7 @@ class ComputeBeta(base_api.BaseApiClient):
           }
 
     def AggregatedList(self, request, global_params=None):
-      """Retrieves an aggregated list of all operations.
+      r"""Retrieves an aggregated list of all operations.
 
       Args:
         request: (ComputeGlobalOperationsAggregatedListRequest) input message
@@ -2265,7 +2269,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified Operations resource.
+      r"""Deletes the specified Operations resource.
 
       Args:
         request: (ComputeGlobalOperationsDeleteRequest) input message
@@ -2291,7 +2295,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      """Retrieves the specified Operations resource. Get a list of operations by making a list() request.
+      r"""Retrieves the specified Operations resource. Gets a list of operations by making a list() request.
 
       Args:
         request: (ComputeGlobalOperationsGetRequest) input message
@@ -2317,7 +2321,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      """Retrieves a list of Operation resources contained within the specified project.
+      r"""Retrieves a list of Operation resources contained within the specified project.
 
       Args:
         request: (ComputeGlobalOperationsListRequest) input message
@@ -2353,7 +2357,7 @@ class ComputeBeta(base_api.BaseApiClient):
           }
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified HealthCheck resource.
+      r"""Deletes the specified HealthCheck resource.
 
       Args:
         request: (ComputeHealthChecksDeleteRequest) input message
@@ -2379,7 +2383,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified HealthCheck resource. Get a list of available health checks by making a list() request.
+      r"""Returns the specified HealthCheck resource. Gets a list of available health checks by making a list() request.
 
       Args:
         request: (ComputeHealthChecksGetRequest) input message
@@ -2405,7 +2409,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Insert(self, request, global_params=None):
-      """Creates a HealthCheck resource in the specified project using the data included in the request.
+      r"""Creates a HealthCheck resource in the specified project using the data included in the request.
 
       Args:
         request: (ComputeHealthChecksInsertRequest) input message
@@ -2431,7 +2435,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      """Retrieves the list of HealthCheck resources available to the specified project.
+      r"""Retrieves the list of HealthCheck resources available to the specified project.
 
       Args:
         request: (ComputeHealthChecksListRequest) input message
@@ -2457,7 +2461,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      """Updates a HealthCheck resource in the specified project using the data included in the request. This method supports PATCH semantics and uses the JSON merge patch format and processing rules.
+      r"""Updates a HealthCheck resource in the specified project using the data included in the request. This method supports PATCH semantics and uses the JSON merge patch format and processing rules.
 
       Args:
         request: (ComputeHealthChecksPatchRequest) input message
@@ -2483,7 +2487,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeHealthChecksTestIamPermissionsRequest) input message
@@ -2509,7 +2513,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Update(self, request, global_params=None):
-      """Updates a HealthCheck resource in the specified project using the data included in the request.
+      r"""Updates a HealthCheck resource in the specified project using the data included in the request.
 
       Args:
         request: (ComputeHealthChecksUpdateRequest) input message
@@ -2545,7 +2549,7 @@ class ComputeBeta(base_api.BaseApiClient):
           }
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified HttpHealthCheck resource.
+      r"""Deletes the specified HttpHealthCheck resource.
 
       Args:
         request: (ComputeHttpHealthChecksDeleteRequest) input message
@@ -2571,7 +2575,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified HttpHealthCheck resource. Get a list of available HTTP health checks by making a list() request.
+      r"""Returns the specified HttpHealthCheck resource. Gets a list of available HTTP health checks by making a list() request.
 
       Args:
         request: (ComputeHttpHealthChecksGetRequest) input message
@@ -2597,7 +2601,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Insert(self, request, global_params=None):
-      """Creates a HttpHealthCheck resource in the specified project using the data included in the request.
+      r"""Creates a HttpHealthCheck resource in the specified project using the data included in the request.
 
       Args:
         request: (ComputeHttpHealthChecksInsertRequest) input message
@@ -2623,7 +2627,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      """Retrieves the list of HttpHealthCheck resources available to the specified project.
+      r"""Retrieves the list of HttpHealthCheck resources available to the specified project.
 
       Args:
         request: (ComputeHttpHealthChecksListRequest) input message
@@ -2649,7 +2653,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      """Updates a HttpHealthCheck resource in the specified project using the data included in the request. This method supports PATCH semantics and uses the JSON merge patch format and processing rules.
+      r"""Updates a HttpHealthCheck resource in the specified project using the data included in the request. This method supports PATCH semantics and uses the JSON merge patch format and processing rules.
 
       Args:
         request: (ComputeHttpHealthChecksPatchRequest) input message
@@ -2675,7 +2679,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeHttpHealthChecksTestIamPermissionsRequest) input message
@@ -2701,7 +2705,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Update(self, request, global_params=None):
-      """Updates a HttpHealthCheck resource in the specified project using the data included in the request.
+      r"""Updates a HttpHealthCheck resource in the specified project using the data included in the request.
 
       Args:
         request: (ComputeHttpHealthChecksUpdateRequest) input message
@@ -2737,7 +2741,7 @@ class ComputeBeta(base_api.BaseApiClient):
           }
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified HttpsHealthCheck resource.
+      r"""Deletes the specified HttpsHealthCheck resource.
 
       Args:
         request: (ComputeHttpsHealthChecksDeleteRequest) input message
@@ -2763,7 +2767,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified HttpsHealthCheck resource. Get a list of available HTTPS health checks by making a list() request.
+      r"""Returns the specified HttpsHealthCheck resource. Gets a list of available HTTPS health checks by making a list() request.
 
       Args:
         request: (ComputeHttpsHealthChecksGetRequest) input message
@@ -2789,7 +2793,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Insert(self, request, global_params=None):
-      """Creates a HttpsHealthCheck resource in the specified project using the data included in the request.
+      r"""Creates a HttpsHealthCheck resource in the specified project using the data included in the request.
 
       Args:
         request: (ComputeHttpsHealthChecksInsertRequest) input message
@@ -2815,7 +2819,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def List(self, request, global_params=None):
-      """Retrieves the list of HttpsHealthCheck resources available to the specified project.
+      r"""Retrieves the list of HttpsHealthCheck resources available to the specified project.
 
       Args:
         request: (ComputeHttpsHealthChecksListRequest) input message
@@ -2841,7 +2845,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Patch(self, request, global_params=None):
-      """Updates a HttpsHealthCheck resource in the specified project using the data included in the request. This method supports PATCH semantics and uses the JSON merge patch format and processing rules.
+      r"""Updates a HttpsHealthCheck resource in the specified project using the data included in the request. This method supports PATCH semantics and uses the JSON merge patch format and processing rules.
 
       Args:
         request: (ComputeHttpsHealthChecksPatchRequest) input message
@@ -2867,7 +2871,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeHttpsHealthChecksTestIamPermissionsRequest) input message
@@ -2893,7 +2897,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Update(self, request, global_params=None):
-      """Updates a HttpsHealthCheck resource in the specified project using the data included in the request.
+      r"""Updates a HttpsHealthCheck resource in the specified project using the data included in the request.
 
       Args:
         request: (ComputeHttpsHealthChecksUpdateRequest) input message
@@ -2929,7 +2933,7 @@ class ComputeBeta(base_api.BaseApiClient):
           }
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified image.
+      r"""Deletes the specified image.
 
       Args:
         request: (ComputeImagesDeleteRequest) input message
@@ -2955,7 +2959,7 @@ class ComputeBeta(base_api.BaseApiClient):
     )
 
     def Deprecate(self, request, global_params=None):
-      """Sets the deprecation status of an image.
+      r"""Sets the deprecation status of an image.
 
 If an empty request body is given, clears the deprecation status instead.
 
@@ -2983,7 +2987,7 @@ If an empty request body is given, clears the deprecation status instead.
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified image. Get a list of available images by making a list() request.
+      r"""Returns the specified image. Gets a list of available images by making a list() request.
 
       Args:
         request: (ComputeImagesGetRequest) input message
@@ -3009,7 +3013,7 @@ If an empty request body is given, clears the deprecation status instead.
     )
 
     def GetFromFamily(self, request, global_params=None):
-      """Returns the latest image that is part of an image family and is not deprecated.
+      r"""Returns the latest image that is part of an image family and is not deprecated.
 
       Args:
         request: (ComputeImagesGetFromFamilyRequest) input message
@@ -3035,7 +3039,7 @@ If an empty request body is given, clears the deprecation status instead.
     )
 
     def Insert(self, request, global_params=None):
-      """Creates an image in the specified project using the data included in the request.
+      r"""Creates an image in the specified project using the data included in the request.
 
       Args:
         request: (ComputeImagesInsertRequest) input message
@@ -3061,7 +3065,7 @@ If an empty request body is given, clears the deprecation status instead.
     )
 
     def List(self, request, global_params=None):
-      """Retrieves the list of custom images available to the specified project. Custom images are images you create that belong to your project. This method does not get any images that belong to other projects, including publicly-available images, like Debian 8. If you want to get a list of publicly-available images, use this method to make a request to the respective image project, such as debian-cloud or windows-cloud.
+      r"""Retrieves the list of custom images available to the specified project. Custom images are images you create that belong to your project. This method does not get any images that belong to other projects, including publicly-available images, like Debian 8. If you want to get a list of publicly-available images, use this method to make a request to the respective image project, such as debian-cloud or windows-cloud.
 
       Args:
         request: (ComputeImagesListRequest) input message
@@ -3087,7 +3091,7 @@ If an empty request body is given, clears the deprecation status instead.
     )
 
     def SetLabels(self, request, global_params=None):
-      """Sets the labels on an image. To learn more about labels, read the Labeling Resources documentation.
+      r"""Sets the labels on an image. To learn more about labels, read the Labeling Resources documentation.
 
       Args:
         request: (ComputeImagesSetLabelsRequest) input message
@@ -3113,7 +3117,7 @@ If an empty request body is given, clears the deprecation status instead.
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeImagesTestIamPermissionsRequest) input message
@@ -3149,7 +3153,7 @@ If an empty request body is given, clears the deprecation status instead.
           }
 
     def AbandonInstances(self, request, global_params=None):
-      """Schedules a group action to remove the specified instances from the managed instance group. Abandoning an instance does not delete the instance, but it does remove the instance from any target pools that are applied by the managed instance group. This method reduces the targetSize of the managed instance group by the number of instances that you abandon. This operation is marked as DONE when the action is scheduled even if the instances have not yet been removed from the group. You must separately verify the status of the abandoning action with the listmanagedinstances method.
+      r"""Schedules a group action to remove the specified instances from the managed instance group. Abandoning an instance does not delete the instance, but it does remove the instance from any target pools that are applied by the managed instance group. This method reduces the targetSize of the managed instance group by the number of instances that you abandon. This operation is marked as DONE when the action is scheduled even if the instances have not yet been removed from the group. You must separately verify the status of the abandoning action with the listmanagedinstances method.
 
 If the group is part of a backend service that has enabled connection draining, it can take up to 60 seconds after the connection draining duration has elapsed before the VM instance is removed or deleted.
 
@@ -3179,7 +3183,7 @@ You can specify a maximum of 1000 instances with this method per request.
     )
 
     def AggregatedList(self, request, global_params=None):
-      """Retrieves the list of managed instance groups and groups them by zone.
+      r"""Retrieves the list of managed instance groups and groups them by zone.
 
       Args:
         request: (ComputeInstanceGroupManagersAggregatedListRequest) input message
@@ -3205,7 +3209,7 @@ You can specify a maximum of 1000 instances with this method per request.
     )
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified managed instance group and all of the instances in that group. Note that the instance group must not belong to a backend service. Read  Deleting an instance group for more information.
+      r"""Deletes the specified managed instance group and all of the instances in that group. Note that the instance group must not belong to a backend service. Read  Deleting an instance group for more information.
 
       Args:
         request: (ComputeInstanceGroupManagersDeleteRequest) input message
@@ -3231,7 +3235,7 @@ You can specify a maximum of 1000 instances with this method per request.
     )
 
     def DeleteInstances(self, request, global_params=None):
-      """Schedules a group action to delete the specified instances in the managed instance group. The instances are also removed from any target pools of which they were a member. This method reduces the targetSize of the managed instance group by the number of instances that you delete. This operation is marked as DONE when the action is scheduled even if the instances are still being deleted. You must separately verify the status of the deleting action with the listmanagedinstances method.
+      r"""Schedules a group action to delete the specified instances in the managed instance group. The instances are also removed from any target pools of which they were a member. This method reduces the targetSize of the managed instance group by the number of instances that you delete. This operation is marked as DONE when the action is scheduled even if the instances are still being deleted. You must separately verify the status of the deleting action with the listmanagedinstances method.
 
 If the group is part of a backend service that has enabled connection draining, it can take up to 60 seconds after the connection draining duration has elapsed before the VM instance is removed or deleted.
 
@@ -3261,7 +3265,7 @@ You can specify a maximum of 1000 instances with this method per request.
     )
 
     def Get(self, request, global_params=None):
-      """Returns all of the details about the specified managed instance group. Get a list of available managed instance groups by making a list() request.
+      r"""Returns all of the details about the specified managed instance group. Gets a list of available managed instance groups by making a list() request.
 
       Args:
         request: (ComputeInstanceGroupManagersGetRequest) input message
@@ -3287,7 +3291,7 @@ You can specify a maximum of 1000 instances with this method per request.
     )
 
     def Insert(self, request, global_params=None):
-      """Creates a managed instance group using the information that you specify in the request. After the group is created, it schedules an action to create instances in the group using the specified instance template. This operation is marked as DONE when the group is created even if the instances in the group have not yet been created. You must separately verify the status of the individual instances with the listmanagedinstances method.
+      r"""Creates a managed instance group using the information that you specify in the request. After the group is created, it schedules an action to create instances in the group using the specified instance template. This operation is marked as DONE when the group is created even if the instances in the group have not yet been created. You must separately verify the status of the individual instances with the listmanagedinstances method.
 
 A managed instance group can have up to 1000 VM instances per group. Please contact Cloud Support if you need an increase in this limit.
 
@@ -3315,7 +3319,7 @@ A managed instance group can have up to 1000 VM instances per group. Please cont
     )
 
     def List(self, request, global_params=None):
-      """Retrieves a list of managed instance groups that are contained within the specified project and zone.
+      r"""Retrieves a list of managed instance groups that are contained within the specified project and zone.
 
       Args:
         request: (ComputeInstanceGroupManagersListRequest) input message
@@ -3341,7 +3345,7 @@ A managed instance group can have up to 1000 VM instances per group. Please cont
     )
 
     def ListManagedInstances(self, request, global_params=None):
-      """Lists all of the instances in the managed instance group. Each instance in the list has a currentAction, which indicates the action that the managed instance group is performing on the instance. For example, if the group is still creating an instance, the currentAction is CREATING. If a previous action failed, the list displays the errors for that failed action.
+      r"""Lists all of the instances in the managed instance group. Each instance in the list has a currentAction, which indicates the action that the managed instance group is performing on the instance. For example, if the group is still creating an instance, the currentAction is CREATING. If a previous action failed, the list displays the errors for that failed action.
 
       Args:
         request: (ComputeInstanceGroupManagersListManagedInstancesRequest) input message
@@ -3367,7 +3371,7 @@ A managed instance group can have up to 1000 VM instances per group. Please cont
     )
 
     def Patch(self, request, global_params=None):
-      """Updates a managed instance group using the information that you specify in the request. This operation is marked as DONE when the group is patched even if the instances in the group are still in the process of being patched. You must separately verify the status of the individual instances with the listManagedInstances method. This method supports PATCH semantics and uses the JSON merge patch format and processing rules.
+      r"""Updates a managed instance group using the information that you specify in the request. This operation is marked as DONE when the group is patched even if the instances in the group are still in the process of being patched. You must separately verify the status of the individual instances with the listManagedInstances method. This method supports PATCH semantics and uses the JSON merge patch format and processing rules.
 
       Args:
         request: (ComputeInstanceGroupManagersPatchRequest) input message
@@ -3393,7 +3397,7 @@ A managed instance group can have up to 1000 VM instances per group. Please cont
     )
 
     def RecreateInstances(self, request, global_params=None):
-      """Schedules a group action to recreate the specified instances in the managed instance group. The instances are deleted and recreated using the current instance template for the managed instance group. This operation is marked as DONE when the action is scheduled even if the instances have not yet been recreated. You must separately verify the status of the recreating action with the listmanagedinstances method.
+      r"""Schedules a group action to recreate the specified instances in the managed instance group. The instances are deleted and recreated using the current instance template for the managed instance group. This operation is marked as DONE when the action is scheduled even if the instances have not yet been recreated. You must separately verify the status of the recreating action with the listmanagedinstances method.
 
 If the group is part of a backend service that has enabled connection draining, it can take up to 60 seconds after the connection draining duration has elapsed before the VM instance is removed or deleted.
 
@@ -3423,7 +3427,7 @@ You can specify a maximum of 1000 instances with this method per request.
     )
 
     def Resize(self, request, global_params=None):
-      """Resizes the managed instance group. If you increase the size, the group creates new instances using the current instance template. If you decrease the size, the group deletes instances. The resize operation is marked DONE when the resize actions are scheduled even if the group has not yet added or deleted any instances. You must separately verify the status of the creating or deleting actions with the listmanagedinstances method.
+      r"""Resizes the managed instance group. If you increase the size, the group creates new instances using the current instance template. If you decrease the size, the group deletes instances. The resize operation is marked DONE when the resize actions are scheduled even if the group has not yet added or deleted any instances. You must separately verify the status of the creating or deleting actions with the listmanagedinstances method.
 
 If the group is part of a backend service that has enabled connection draining, it can take up to 60 seconds after the connection draining duration has elapsed before the VM instance is removed or deleted.
 
@@ -3451,7 +3455,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def ResizeAdvanced(self, request, global_params=None):
-      """Resizes the managed instance group with advanced configuration options like disabling creation retries. This is an extended version of the resize method.
+      r"""Resizes the managed instance group with advanced configuration options like disabling creation retries. This is an extended version of the resize method.
 
 If you increase the size of the instance group, the group creates new instances using the current instance template. If you decrease the size, the group deletes instances. The resize operation is marked DONE when the resize actions are scheduled even if the group has not yet added or deleted any instances. You must separately verify the status of the creating, creatingWithoutRetries, or deleting actions with the get or listmanagedinstances method.
 
@@ -3481,7 +3485,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def SetAutoHealingPolicies(self, request, global_params=None):
-      """Modifies the autohealing policies.
+      r"""Modifies the autohealing policies.
 
       Args:
         request: (ComputeInstanceGroupManagersSetAutoHealingPoliciesRequest) input message
@@ -3507,7 +3511,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def SetInstanceTemplate(self, request, global_params=None):
-      """Specifies the instance template to use when creating new instances in this group. The templates for existing instances in the group do not change unless you recreate them.
+      r"""Specifies the instance template to use when creating new instances in this group. The templates for existing instances in the group do not change unless you recreate them.
 
       Args:
         request: (ComputeInstanceGroupManagersSetInstanceTemplateRequest) input message
@@ -3533,7 +3537,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def SetTargetPools(self, request, global_params=None):
-      """Modifies the target pools to which all instances in this managed instance group are assigned. The target pools automatically apply to all of the instances in the managed instance group. This operation is marked DONE when you make the request even if the instances have not yet been added to their target pools. The change might take some time to apply to all of the instances in the group depending on the size of the group.
+      r"""Modifies the target pools to which all instances in this managed instance group are assigned. The target pools automatically apply to all of the instances in the managed instance group. This operation is marked DONE when you make the request even if the instances have not yet been added to their target pools. The change might take some time to apply to all of the instances in the group depending on the size of the group.
 
       Args:
         request: (ComputeInstanceGroupManagersSetTargetPoolsRequest) input message
@@ -3559,7 +3563,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeInstanceGroupManagersTestIamPermissionsRequest) input message
@@ -3585,7 +3589,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Update(self, request, global_params=None):
-      """Updates a managed instance group using the information that you specify in the request. This operation is marked as DONE when the group is updated even if the instances in the group have not yet been updated. You must separately verify the status of the individual instances with the listManagedInstances method.
+      r"""Updates a managed instance group using the information that you specify in the request. This operation is marked as DONE when the group is updated even if the instances in the group have not yet been updated. You must separately verify the status of the individual instances with the listManagedInstances method.
 
       Args:
         request: (ComputeInstanceGroupManagersUpdateRequest) input message
@@ -3621,7 +3625,7 @@ If the group is part of a backend service that has enabled connection draining, 
           }
 
     def AddInstances(self, request, global_params=None):
-      """Adds a list of instances to the specified instance group. All of the instances in the instance group must be in the same network/subnetwork. Read  Adding instances for more information.
+      r"""Adds a list of instances to the specified instance group. All of the instances in the instance group must be in the same network/subnetwork. Read  Adding instances for more information.
 
       Args:
         request: (ComputeInstanceGroupsAddInstancesRequest) input message
@@ -3647,7 +3651,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def AggregatedList(self, request, global_params=None):
-      """Retrieves the list of instance groups and sorts them by zone.
+      r"""Retrieves the list of instance groups and sorts them by zone.
 
       Args:
         request: (ComputeInstanceGroupsAggregatedListRequest) input message
@@ -3673,7 +3677,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified instance group. The instances in the group are not deleted. Note that instance group must not belong to a backend service. Read  Deleting an instance group for more information.
+      r"""Deletes the specified instance group. The instances in the group are not deleted. Note that instance group must not belong to a backend service. Read  Deleting an instance group for more information.
 
       Args:
         request: (ComputeInstanceGroupsDeleteRequest) input message
@@ -3699,7 +3703,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified instance group. Get a list of available instance groups by making a list() request.
+      r"""Returns the specified instance group. Gets a list of available instance groups by making a list() request.
 
       Args:
         request: (ComputeInstanceGroupsGetRequest) input message
@@ -3725,7 +3729,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Insert(self, request, global_params=None):
-      """Creates an instance group in the specified project using the parameters that are included in the request.
+      r"""Creates an instance group in the specified project using the parameters that are included in the request.
 
       Args:
         request: (ComputeInstanceGroupsInsertRequest) input message
@@ -3751,7 +3755,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def List(self, request, global_params=None):
-      """Retrieves the list of instance groups that are located in the specified project and zone.
+      r"""Retrieves the list of instance groups that are located in the specified project and zone.
 
       Args:
         request: (ComputeInstanceGroupsListRequest) input message
@@ -3777,7 +3781,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def ListInstances(self, request, global_params=None):
-      """Lists the instances in the specified instance group.
+      r"""Lists the instances in the specified instance group.
 
       Args:
         request: (ComputeInstanceGroupsListInstancesRequest) input message
@@ -3803,7 +3807,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def RemoveInstances(self, request, global_params=None):
-      """Removes one or more instances from the specified instance group, but does not delete those instances.
+      r"""Removes one or more instances from the specified instance group, but does not delete those instances.
 
 If the group is part of a backend service that has enabled connection draining, it can take up to 60 seconds after the connection draining duration before the VM instance is removed or deleted.
 
@@ -3831,7 +3835,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def SetNamedPorts(self, request, global_params=None):
-      """Sets the named ports for the specified instance group.
+      r"""Sets the named ports for the specified instance group.
 
       Args:
         request: (ComputeInstanceGroupsSetNamedPortsRequest) input message
@@ -3857,7 +3861,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeInstanceGroupsTestIamPermissionsRequest) input message
@@ -3893,7 +3897,7 @@ If the group is part of a backend service that has enabled connection draining, 
           }
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified instance template. Deleting an instance template is permanent and cannot be undone. It's not possible to delete templates which are in use by an instance group.
+      r"""Deletes the specified instance template. Deleting an instance template is permanent and cannot be undone. It's not possible to delete templates which are in use by an instance group.
 
       Args:
         request: (ComputeInstanceTemplatesDeleteRequest) input message
@@ -3919,7 +3923,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified instance template. Get a list of available instance templates by making a list() request.
+      r"""Returns the specified instance template. Gets a list of available instance templates by making a list() request.
 
       Args:
         request: (ComputeInstanceTemplatesGetRequest) input message
@@ -3945,7 +3949,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Insert(self, request, global_params=None):
-      """Creates an instance template in the specified project using the data that is included in the request. If you are creating a new template to update an existing instance group, your new instance template must use the same network or, if applicable, the same subnetwork as the original template.
+      r"""Creates an instance template in the specified project using the data that is included in the request. If you are creating a new template to update an existing instance group, your new instance template must use the same network or, if applicable, the same subnetwork as the original template.
 
       Args:
         request: (ComputeInstanceTemplatesInsertRequest) input message
@@ -3971,7 +3975,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def List(self, request, global_params=None):
-      """Retrieves a list of instance templates that are contained within the specified project and zone.
+      r"""Retrieves a list of instance templates that are contained within the specified project and zone.
 
       Args:
         request: (ComputeInstanceTemplatesListRequest) input message
@@ -3997,7 +4001,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeInstanceTemplatesTestIamPermissionsRequest) input message
@@ -4033,7 +4037,7 @@ If the group is part of a backend service that has enabled connection draining, 
           }
 
     def AddAccessConfig(self, request, global_params=None):
-      """Adds an access config to an instance's network interface.
+      r"""Adds an access config to an instance's network interface.
 
       Args:
         request: (ComputeInstancesAddAccessConfigRequest) input message
@@ -4059,7 +4063,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def AggregatedList(self, request, global_params=None):
-      """Retrieves aggregated list of instances.
+      r"""Retrieves aggregated list of instances.
 
       Args:
         request: (ComputeInstancesAggregatedListRequest) input message
@@ -4085,7 +4089,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def AttachDisk(self, request, global_params=None):
-      """Attaches an existing Disk resource to an instance. You must first create the disk before you can attach it. It is not possible to create and attach a disk at the same time. For more information, read Adding a persistent disk to your instance.
+      r"""Attaches an existing Disk resource to an instance. You must first create the disk before you can attach it. It is not possible to create and attach a disk at the same time. For more information, read Adding a persistent disk to your instance.
 
       Args:
         request: (ComputeInstancesAttachDiskRequest) input message
@@ -4111,7 +4115,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified Instance resource. For more information, see Stopping or Deleting an Instance.
+      r"""Deletes the specified Instance resource. For more information, see Stopping or Deleting an Instance.
 
       Args:
         request: (ComputeInstancesDeleteRequest) input message
@@ -4137,7 +4141,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def DeleteAccessConfig(self, request, global_params=None):
-      """Deletes an access config from an instance's network interface.
+      r"""Deletes an access config from an instance's network interface.
 
       Args:
         request: (ComputeInstancesDeleteAccessConfigRequest) input message
@@ -4163,7 +4167,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def DetachDisk(self, request, global_params=None):
-      """Detaches a disk from an instance.
+      r"""Detaches a disk from an instance.
 
       Args:
         request: (ComputeInstancesDetachDiskRequest) input message
@@ -4189,7 +4193,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified Instance resource. Get a list of available instances by making a list() request.
+      r"""Returns the specified Instance resource. Gets a list of available instances by making a list() request.
 
       Args:
         request: (ComputeInstancesGetRequest) input message
@@ -4215,7 +4219,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def GetSerialPortOutput(self, request, global_params=None):
-      """Returns the specified instance's serial port output.
+      r"""Returns the specified instance's serial port output.
 
       Args:
         request: (ComputeInstancesGetSerialPortOutputRequest) input message
@@ -4241,7 +4245,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Insert(self, request, global_params=None):
-      """Creates an instance resource in the specified project using the data included in the request.
+      r"""Creates an instance resource in the specified project using the data included in the request.
 
       Args:
         request: (ComputeInstancesInsertRequest) input message
@@ -4267,7 +4271,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def List(self, request, global_params=None):
-      """Retrieves the list of instances contained within the specified zone.
+      r"""Retrieves the list of instances contained within the specified zone.
 
       Args:
         request: (ComputeInstancesListRequest) input message
@@ -4293,7 +4297,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def ListReferrers(self, request, global_params=None):
-      """Retrieves the list of referrers to instances contained within the specified zone.
+      r"""Retrieves the list of referrers to instances contained within the specified zone.
 
       Args:
         request: (ComputeInstancesListReferrersRequest) input message
@@ -4319,7 +4323,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Reset(self, request, global_params=None):
-      """Performs a reset on the instance. For more information, see Resetting an instance.
+      r"""Performs a reset on the instance. For more information, see Resetting an instance.
 
       Args:
         request: (ComputeInstancesResetRequest) input message
@@ -4345,7 +4349,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def SetDeletionProtection(self, request, global_params=None):
-      """Sets deletion protection on the instance.
+      r"""Sets deletion protection on the instance.
 
       Args:
         request: (ComputeInstancesSetDeletionProtectionRequest) input message
@@ -4371,7 +4375,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def SetDiskAutoDelete(self, request, global_params=None):
-      """Sets the auto-delete flag for a disk attached to an instance.
+      r"""Sets the auto-delete flag for a disk attached to an instance.
 
       Args:
         request: (ComputeInstancesSetDiskAutoDeleteRequest) input message
@@ -4397,7 +4401,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def SetLabels(self, request, global_params=None):
-      """Sets labels on an instance. To learn more about labels, read the Labeling Resources documentation.
+      r"""Sets labels on an instance. To learn more about labels, read the Labeling Resources documentation.
 
       Args:
         request: (ComputeInstancesSetLabelsRequest) input message
@@ -4423,7 +4427,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def SetMachineResources(self, request, global_params=None):
-      """Changes the number and/or type of accelerator for a stopped instance to the values specified in the request.
+      r"""Changes the number and/or type of accelerator for a stopped instance to the values specified in the request.
 
       Args:
         request: (ComputeInstancesSetMachineResourcesRequest) input message
@@ -4449,7 +4453,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def SetMachineType(self, request, global_params=None):
-      """Changes the machine type for a stopped instance to the machine type specified in the request.
+      r"""Changes the machine type for a stopped instance to the machine type specified in the request.
 
       Args:
         request: (ComputeInstancesSetMachineTypeRequest) input message
@@ -4475,7 +4479,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def SetMetadata(self, request, global_params=None):
-      """Sets metadata for the specified instance to the data included in the request.
+      r"""Sets metadata for the specified instance to the data included in the request.
 
       Args:
         request: (ComputeInstancesSetMetadataRequest) input message
@@ -4501,7 +4505,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def SetMinCpuPlatform(self, request, global_params=None):
-      """Changes the minimum CPU platform that this instance should use. This method can only be called on a stopped instance. For more information, read Specifying a Minimum CPU Platform.
+      r"""Changes the minimum CPU platform that this instance should use. This method can only be called on a stopped instance. For more information, read Specifying a Minimum CPU Platform.
 
       Args:
         request: (ComputeInstancesSetMinCpuPlatformRequest) input message
@@ -4527,7 +4531,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def SetScheduling(self, request, global_params=None):
-      """Sets an instance's scheduling options.
+      r"""Sets an instance's scheduling options.
 
       Args:
         request: (ComputeInstancesSetSchedulingRequest) input message
@@ -4553,7 +4557,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def SetServiceAccount(self, request, global_params=None):
-      """Sets the service account on the instance. For more information, read Changing the service account and access scopes for an instance.
+      r"""Sets the service account on the instance. For more information, read Changing the service account and access scopes for an instance.
 
       Args:
         request: (ComputeInstancesSetServiceAccountRequest) input message
@@ -4579,7 +4583,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def SetTags(self, request, global_params=None):
-      """Sets tags for the specified instance to the data included in the request.
+      r"""Sets tags for the specified instance to the data included in the request.
 
       Args:
         request: (ComputeInstancesSetTagsRequest) input message
@@ -4605,7 +4609,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def SimulateMaintenanceEvent(self, request, global_params=None):
-      """Simulates a maintenance event on the instance.
+      r"""Simulates a maintenance event on the instance.
 
       Args:
         request: (ComputeInstancesSimulateMaintenanceEventRequest) input message
@@ -4631,7 +4635,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Start(self, request, global_params=None):
-      """Starts an instance that was stopped using the using the instances().stop method. For more information, see Restart an instance.
+      r"""Starts an instance that was stopped using the instances().stop method. For more information, see Restart an instance.
 
       Args:
         request: (ComputeInstancesStartRequest) input message
@@ -4657,7 +4661,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def StartWithEncryptionKey(self, request, global_params=None):
-      """Starts an instance that was stopped using the using the instances().stop method. For more information, see Restart an instance.
+      r"""Starts an instance that was stopped using the instances().stop method. For more information, see Restart an instance.
 
       Args:
         request: (ComputeInstancesStartWithEncryptionKeyRequest) input message
@@ -4683,7 +4687,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Stop(self, request, global_params=None):
-      """Stops a running instance, shutting it down cleanly, and allows you to restart the instance at a later time. Stopped instances do not incur VM usage charges while they are stopped. However, resources that the VM is using, such as persistent disks and static IP addresses, will continue to be charged until they are deleted. For more information, see Stopping an instance.
+      r"""Stops a running instance, shutting it down cleanly, and allows you to restart the instance at a later time. Stopped instances do not incur VM usage charges while they are stopped. However, resources that the VM is using, such as persistent disks and static IP addresses, will continue to be charged until they are deleted. For more information, see Stopping an instance.
 
       Args:
         request: (ComputeInstancesStopRequest) input message
@@ -4709,7 +4713,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeInstancesTestIamPermissionsRequest) input message
@@ -4735,7 +4739,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def UpdateAccessConfig(self, request, global_params=None):
-      """Updates the specified access config from an instance's network interface with the data included in the request. This method supports PATCH semantics and uses the JSON merge patch format and processing rules.
+      r"""Updates the specified access config from an instance's network interface with the data included in the request. This method supports PATCH semantics and uses the JSON merge patch format and processing rules.
 
       Args:
         request: (ComputeInstancesUpdateAccessConfigRequest) input message
@@ -4761,7 +4765,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def UpdateNetworkInterface(self, request, global_params=None):
-      """Updates an instance's network interface. This method follows PATCH semantics.
+      r"""Updates an instance's network interface. This method follows PATCH semantics.
 
       Args:
         request: (ComputeInstancesUpdateNetworkInterfaceRequest) input message
@@ -4797,7 +4801,7 @@ If the group is part of a backend service that has enabled connection draining, 
           }
 
     def AggregatedList(self, request, global_params=None):
-      """Retrieves an aggregated list of interconnect attachments.
+      r"""Retrieves an aggregated list of interconnect attachments.
 
       Args:
         request: (ComputeInterconnectAttachmentsAggregatedListRequest) input message
@@ -4823,7 +4827,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified interconnect attachment.
+      r"""Deletes the specified interconnect attachment.
 
       Args:
         request: (ComputeInterconnectAttachmentsDeleteRequest) input message
@@ -4849,7 +4853,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified interconnect attachment.
+      r"""Returns the specified interconnect attachment.
 
       Args:
         request: (ComputeInterconnectAttachmentsGetRequest) input message
@@ -4875,7 +4879,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Insert(self, request, global_params=None):
-      """Creates an InterconnectAttachment in the specified project using the data included in the request.
+      r"""Creates an InterconnectAttachment in the specified project using the data included in the request.
 
       Args:
         request: (ComputeInterconnectAttachmentsInsertRequest) input message
@@ -4901,7 +4905,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def List(self, request, global_params=None):
-      """Retrieves the list of interconnect attachments contained within the specified region.
+      r"""Retrieves the list of interconnect attachments contained within the specified region.
 
       Args:
         request: (ComputeInterconnectAttachmentsListRequest) input message
@@ -4927,7 +4931,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Patch(self, request, global_params=None):
-      """Updates the specified interconnect attachment with the data included in the request. This method supports PATCH semantics and uses the JSON merge patch format and processing rules.
+      r"""Updates the specified interconnect attachment with the data included in the request. This method supports PATCH semantics and uses the JSON merge patch format and processing rules.
 
       Args:
         request: (ComputeInterconnectAttachmentsPatchRequest) input message
@@ -4953,7 +4957,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def SetLabels(self, request, global_params=None):
-      """Sets the labels on an InterconnectAttachment. To learn more about labels, read the Labeling Resources documentation.
+      r"""Sets the labels on an InterconnectAttachment. To learn more about labels, read the Labeling Resources documentation.
 
       Args:
         request: (ComputeInterconnectAttachmentsSetLabelsRequest) input message
@@ -4979,7 +4983,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeInterconnectAttachmentsTestIamPermissionsRequest) input message
@@ -5015,7 +5019,7 @@ If the group is part of a backend service that has enabled connection draining, 
           }
 
     def Get(self, request, global_params=None):
-      """Returns the details for the specified interconnect location. Get a list of available interconnect locations by making a list() request.
+      r"""Returns the details for the specified interconnect location. Gets a list of available interconnect locations by making a list() request.
 
       Args:
         request: (ComputeInterconnectLocationsGetRequest) input message
@@ -5041,7 +5045,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def List(self, request, global_params=None):
-      """Retrieves the list of interconnect locations available to the specified project.
+      r"""Retrieves the list of interconnect locations available to the specified project.
 
       Args:
         request: (ComputeInterconnectLocationsListRequest) input message
@@ -5077,7 +5081,7 @@ If the group is part of a backend service that has enabled connection draining, 
           }
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified interconnect.
+      r"""Deletes the specified interconnect.
 
       Args:
         request: (ComputeInterconnectsDeleteRequest) input message
@@ -5103,7 +5107,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified interconnect. Get a list of available interconnects by making a list() request.
+      r"""Returns the specified interconnect. Get a list of available interconnects by making a list() request.
 
       Args:
         request: (ComputeInterconnectsGetRequest) input message
@@ -5129,7 +5133,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Insert(self, request, global_params=None):
-      """Creates a Interconnect in the specified project using the data included in the request.
+      r"""Creates a Interconnect in the specified project using the data included in the request.
 
       Args:
         request: (ComputeInterconnectsInsertRequest) input message
@@ -5155,7 +5159,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def List(self, request, global_params=None):
-      """Retrieves the list of interconnect available to the specified project.
+      r"""Retrieves the list of interconnect available to the specified project.
 
       Args:
         request: (ComputeInterconnectsListRequest) input message
@@ -5181,7 +5185,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Patch(self, request, global_params=None):
-      """Updates the specified interconnect with the data included in the request. This method supports PATCH semantics and uses the JSON merge patch format and processing rules.
+      r"""Updates the specified interconnect with the data included in the request. This method supports PATCH semantics and uses the JSON merge patch format and processing rules.
 
       Args:
         request: (ComputeInterconnectsPatchRequest) input message
@@ -5207,7 +5211,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def SetLabels(self, request, global_params=None):
-      """Sets the labels on an Interconnect. To learn more about labels, read the Labeling Resources documentation.
+      r"""Sets the labels on an Interconnect. To learn more about labels, read the Labeling Resources documentation.
 
       Args:
         request: (ComputeInterconnectsSetLabelsRequest) input message
@@ -5233,7 +5237,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeInterconnectsTestIamPermissionsRequest) input message
@@ -5269,7 +5273,7 @@ If the group is part of a backend service that has enabled connection draining, 
           }
 
     def Get(self, request, global_params=None):
-      """Return a specified license code. License codes are mirrored across all projects that have permissions to read the License Code.
+      r"""Return a specified license code. License codes are mirrored across all projects that have permissions to read the License Code.
 
       Args:
         request: (ComputeLicenseCodesGetRequest) input message
@@ -5305,7 +5309,7 @@ If the group is part of a backend service that has enabled connection draining, 
           }
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified license.
+      r"""Deletes the specified license.
 
       Args:
         request: (ComputeLicensesDeleteRequest) input message
@@ -5331,7 +5335,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified License resource.
+      r"""Returns the specified License resource.
 
       Args:
         request: (ComputeLicensesGetRequest) input message
@@ -5357,7 +5361,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Insert(self, request, global_params=None):
-      """Create a License resource in the specified project.
+      r"""Create a License resource in the specified project.
 
       Args:
         request: (ComputeLicensesInsertRequest) input message
@@ -5383,7 +5387,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def List(self, request, global_params=None):
-      """Retrieves the list of licenses available in the specified project. This method does not get any licenses that belong to other projects, including licenses attached to publicly-available images, like Debian 8. If you want to get a list of publicly-available licenses, use this method to make a request to the respective image project, such as debian-cloud or windows-cloud.
+      r"""Retrieves the list of licenses available in the specified project. This method does not get any licenses that belong to other projects, including licenses attached to publicly-available images, like Debian 9. If you want to get a list of publicly-available licenses, use this method to make a request to the respective image project, such as debian-cloud or windows-cloud.
 
       Args:
         request: (ComputeLicensesListRequest) input message
@@ -5419,7 +5423,7 @@ If the group is part of a backend service that has enabled connection draining, 
           }
 
     def AggregatedList(self, request, global_params=None):
-      """Retrieves an aggregated list of machine types.
+      r"""Retrieves an aggregated list of machine types.
 
       Args:
         request: (ComputeMachineTypesAggregatedListRequest) input message
@@ -5445,7 +5449,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified machine type. Get a list of available machine types by making a list() request.
+      r"""Returns the specified machine type. Gets a list of available machine types by making a list() request.
 
       Args:
         request: (ComputeMachineTypesGetRequest) input message
@@ -5471,7 +5475,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def List(self, request, global_params=None):
-      """Retrieves a list of machine types available to the specified project.
+      r"""Retrieves a list of machine types available to the specified project.
 
       Args:
         request: (ComputeMachineTypesListRequest) input message
@@ -5507,7 +5511,7 @@ If the group is part of a backend service that has enabled connection draining, 
           }
 
     def AddPeering(self, request, global_params=None):
-      """Adds a peering to the specified network.
+      r"""Adds a peering to the specified network.
 
       Args:
         request: (ComputeNetworksAddPeeringRequest) input message
@@ -5533,7 +5537,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified network.
+      r"""Deletes the specified network.
 
       Args:
         request: (ComputeNetworksDeleteRequest) input message
@@ -5559,7 +5563,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified network. Get a list of available networks by making a list() request.
+      r"""Returns the specified network. Gets a list of available networks by making a list() request.
 
       Args:
         request: (ComputeNetworksGetRequest) input message
@@ -5585,7 +5589,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Insert(self, request, global_params=None):
-      """Creates a network in the specified project using the data included in the request.
+      r"""Creates a network in the specified project using the data included in the request.
 
       Args:
         request: (ComputeNetworksInsertRequest) input message
@@ -5611,7 +5615,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def List(self, request, global_params=None):
-      """Retrieves the list of networks available to the specified project.
+      r"""Retrieves the list of networks available to the specified project.
 
       Args:
         request: (ComputeNetworksListRequest) input message
@@ -5637,7 +5641,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Patch(self, request, global_params=None):
-      """Patches the specified network with the data included in the request. Only the following fields can be modified: routingConfig.routingMode.
+      r"""Patches the specified network with the data included in the request. Only the following fields can be modified: routingConfig.routingMode.
 
       Args:
         request: (ComputeNetworksPatchRequest) input message
@@ -5663,7 +5667,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def RemovePeering(self, request, global_params=None):
-      """Removes a peering from the specified network.
+      r"""Removes a peering from the specified network.
 
       Args:
         request: (ComputeNetworksRemovePeeringRequest) input message
@@ -5689,7 +5693,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def SwitchToCustomMode(self, request, global_params=None):
-      """Switches the network mode from auto subnet mode to custom subnet mode.
+      r"""Switches the network mode from auto subnet mode to custom subnet mode.
 
       Args:
         request: (ComputeNetworksSwitchToCustomModeRequest) input message
@@ -5715,7 +5719,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeNetworksTestIamPermissionsRequest) input message
@@ -5740,6 +5744,608 @@ If the group is part of a backend service that has enabled connection draining, 
         supports_download=False,
     )
 
+  class NodeGroupsService(base_api.BaseApiService):
+    """Service class for the nodeGroups resource."""
+
+    _NAME = u'nodeGroups'
+
+    def __init__(self, client):
+      super(ComputeBeta.NodeGroupsService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def AddNodes(self, request, global_params=None):
+      r"""Adds specified number of nodes to the node group.
+
+      Args:
+        request: (ComputeNodeGroupsAddNodesRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('AddNodes')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    AddNodes.method_config = lambda: base_api.ApiMethodInfo(
+        http_method=u'POST',
+        method_id=u'compute.nodeGroups.addNodes',
+        ordered_params=[u'project', u'zone', u'nodeGroup'],
+        path_params=[u'nodeGroup', u'project', u'zone'],
+        query_params=[u'requestId'],
+        relative_path=u'projects/{project}/zones/{zone}/nodeGroups/{nodeGroup}/addNodes',
+        request_field=u'nodeGroupsAddNodesRequest',
+        request_type_name=u'ComputeNodeGroupsAddNodesRequest',
+        response_type_name=u'Operation',
+        supports_download=False,
+    )
+
+    def AggregatedList(self, request, global_params=None):
+      r"""Retrieves an aggregated list of node groups.
+
+      Args:
+        request: (ComputeNodeGroupsAggregatedListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (NodeGroupAggregatedList) The response message.
+      """
+      config = self.GetMethodConfig('AggregatedList')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
+        http_method=u'GET',
+        method_id=u'compute.nodeGroups.aggregatedList',
+        ordered_params=[u'project'],
+        path_params=[u'project'],
+        query_params=[u'filter', u'maxResults', u'orderBy', u'pageToken'],
+        relative_path=u'projects/{project}/aggregated/nodeGroups',
+        request_field='',
+        request_type_name=u'ComputeNodeGroupsAggregatedListRequest',
+        response_type_name=u'NodeGroupAggregatedList',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes the specified NodeGroup resource.
+
+      Args:
+        request: (ComputeNodeGroupsDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        http_method=u'DELETE',
+        method_id=u'compute.nodeGroups.delete',
+        ordered_params=[u'project', u'zone', u'nodeGroup'],
+        path_params=[u'nodeGroup', u'project', u'zone'],
+        query_params=[u'requestId'],
+        relative_path=u'projects/{project}/zones/{zone}/nodeGroups/{nodeGroup}',
+        request_field='',
+        request_type_name=u'ComputeNodeGroupsDeleteRequest',
+        response_type_name=u'Operation',
+        supports_download=False,
+    )
+
+    def DeleteNodes(self, request, global_params=None):
+      r"""Deletes specified nodes from the node group.
+
+      Args:
+        request: (ComputeNodeGroupsDeleteNodesRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('DeleteNodes')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    DeleteNodes.method_config = lambda: base_api.ApiMethodInfo(
+        http_method=u'POST',
+        method_id=u'compute.nodeGroups.deleteNodes',
+        ordered_params=[u'project', u'zone', u'nodeGroup'],
+        path_params=[u'nodeGroup', u'project', u'zone'],
+        query_params=[u'requestId'],
+        relative_path=u'projects/{project}/zones/{zone}/nodeGroups/{nodeGroup}/deleteNodes',
+        request_field=u'nodeGroupsDeleteNodesRequest',
+        request_type_name=u'ComputeNodeGroupsDeleteNodesRequest',
+        response_type_name=u'Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Returns the specified NodeGroup. Get a list of available NodeGroups by making a list() request.
+
+      Args:
+        request: (ComputeNodeGroupsGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (NodeGroup) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        http_method=u'GET',
+        method_id=u'compute.nodeGroups.get',
+        ordered_params=[u'project', u'zone', u'nodeGroup'],
+        path_params=[u'nodeGroup', u'project', u'zone'],
+        query_params=[],
+        relative_path=u'projects/{project}/zones/{zone}/nodeGroups/{nodeGroup}',
+        request_field='',
+        request_type_name=u'ComputeNodeGroupsGetRequest',
+        response_type_name=u'NodeGroup',
+        supports_download=False,
+    )
+
+    def GetIamPolicy(self, request, global_params=None):
+      r"""Gets the access control policy for a resource. May be empty if no such policy or resource exists.
+
+      Args:
+        request: (ComputeNodeGroupsGetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Policy) The response message.
+      """
+      config = self.GetMethodConfig('GetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        http_method=u'GET',
+        method_id=u'compute.nodeGroups.getIamPolicy',
+        ordered_params=[u'project', u'zone', u'resource'],
+        path_params=[u'project', u'resource', u'zone'],
+        query_params=[],
+        relative_path=u'projects/{project}/zones/{zone}/nodeGroups/{resource}/getIamPolicy',
+        request_field='',
+        request_type_name=u'ComputeNodeGroupsGetIamPolicyRequest',
+        response_type_name=u'Policy',
+        supports_download=False,
+    )
+
+    def Insert(self, request, global_params=None):
+      r"""Creates a NodeGroup resource in the specified project using the data included in the request.
+
+      Args:
+        request: (ComputeNodeGroupsInsertRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Insert')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Insert.method_config = lambda: base_api.ApiMethodInfo(
+        http_method=u'POST',
+        method_id=u'compute.nodeGroups.insert',
+        ordered_params=[u'project', u'zone', u'initialNodeCount'],
+        path_params=[u'project', u'zone'],
+        query_params=[u'initialNodeCount', u'requestId'],
+        relative_path=u'projects/{project}/zones/{zone}/nodeGroups',
+        request_field=u'nodeGroup',
+        request_type_name=u'ComputeNodeGroupsInsertRequest',
+        response_type_name=u'Operation',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Retrieves a list of node groups available to the specified project.
+
+      Args:
+        request: (ComputeNodeGroupsListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (NodeGroupList) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        http_method=u'GET',
+        method_id=u'compute.nodeGroups.list',
+        ordered_params=[u'project', u'zone'],
+        path_params=[u'project', u'zone'],
+        query_params=[u'filter', u'maxResults', u'orderBy', u'pageToken'],
+        relative_path=u'projects/{project}/zones/{zone}/nodeGroups',
+        request_field='',
+        request_type_name=u'ComputeNodeGroupsListRequest',
+        response_type_name=u'NodeGroupList',
+        supports_download=False,
+    )
+
+    def SetIamPolicy(self, request, global_params=None):
+      r"""Sets the access control policy on the specified resource. Replaces any existing policy.
+
+      Args:
+        request: (ComputeNodeGroupsSetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Policy) The response message.
+      """
+      config = self.GetMethodConfig('SetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        http_method=u'POST',
+        method_id=u'compute.nodeGroups.setIamPolicy',
+        ordered_params=[u'project', u'zone', u'resource'],
+        path_params=[u'project', u'resource', u'zone'],
+        query_params=[],
+        relative_path=u'projects/{project}/zones/{zone}/nodeGroups/{resource}/setIamPolicy',
+        request_field=u'zoneSetPolicyRequest',
+        request_type_name=u'ComputeNodeGroupsSetIamPolicyRequest',
+        response_type_name=u'Policy',
+        supports_download=False,
+    )
+
+    def SetNodeTemplate(self, request, global_params=None):
+      r"""Updates the node template of the node group.
+
+      Args:
+        request: (ComputeNodeGroupsSetNodeTemplateRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('SetNodeTemplate')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    SetNodeTemplate.method_config = lambda: base_api.ApiMethodInfo(
+        http_method=u'POST',
+        method_id=u'compute.nodeGroups.setNodeTemplate',
+        ordered_params=[u'project', u'zone', u'nodeGroup'],
+        path_params=[u'nodeGroup', u'project', u'zone'],
+        query_params=[u'requestId'],
+        relative_path=u'projects/{project}/zones/{zone}/nodeGroups/{nodeGroup}/setNodeTemplate',
+        request_field=u'nodeGroupsSetNodeTemplateRequest',
+        request_type_name=u'ComputeNodeGroupsSetNodeTemplateRequest',
+        response_type_name=u'Operation',
+        supports_download=False,
+    )
+
+    def TestIamPermissions(self, request, global_params=None):
+      r"""Returns permissions that a caller has on the specified resource.
+
+      Args:
+        request: (ComputeNodeGroupsTestIamPermissionsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (TestPermissionsResponse) The response message.
+      """
+      config = self.GetMethodConfig('TestIamPermissions')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
+        http_method=u'POST',
+        method_id=u'compute.nodeGroups.testIamPermissions',
+        ordered_params=[u'project', u'zone', u'resource'],
+        path_params=[u'project', u'resource', u'zone'],
+        query_params=[],
+        relative_path=u'projects/{project}/zones/{zone}/nodeGroups/{resource}/testIamPermissions',
+        request_field=u'testPermissionsRequest',
+        request_type_name=u'ComputeNodeGroupsTestIamPermissionsRequest',
+        response_type_name=u'TestPermissionsResponse',
+        supports_download=False,
+    )
+
+  class NodeTemplatesService(base_api.BaseApiService):
+    """Service class for the nodeTemplates resource."""
+
+    _NAME = u'nodeTemplates'
+
+    def __init__(self, client):
+      super(ComputeBeta.NodeTemplatesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def AggregatedList(self, request, global_params=None):
+      r"""Retrieves an aggregated list of node templates.
+
+      Args:
+        request: (ComputeNodeTemplatesAggregatedListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (NodeTemplateAggregatedList) The response message.
+      """
+      config = self.GetMethodConfig('AggregatedList')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
+        http_method=u'GET',
+        method_id=u'compute.nodeTemplates.aggregatedList',
+        ordered_params=[u'project'],
+        path_params=[u'project'],
+        query_params=[u'filter', u'maxResults', u'orderBy', u'pageToken'],
+        relative_path=u'projects/{project}/aggregated/nodeTemplates',
+        request_field='',
+        request_type_name=u'ComputeNodeTemplatesAggregatedListRequest',
+        response_type_name=u'NodeTemplateAggregatedList',
+        supports_download=False,
+    )
+
+    def Delete(self, request, global_params=None):
+      r"""Deletes the specified NodeTemplate resource.
+
+      Args:
+        request: (ComputeNodeTemplatesDeleteRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Delete')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Delete.method_config = lambda: base_api.ApiMethodInfo(
+        http_method=u'DELETE',
+        method_id=u'compute.nodeTemplates.delete',
+        ordered_params=[u'project', u'region', u'nodeTemplate'],
+        path_params=[u'nodeTemplate', u'project', u'region'],
+        query_params=[u'requestId'],
+        relative_path=u'projects/{project}/regions/{region}/nodeTemplates/{nodeTemplate}',
+        request_field='',
+        request_type_name=u'ComputeNodeTemplatesDeleteRequest',
+        response_type_name=u'Operation',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Returns the specified node template. Gets a list of available node templates by making a list() request.
+
+      Args:
+        request: (ComputeNodeTemplatesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (NodeTemplate) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        http_method=u'GET',
+        method_id=u'compute.nodeTemplates.get',
+        ordered_params=[u'project', u'region', u'nodeTemplate'],
+        path_params=[u'nodeTemplate', u'project', u'region'],
+        query_params=[],
+        relative_path=u'projects/{project}/regions/{region}/nodeTemplates/{nodeTemplate}',
+        request_field='',
+        request_type_name=u'ComputeNodeTemplatesGetRequest',
+        response_type_name=u'NodeTemplate',
+        supports_download=False,
+    )
+
+    def GetIamPolicy(self, request, global_params=None):
+      r"""Gets the access control policy for a resource. May be empty if no such policy or resource exists.
+
+      Args:
+        request: (ComputeNodeTemplatesGetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Policy) The response message.
+      """
+      config = self.GetMethodConfig('GetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    GetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        http_method=u'GET',
+        method_id=u'compute.nodeTemplates.getIamPolicy',
+        ordered_params=[u'project', u'region', u'resource'],
+        path_params=[u'project', u'region', u'resource'],
+        query_params=[],
+        relative_path=u'projects/{project}/regions/{region}/nodeTemplates/{resource}/getIamPolicy',
+        request_field='',
+        request_type_name=u'ComputeNodeTemplatesGetIamPolicyRequest',
+        response_type_name=u'Policy',
+        supports_download=False,
+    )
+
+    def Insert(self, request, global_params=None):
+      r"""Creates a NodeTemplate resource in the specified project using the data included in the request.
+
+      Args:
+        request: (ComputeNodeTemplatesInsertRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Operation) The response message.
+      """
+      config = self.GetMethodConfig('Insert')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Insert.method_config = lambda: base_api.ApiMethodInfo(
+        http_method=u'POST',
+        method_id=u'compute.nodeTemplates.insert',
+        ordered_params=[u'project', u'region'],
+        path_params=[u'project', u'region'],
+        query_params=[u'requestId'],
+        relative_path=u'projects/{project}/regions/{region}/nodeTemplates',
+        request_field=u'nodeTemplate',
+        request_type_name=u'ComputeNodeTemplatesInsertRequest',
+        response_type_name=u'Operation',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Retrieves a list of node templates available to the specified project.
+
+      Args:
+        request: (ComputeNodeTemplatesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (NodeTemplateList) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        http_method=u'GET',
+        method_id=u'compute.nodeTemplates.list',
+        ordered_params=[u'project', u'region'],
+        path_params=[u'project', u'region'],
+        query_params=[u'filter', u'maxResults', u'orderBy', u'pageToken'],
+        relative_path=u'projects/{project}/regions/{region}/nodeTemplates',
+        request_field='',
+        request_type_name=u'ComputeNodeTemplatesListRequest',
+        response_type_name=u'NodeTemplateList',
+        supports_download=False,
+    )
+
+    def SetIamPolicy(self, request, global_params=None):
+      r"""Sets the access control policy on the specified resource. Replaces any existing policy.
+
+      Args:
+        request: (ComputeNodeTemplatesSetIamPolicyRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (Policy) The response message.
+      """
+      config = self.GetMethodConfig('SetIamPolicy')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    SetIamPolicy.method_config = lambda: base_api.ApiMethodInfo(
+        http_method=u'POST',
+        method_id=u'compute.nodeTemplates.setIamPolicy',
+        ordered_params=[u'project', u'region', u'resource'],
+        path_params=[u'project', u'region', u'resource'],
+        query_params=[],
+        relative_path=u'projects/{project}/regions/{region}/nodeTemplates/{resource}/setIamPolicy',
+        request_field=u'regionSetPolicyRequest',
+        request_type_name=u'ComputeNodeTemplatesSetIamPolicyRequest',
+        response_type_name=u'Policy',
+        supports_download=False,
+    )
+
+    def TestIamPermissions(self, request, global_params=None):
+      r"""Returns permissions that a caller has on the specified resource.
+
+      Args:
+        request: (ComputeNodeTemplatesTestIamPermissionsRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (TestPermissionsResponse) The response message.
+      """
+      config = self.GetMethodConfig('TestIamPermissions')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    TestIamPermissions.method_config = lambda: base_api.ApiMethodInfo(
+        http_method=u'POST',
+        method_id=u'compute.nodeTemplates.testIamPermissions',
+        ordered_params=[u'project', u'region', u'resource'],
+        path_params=[u'project', u'region', u'resource'],
+        query_params=[],
+        relative_path=u'projects/{project}/regions/{region}/nodeTemplates/{resource}/testIamPermissions',
+        request_field=u'testPermissionsRequest',
+        request_type_name=u'ComputeNodeTemplatesTestIamPermissionsRequest',
+        response_type_name=u'TestPermissionsResponse',
+        supports_download=False,
+    )
+
+  class NodeTypesService(base_api.BaseApiService):
+    """Service class for the nodeTypes resource."""
+
+    _NAME = u'nodeTypes'
+
+    def __init__(self, client):
+      super(ComputeBeta.NodeTypesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def AggregatedList(self, request, global_params=None):
+      r"""Retrieves an aggregated list of node types.
+
+      Args:
+        request: (ComputeNodeTypesAggregatedListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (NodeTypeAggregatedList) The response message.
+      """
+      config = self.GetMethodConfig('AggregatedList')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    AggregatedList.method_config = lambda: base_api.ApiMethodInfo(
+        http_method=u'GET',
+        method_id=u'compute.nodeTypes.aggregatedList',
+        ordered_params=[u'project'],
+        path_params=[u'project'],
+        query_params=[u'filter', u'maxResults', u'orderBy', u'pageToken'],
+        relative_path=u'projects/{project}/aggregated/nodeTypes',
+        request_field='',
+        request_type_name=u'ComputeNodeTypesAggregatedListRequest',
+        response_type_name=u'NodeTypeAggregatedList',
+        supports_download=False,
+    )
+
+    def Get(self, request, global_params=None):
+      r"""Returns the specified node type. Gets a list of available node types by making a list() request.
+
+      Args:
+        request: (ComputeNodeTypesGetRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (NodeType) The response message.
+      """
+      config = self.GetMethodConfig('Get')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    Get.method_config = lambda: base_api.ApiMethodInfo(
+        http_method=u'GET',
+        method_id=u'compute.nodeTypes.get',
+        ordered_params=[u'project', u'zone', u'nodeType'],
+        path_params=[u'nodeType', u'project', u'zone'],
+        query_params=[],
+        relative_path=u'projects/{project}/zones/{zone}/nodeTypes/{nodeType}',
+        request_field='',
+        request_type_name=u'ComputeNodeTypesGetRequest',
+        response_type_name=u'NodeType',
+        supports_download=False,
+    )
+
+    def List(self, request, global_params=None):
+      r"""Retrieves a list of node types available to the specified project.
+
+      Args:
+        request: (ComputeNodeTypesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (NodeTypeList) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        http_method=u'GET',
+        method_id=u'compute.nodeTypes.list',
+        ordered_params=[u'project', u'zone'],
+        path_params=[u'project', u'zone'],
+        query_params=[u'filter', u'maxResults', u'orderBy', u'pageToken'],
+        relative_path=u'projects/{project}/zones/{zone}/nodeTypes',
+        request_field='',
+        request_type_name=u'ComputeNodeTypesListRequest',
+        response_type_name=u'NodeTypeList',
+        supports_download=False,
+    )
+
   class ProjectsService(base_api.BaseApiService):
     """Service class for the projects resource."""
 
@@ -5751,7 +6357,7 @@ If the group is part of a backend service that has enabled connection draining, 
           }
 
     def DisableXpnHost(self, request, global_params=None):
-      """Disable this project as a shared VPC host project.
+      r"""Disable this project as a shared VPC host project.
 
       Args:
         request: (ComputeProjectsDisableXpnHostRequest) input message
@@ -5777,7 +6383,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def DisableXpnResource(self, request, global_params=None):
-      """Disable a serivce resource (a.k.a service project) associated with this host project.
+      r"""Disable a serivce resource (a.k.a service project) associated with this host project.
 
       Args:
         request: (ComputeProjectsDisableXpnResourceRequest) input message
@@ -5803,7 +6409,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def EnableXpnHost(self, request, global_params=None):
-      """Enable this project as a shared VPC host project.
+      r"""Enable this project as a shared VPC host project.
 
       Args:
         request: (ComputeProjectsEnableXpnHostRequest) input message
@@ -5829,7 +6435,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def EnableXpnResource(self, request, global_params=None):
-      """Enable service resource (a.k.a service project) for a host project, so that subnets in the host project can be used by instances in the service project.
+      r"""Enable service resource (a.k.a service project) for a host project, so that subnets in the host project can be used by instances in the service project.
 
       Args:
         request: (ComputeProjectsEnableXpnResourceRequest) input message
@@ -5855,7 +6461,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified Project resource.
+      r"""Returns the specified Project resource.
 
       Args:
         request: (ComputeProjectsGetRequest) input message
@@ -5881,7 +6487,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def GetXpnHost(self, request, global_params=None):
-      """Get the shared VPC host project that this project links to. May be empty if no link exists.
+      r"""Gets the shared VPC host project that this project links to. May be empty if no link exists.
 
       Args:
         request: (ComputeProjectsGetXpnHostRequest) input message
@@ -5907,7 +6513,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def GetXpnResources(self, request, global_params=None):
-      """Get service resources (a.k.a service project) associated with this host project.
+      r"""Gets service resources (a.k.a service project) associated with this host project.
 
       Args:
         request: (ComputeProjectsGetXpnResourcesRequest) input message
@@ -5933,7 +6539,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def ListXpnHosts(self, request, global_params=None):
-      """List all shared VPC host projects visible to the user in an organization.
+      r"""Lists all shared VPC host projects visible to the user in an organization.
 
       Args:
         request: (ComputeProjectsListXpnHostsRequest) input message
@@ -5959,7 +6565,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def MoveDisk(self, request, global_params=None):
-      """Moves a persistent disk from one zone to another.
+      r"""Moves a persistent disk from one zone to another.
 
       Args:
         request: (ComputeProjectsMoveDiskRequest) input message
@@ -5985,7 +6591,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def MoveInstance(self, request, global_params=None):
-      """Moves an instance and its attached persistent disks from one zone to another.
+      r"""Moves an instance and its attached persistent disks from one zone to another.
 
       Args:
         request: (ComputeProjectsMoveInstanceRequest) input message
@@ -6011,7 +6617,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def SetCommonInstanceMetadata(self, request, global_params=None):
-      """Sets metadata common to all instances within the specified project using the data included in the request.
+      r"""Sets metadata common to all instances within the specified project using the data included in the request.
 
       Args:
         request: (ComputeProjectsSetCommonInstanceMetadataRequest) input message
@@ -6037,7 +6643,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def SetDefaultNetworkTier(self, request, global_params=None):
-      """Sets the default network tier of the project. The default network tier is used when an address/forwardingRule/instance is created without specifying the network tier field.
+      r"""Sets the default network tier of the project. The default network tier is used when an address/forwardingRule/instance is created without specifying the network tier field.
 
       Args:
         request: (ComputeProjectsSetDefaultNetworkTierRequest) input message
@@ -6063,7 +6669,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def SetUsageExportBucket(self, request, global_params=None):
-      """Enables the usage export feature and sets the usage export bucket where reports are stored. If you provide an empty request body using this method, the usage export feature will be disabled.
+      r"""Enables the usage export feature and sets the usage export bucket where reports are stored. If you provide an empty request body using this method, the usage export feature will be disabled.
 
       Args:
         request: (ComputeProjectsSetUsageExportBucketRequest) input message
@@ -6099,7 +6705,7 @@ If the group is part of a backend service that has enabled connection draining, 
           }
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified autoscaler.
+      r"""Deletes the specified autoscaler.
 
       Args:
         request: (ComputeRegionAutoscalersDeleteRequest) input message
@@ -6125,7 +6731,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified autoscaler.
+      r"""Returns the specified autoscaler.
 
       Args:
         request: (ComputeRegionAutoscalersGetRequest) input message
@@ -6151,7 +6757,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Insert(self, request, global_params=None):
-      """Creates an autoscaler in the specified project using the data included in the request.
+      r"""Creates an autoscaler in the specified project using the data included in the request.
 
       Args:
         request: (ComputeRegionAutoscalersInsertRequest) input message
@@ -6177,7 +6783,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def List(self, request, global_params=None):
-      """Retrieves a list of autoscalers contained within the specified region.
+      r"""Retrieves a list of autoscalers contained within the specified region.
 
       Args:
         request: (ComputeRegionAutoscalersListRequest) input message
@@ -6203,7 +6809,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Patch(self, request, global_params=None):
-      """Updates an autoscaler in the specified project using the data included in the request. This method supports PATCH semantics and uses the JSON merge patch format and processing rules.
+      r"""Updates an autoscaler in the specified project using the data included in the request. This method supports PATCH semantics and uses the JSON merge patch format and processing rules.
 
       Args:
         request: (ComputeRegionAutoscalersPatchRequest) input message
@@ -6229,7 +6835,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeRegionAutoscalersTestIamPermissionsRequest) input message
@@ -6255,7 +6861,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Update(self, request, global_params=None):
-      """Updates an autoscaler in the specified project using the data included in the request.
+      r"""Updates an autoscaler in the specified project using the data included in the request.
 
       Args:
         request: (ComputeRegionAutoscalersUpdateRequest) input message
@@ -6291,7 +6897,7 @@ If the group is part of a backend service that has enabled connection draining, 
           }
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified regional BackendService resource.
+      r"""Deletes the specified regional BackendService resource.
 
       Args:
         request: (ComputeRegionBackendServicesDeleteRequest) input message
@@ -6317,7 +6923,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified regional BackendService resource.
+      r"""Returns the specified regional BackendService resource.
 
       Args:
         request: (ComputeRegionBackendServicesGetRequest) input message
@@ -6343,7 +6949,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def GetHealth(self, request, global_params=None):
-      """Gets the most recent health check results for this regional BackendService.
+      r"""Gets the most recent health check results for this regional BackendService.
 
       Args:
         request: (ComputeRegionBackendServicesGetHealthRequest) input message
@@ -6369,7 +6975,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Insert(self, request, global_params=None):
-      """Creates a regional BackendService resource in the specified project using the data included in the request. There are several restrictions and guidelines to keep in mind when creating a regional backend service. Read  Restrictions and Guidelines for more information.
+      r"""Creates a regional BackendService resource in the specified project using the data included in the request. There are several restrictions and guidelines to keep in mind when creating a regional backend service. Read  Restrictions and Guidelines for more information.
 
       Args:
         request: (ComputeRegionBackendServicesInsertRequest) input message
@@ -6395,7 +7001,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def List(self, request, global_params=None):
-      """Retrieves the list of regional BackendService resources available to the specified project in the given region.
+      r"""Retrieves the list of regional BackendService resources available to the specified project in the given region.
 
       Args:
         request: (ComputeRegionBackendServicesListRequest) input message
@@ -6421,7 +7027,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Patch(self, request, global_params=None):
-      """Updates the specified regional BackendService resource with the data included in the request. There are several restrictions and guidelines to keep in mind when updating a backend service. Read  Restrictions and Guidelines for more information. This method supports PATCH semantics and uses the JSON merge patch format and processing rules.
+      r"""Updates the specified regional BackendService resource with the data included in the request. There are several restrictions and guidelines to keep in mind when updating a backend service. Read  Restrictions and Guidelines for more information. This method supports PATCH semantics and uses the JSON merge patch format and processing rules.
 
       Args:
         request: (ComputeRegionBackendServicesPatchRequest) input message
@@ -6447,7 +7053,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeRegionBackendServicesTestIamPermissionsRequest) input message
@@ -6473,7 +7079,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Update(self, request, global_params=None):
-      """Updates the specified regional BackendService resource with the data included in the request. There are several restrictions and guidelines to keep in mind when updating a backend service. Read  Restrictions and Guidelines for more information.
+      r"""Updates the specified regional BackendService resource with the data included in the request. There are several restrictions and guidelines to keep in mind when updating a backend service. Read  Restrictions and Guidelines for more information.
 
       Args:
         request: (ComputeRegionBackendServicesUpdateRequest) input message
@@ -6509,7 +7115,7 @@ If the group is part of a backend service that has enabled connection draining, 
           }
 
     def AggregatedList(self, request, global_params=None):
-      """Retrieves an aggregated list of commitments.
+      r"""Retrieves an aggregated list of commitments.
 
       Args:
         request: (ComputeRegionCommitmentsAggregatedListRequest) input message
@@ -6535,7 +7141,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified commitment resource. Get a list of available commitments by making a list() request.
+      r"""Returns the specified commitment resource. Gets a list of available commitments by making a list() request.
 
       Args:
         request: (ComputeRegionCommitmentsGetRequest) input message
@@ -6561,7 +7167,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Insert(self, request, global_params=None):
-      """Creates a commitment in the specified project using the data included in the request.
+      r"""Creates a commitment in the specified project using the data included in the request.
 
       Args:
         request: (ComputeRegionCommitmentsInsertRequest) input message
@@ -6587,7 +7193,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def List(self, request, global_params=None):
-      """Retrieves a list of commitments contained within the specified region.
+      r"""Retrieves a list of commitments contained within the specified region.
 
       Args:
         request: (ComputeRegionCommitmentsListRequest) input message
@@ -6623,7 +7229,7 @@ If the group is part of a backend service that has enabled connection draining, 
           }
 
     def Get(self, request, global_params=None):
-      """Returns the specified regional disk type. Get a list of available disk types by making a list() request.
+      r"""Returns the specified regional disk type. Gets a list of available disk types by making a list() request.
 
       Args:
         request: (ComputeRegionDiskTypesGetRequest) input message
@@ -6649,7 +7255,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def List(self, request, global_params=None):
-      """Retrieves a list of regional disk types available to the specified project.
+      r"""Retrieves a list of regional disk types available to the specified project.
 
       Args:
         request: (ComputeRegionDiskTypesListRequest) input message
@@ -6685,7 +7291,7 @@ If the group is part of a backend service that has enabled connection draining, 
           }
 
     def CreateSnapshot(self, request, global_params=None):
-      """Creates a snapshot of this regional disk.
+      r"""Creates a snapshot of this regional disk.
 
       Args:
         request: (ComputeRegionDisksCreateSnapshotRequest) input message
@@ -6711,7 +7317,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified regional persistent disk. Deleting a regional disk removes all the replicas of its data permanently and is irreversible. However, deleting a disk does not delete any snapshots previously made from the disk. You must separately delete snapshots.
+      r"""Deletes the specified regional persistent disk. Deleting a regional disk removes all the replicas of its data permanently and is irreversible. However, deleting a disk does not delete any snapshots previously made from the disk. You must separately delete snapshots.
 
       Args:
         request: (ComputeRegionDisksDeleteRequest) input message
@@ -6737,7 +7343,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Get(self, request, global_params=None):
-      """Returns a specified regional persistent disk.
+      r"""Returns a specified regional persistent disk.
 
       Args:
         request: (ComputeRegionDisksGetRequest) input message
@@ -6763,7 +7369,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Insert(self, request, global_params=None):
-      """Creates a persistent regional disk in the specified project using the data included in the request.
+      r"""Creates a persistent regional disk in the specified project using the data included in the request.
 
       Args:
         request: (ComputeRegionDisksInsertRequest) input message
@@ -6789,7 +7395,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def List(self, request, global_params=None):
-      """Retrieves the list of persistent disks contained within the specified region.
+      r"""Retrieves the list of persistent disks contained within the specified region.
 
       Args:
         request: (ComputeRegionDisksListRequest) input message
@@ -6815,7 +7421,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Resize(self, request, global_params=None):
-      """Resizes the specified regional persistent disk.
+      r"""Resizes the specified regional persistent disk.
 
       Args:
         request: (ComputeRegionDisksResizeRequest) input message
@@ -6841,7 +7447,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def SetLabels(self, request, global_params=None):
-      """Sets the labels on the target regional disk.
+      r"""Sets the labels on the target regional disk.
 
       Args:
         request: (ComputeRegionDisksSetLabelsRequest) input message
@@ -6867,7 +7473,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeRegionDisksTestIamPermissionsRequest) input message
@@ -6903,7 +7509,7 @@ If the group is part of a backend service that has enabled connection draining, 
           }
 
     def AbandonInstances(self, request, global_params=None):
-      """Schedules a group action to remove the specified instances from the managed instance group. Abandoning an instance does not delete the instance, but it does remove the instance from any target pools that are applied by the managed instance group. This method reduces the targetSize of the managed instance group by the number of instances that you abandon. This operation is marked as DONE when the action is scheduled even if the instances have not yet been removed from the group. You must separately verify the status of the abandoning action with the listmanagedinstances method.
+      r"""Schedules a group action to remove the specified instances from the managed instance group. Abandoning an instance does not delete the instance, but it does remove the instance from any target pools that are applied by the managed instance group. This method reduces the targetSize of the managed instance group by the number of instances that you abandon. This operation is marked as DONE when the action is scheduled even if the instances have not yet been removed from the group. You must separately verify the status of the abandoning action with the listmanagedinstances method.
 
 If the group is part of a backend service that has enabled connection draining, it can take up to 60 seconds after the connection draining duration has elapsed before the VM instance is removed or deleted.
 
@@ -6933,7 +7539,7 @@ You can specify a maximum of 1000 instances with this method per request.
     )
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified managed instance group and all of the instances in that group.
+      r"""Deletes the specified managed instance group and all of the instances in that group.
 
       Args:
         request: (ComputeRegionInstanceGroupManagersDeleteRequest) input message
@@ -6959,7 +7565,7 @@ You can specify a maximum of 1000 instances with this method per request.
     )
 
     def DeleteInstances(self, request, global_params=None):
-      """Schedules a group action to delete the specified instances in the managed instance group. The instances are also removed from any target pools of which they were a member. This method reduces the targetSize of the managed instance group by the number of instances that you delete. This operation is marked as DONE when the action is scheduled even if the instances are still being deleted. You must separately verify the status of the deleting action with the listmanagedinstances method.
+      r"""Schedules a group action to delete the specified instances in the managed instance group. The instances are also removed from any target pools of which they were a member. This method reduces the targetSize of the managed instance group by the number of instances that you delete. This operation is marked as DONE when the action is scheduled even if the instances are still being deleted. You must separately verify the status of the deleting action with the listmanagedinstances method.
 
 If the group is part of a backend service that has enabled connection draining, it can take up to 60 seconds after the connection draining duration has elapsed before the VM instance is removed or deleted.
 
@@ -6989,7 +7595,7 @@ You can specify a maximum of 1000 instances with this method per request.
     )
 
     def Get(self, request, global_params=None):
-      """Returns all of the details about the specified managed instance group.
+      r"""Returns all of the details about the specified managed instance group.
 
       Args:
         request: (ComputeRegionInstanceGroupManagersGetRequest) input message
@@ -7015,7 +7621,7 @@ You can specify a maximum of 1000 instances with this method per request.
     )
 
     def Insert(self, request, global_params=None):
-      """Creates a managed instance group using the information that you specify in the request. After the group is created, it schedules an action to create instances in the group using the specified instance template. This operation is marked as DONE when the group is created even if the instances in the group have not yet been created. You must separately verify the status of the individual instances with the listmanagedinstances method.
+      r"""Creates a managed instance group using the information that you specify in the request. After the group is created, it schedules an action to create instances in the group using the specified instance template. This operation is marked as DONE when the group is created even if the instances in the group have not yet been created. You must separately verify the status of the individual instances with the listmanagedinstances method.
 
 A regional managed instance group can contain up to 2000 instances.
 
@@ -7043,7 +7649,7 @@ A regional managed instance group can contain up to 2000 instances.
     )
 
     def List(self, request, global_params=None):
-      """Retrieves the list of managed instance groups that are contained within the specified region.
+      r"""Retrieves the list of managed instance groups that are contained within the specified region.
 
       Args:
         request: (ComputeRegionInstanceGroupManagersListRequest) input message
@@ -7069,7 +7675,7 @@ A regional managed instance group can contain up to 2000 instances.
     )
 
     def ListManagedInstances(self, request, global_params=None):
-      """Lists the instances in the managed instance group and instances that are scheduled to be created. The list includes any current actions that the group has scheduled for its instances.
+      r"""Lists the instances in the managed instance group and instances that are scheduled to be created. The list includes any current actions that the group has scheduled for its instances.
 
       Args:
         request: (ComputeRegionInstanceGroupManagersListManagedInstancesRequest) input message
@@ -7095,7 +7701,7 @@ A regional managed instance group can contain up to 2000 instances.
     )
 
     def Patch(self, request, global_params=None):
-      """Updates a managed instance group using the information that you specify in the request. This operation is marked as DONE when the group is patched even if the instances in the group are still in the process of being patched. You must separately verify the status of the individual instances with the listmanagedinstances method. This method supports PATCH semantics and uses the JSON merge patch format and processing rules.
+      r"""Updates a managed instance group using the information that you specify in the request. This operation is marked as DONE when the group is patched even if the instances in the group are still in the process of being patched. You must separately verify the status of the individual instances with the listmanagedinstances method. This method supports PATCH semantics and uses the JSON merge patch format and processing rules.
 
       Args:
         request: (ComputeRegionInstanceGroupManagersPatchRequest) input message
@@ -7121,7 +7727,7 @@ A regional managed instance group can contain up to 2000 instances.
     )
 
     def RecreateInstances(self, request, global_params=None):
-      """Schedules a group action to recreate the specified instances in the managed instance group. The instances are deleted and recreated using the current instance template for the managed instance group. This operation is marked as DONE when the action is scheduled even if the instances have not yet been recreated. You must separately verify the status of the recreating action with the listmanagedinstances method.
+      r"""Schedules a group action to recreate the specified instances in the managed instance group. The instances are deleted and recreated using the current instance template for the managed instance group. This operation is marked as DONE when the action is scheduled even if the instances have not yet been recreated. You must separately verify the status of the recreating action with the listmanagedinstances method.
 
 If the group is part of a backend service that has enabled connection draining, it can take up to 60 seconds after the connection draining duration has elapsed before the VM instance is removed or deleted.
 
@@ -7151,7 +7757,7 @@ You can specify a maximum of 1000 instances with this method per request.
     )
 
     def Resize(self, request, global_params=None):
-      """Changes the intended size for the managed instance group. If you increase the size, the group schedules actions to create new instances using the current instance template. If you decrease the size, the group schedules delete actions on one or more instances. The resize operation is marked DONE when the resize actions are scheduled even if the group has not yet added or deleted any instances. You must separately verify the status of the creating or deleting actions with the listmanagedinstances method.
+      r"""Changes the intended size for the managed instance group. If you increase the size, the group schedules actions to create new instances using the current instance template. If you decrease the size, the group schedules delete actions on one or more instances. The resize operation is marked DONE when the resize actions are scheduled even if the group has not yet added or deleted any instances. You must separately verify the status of the creating or deleting actions with the listmanagedinstances method.
 
 If the group is part of a backend service that has enabled connection draining, it can take up to 60 seconds after the connection draining duration has elapsed before the VM instance is removed or deleted.
 
@@ -7179,7 +7785,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def SetAutoHealingPolicies(self, request, global_params=None):
-      """Modifies the autohealing policy for the instances in this managed instance group.
+      r"""Modifies the autohealing policy for the instances in this managed instance group.
 
       Args:
         request: (ComputeRegionInstanceGroupManagersSetAutoHealingPoliciesRequest) input message
@@ -7205,7 +7811,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def SetInstanceTemplate(self, request, global_params=None):
-      """Sets the instance template to use when creating new instances or recreating instances in this group. Existing instances are not affected.
+      r"""Sets the instance template to use when creating new instances or recreating instances in this group. Existing instances are not affected.
 
       Args:
         request: (ComputeRegionInstanceGroupManagersSetInstanceTemplateRequest) input message
@@ -7231,7 +7837,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def SetTargetPools(self, request, global_params=None):
-      """Modifies the target pools to which all new instances in this group are assigned. Existing instances in the group are not affected.
+      r"""Modifies the target pools to which all new instances in this group are assigned. Existing instances in the group are not affected.
 
       Args:
         request: (ComputeRegionInstanceGroupManagersSetTargetPoolsRequest) input message
@@ -7257,7 +7863,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeRegionInstanceGroupManagersTestIamPermissionsRequest) input message
@@ -7283,7 +7889,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Update(self, request, global_params=None):
-      """Updates a managed instance group using the information that you specify in the request. This operation is marked as DONE when the group is updated even if the instances in the group have not yet been updated. You must separately verify the status of the individual instances with the listmanagedinstances method.
+      r"""Updates a managed instance group using the information that you specify in the request. This operation is marked as DONE when the group is updated even if the instances in the group have not yet been updated. You must separately verify the status of the individual instances with the listmanagedinstances method.
 
       Args:
         request: (ComputeRegionInstanceGroupManagersUpdateRequest) input message
@@ -7319,7 +7925,7 @@ If the group is part of a backend service that has enabled connection draining, 
           }
 
     def Get(self, request, global_params=None):
-      """Returns the specified instance group resource.
+      r"""Returns the specified instance group resource.
 
       Args:
         request: (ComputeRegionInstanceGroupsGetRequest) input message
@@ -7345,7 +7951,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def List(self, request, global_params=None):
-      """Retrieves the list of instance group resources contained within the specified region.
+      r"""Retrieves the list of instance group resources contained within the specified region.
 
       Args:
         request: (ComputeRegionInstanceGroupsListRequest) input message
@@ -7371,7 +7977,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def ListInstances(self, request, global_params=None):
-      """Lists the instances in the specified instance group and displays information about the named ports. Depending on the specified options, this method can list all instances or only the instances that are running.
+      r"""Lists the instances in the specified instance group and displays information about the named ports. Depending on the specified options, this method can list all instances or only the instances that are running.
 
       Args:
         request: (ComputeRegionInstanceGroupsListInstancesRequest) input message
@@ -7397,7 +8003,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def SetNamedPorts(self, request, global_params=None):
-      """Sets the named ports for the specified regional instance group.
+      r"""Sets the named ports for the specified regional instance group.
 
       Args:
         request: (ComputeRegionInstanceGroupsSetNamedPortsRequest) input message
@@ -7423,7 +8029,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeRegionInstanceGroupsTestIamPermissionsRequest) input message
@@ -7459,7 +8065,7 @@ If the group is part of a backend service that has enabled connection draining, 
           }
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified region-specific Operations resource.
+      r"""Deletes the specified region-specific Operations resource.
 
       Args:
         request: (ComputeRegionOperationsDeleteRequest) input message
@@ -7485,7 +8091,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Get(self, request, global_params=None):
-      """Retrieves the specified region-specific Operations resource.
+      r"""Retrieves the specified region-specific Operations resource.
 
       Args:
         request: (ComputeRegionOperationsGetRequest) input message
@@ -7511,7 +8117,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def List(self, request, global_params=None):
-      """Retrieves a list of Operation resources contained within the specified region.
+      r"""Retrieves a list of Operation resources contained within the specified region.
 
       Args:
         request: (ComputeRegionOperationsListRequest) input message
@@ -7547,7 +8153,7 @@ If the group is part of a backend service that has enabled connection draining, 
           }
 
     def Get(self, request, global_params=None):
-      """Returns the specified Region resource. Get a list of available regions by making a list() request.
+      r"""Returns the specified Region resource. Gets a list of available regions by making a list() request.
 
       Args:
         request: (ComputeRegionsGetRequest) input message
@@ -7573,7 +8179,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def List(self, request, global_params=None):
-      """Retrieves the list of region resources available to the specified project.
+      r"""Retrieves the list of region resources available to the specified project.
 
       Args:
         request: (ComputeRegionsListRequest) input message
@@ -7609,7 +8215,7 @@ If the group is part of a backend service that has enabled connection draining, 
           }
 
     def AggregatedList(self, request, global_params=None):
-      """Retrieves an aggregated list of routers.
+      r"""Retrieves an aggregated list of routers.
 
       Args:
         request: (ComputeRoutersAggregatedListRequest) input message
@@ -7635,7 +8241,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified Router resource.
+      r"""Deletes the specified Router resource.
 
       Args:
         request: (ComputeRoutersDeleteRequest) input message
@@ -7661,7 +8267,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified Router resource. Get a list of available routers by making a list() request.
+      r"""Returns the specified Router resource. Gets a list of available routers by making a list() request.
 
       Args:
         request: (ComputeRoutersGetRequest) input message
@@ -7687,7 +8293,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def GetRouterStatus(self, request, global_params=None):
-      """Retrieves runtime information of the specified router.
+      r"""Retrieves runtime information of the specified router.
 
       Args:
         request: (ComputeRoutersGetRouterStatusRequest) input message
@@ -7713,7 +8319,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Insert(self, request, global_params=None):
-      """Creates a Router resource in the specified project and region using the data included in the request.
+      r"""Creates a Router resource in the specified project and region using the data included in the request.
 
       Args:
         request: (ComputeRoutersInsertRequest) input message
@@ -7739,7 +8345,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def List(self, request, global_params=None):
-      """Retrieves a list of Router resources available to the specified project.
+      r"""Retrieves a list of Router resources available to the specified project.
 
       Args:
         request: (ComputeRoutersListRequest) input message
@@ -7765,7 +8371,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Patch(self, request, global_params=None):
-      """Patches the specified Router resource with the data included in the request. This method supports PATCH semantics and uses JSON merge patch format and processing rules.
+      r"""Patches the specified Router resource with the data included in the request. This method supports PATCH semantics and uses JSON merge patch format and processing rules.
 
       Args:
         request: (ComputeRoutersPatchRequest) input message
@@ -7791,7 +8397,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Preview(self, request, global_params=None):
-      """Preview fields auto-generated during router create and update operations. Calling this method does NOT create or update the router.
+      r"""Preview fields auto-generated during router create and update operations. Calling this method does NOT create or update the router.
 
       Args:
         request: (ComputeRoutersPreviewRequest) input message
@@ -7817,7 +8423,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeRoutersTestIamPermissionsRequest) input message
@@ -7843,7 +8449,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Update(self, request, global_params=None):
-      """Updates the specified Router resource with the data included in the request.
+      r"""Updates the specified Router resource with the data included in the request.
 
       Args:
         request: (ComputeRoutersUpdateRequest) input message
@@ -7879,7 +8485,7 @@ If the group is part of a backend service that has enabled connection draining, 
           }
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified Route resource.
+      r"""Deletes the specified Route resource.
 
       Args:
         request: (ComputeRoutesDeleteRequest) input message
@@ -7905,7 +8511,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified Route resource. Get a list of available routes by making a list() request.
+      r"""Returns the specified Route resource. Gets a list of available routes by making a list() request.
 
       Args:
         request: (ComputeRoutesGetRequest) input message
@@ -7931,7 +8537,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Insert(self, request, global_params=None):
-      """Creates a Route resource in the specified project using the data included in the request.
+      r"""Creates a Route resource in the specified project using the data included in the request.
 
       Args:
         request: (ComputeRoutesInsertRequest) input message
@@ -7957,7 +8563,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def List(self, request, global_params=None):
-      """Retrieves the list of Route resources available to the specified project.
+      r"""Retrieves the list of Route resources available to the specified project.
 
       Args:
         request: (ComputeRoutesListRequest) input message
@@ -7983,7 +8589,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeRoutesTestIamPermissionsRequest) input message
@@ -8019,7 +8625,7 @@ If the group is part of a backend service that has enabled connection draining, 
           }
 
     def AddRule(self, request, global_params=None):
-      """Inserts a rule into a security policy.
+      r"""Inserts a rule into a security policy.
 
       Args:
         request: (ComputeSecurityPoliciesAddRuleRequest) input message
@@ -8045,7 +8651,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified policy.
+      r"""Deletes the specified policy.
 
       Args:
         request: (ComputeSecurityPoliciesDeleteRequest) input message
@@ -8071,7 +8677,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Get(self, request, global_params=None):
-      """List all of the ordered rules present in a single specified policy.
+      r"""List all of the ordered rules present in a single specified policy.
 
       Args:
         request: (ComputeSecurityPoliciesGetRequest) input message
@@ -8097,7 +8703,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def GetRule(self, request, global_params=None):
-      """Gets a rule at the specified priority.
+      r"""Gets a rule at the specified priority.
 
       Args:
         request: (ComputeSecurityPoliciesGetRuleRequest) input message
@@ -8123,7 +8729,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Insert(self, request, global_params=None):
-      """Creates a new policy in the specified project using the data included in the request.
+      r"""Creates a new policy in the specified project using the data included in the request.
 
       Args:
         request: (ComputeSecurityPoliciesInsertRequest) input message
@@ -8149,7 +8755,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def List(self, request, global_params=None):
-      """List all the policies that have been configured for the specified project.
+      r"""List all the policies that have been configured for the specified project.
 
       Args:
         request: (ComputeSecurityPoliciesListRequest) input message
@@ -8175,7 +8781,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def Patch(self, request, global_params=None):
-      """Patches the specified policy with the data included in the request.
+      r"""Patches the specified policy with the data included in the request.
 
       Args:
         request: (ComputeSecurityPoliciesPatchRequest) input message
@@ -8201,7 +8807,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def PatchRule(self, request, global_params=None):
-      """Patches a rule at the specified priority.
+      r"""Patches a rule at the specified priority.
 
       Args:
         request: (ComputeSecurityPoliciesPatchRuleRequest) input message
@@ -8227,7 +8833,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def RemoveRule(self, request, global_params=None):
-      """Deletes a rule at the specified priority.
+      r"""Deletes a rule at the specified priority.
 
       Args:
         request: (ComputeSecurityPoliciesRemoveRuleRequest) input message
@@ -8253,7 +8859,7 @@ If the group is part of a backend service that has enabled connection draining, 
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeSecurityPoliciesTestIamPermissionsRequest) input message
@@ -8289,7 +8895,7 @@ If the group is part of a backend service that has enabled connection draining, 
           }
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified Snapshot resource. Keep in mind that deleting a single snapshot might not necessarily delete all the data on that snapshot. If any data on the snapshot that is marked for deletion is needed for subsequent snapshots, the data will be moved to the next corresponding snapshot.
+      r"""Deletes the specified Snapshot resource. Keep in mind that deleting a single snapshot might not necessarily delete all the data on that snapshot. If any data on the snapshot that is marked for deletion is needed for subsequent snapshots, the data will be moved to the next corresponding snapshot.
 
 For more information, see Deleting snaphots.
 
@@ -8317,7 +8923,7 @@ For more information, see Deleting snaphots.
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified Snapshot resource. Get a list of available snapshots by making a list() request.
+      r"""Returns the specified Snapshot resource. Gets a list of available snapshots by making a list() request.
 
       Args:
         request: (ComputeSnapshotsGetRequest) input message
@@ -8343,7 +8949,7 @@ For more information, see Deleting snaphots.
     )
 
     def List(self, request, global_params=None):
-      """Retrieves the list of Snapshot resources contained within the specified project.
+      r"""Retrieves the list of Snapshot resources contained within the specified project.
 
       Args:
         request: (ComputeSnapshotsListRequest) input message
@@ -8369,7 +8975,7 @@ For more information, see Deleting snaphots.
     )
 
     def SetLabels(self, request, global_params=None):
-      """Sets the labels on a snapshot. To learn more about labels, read the Labeling Resources documentation.
+      r"""Sets the labels on a snapshot. To learn more about labels, read the Labeling Resources documentation.
 
       Args:
         request: (ComputeSnapshotsSetLabelsRequest) input message
@@ -8395,7 +9001,7 @@ For more information, see Deleting snaphots.
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeSnapshotsTestIamPermissionsRequest) input message
@@ -8431,7 +9037,7 @@ For more information, see Deleting snaphots.
           }
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified SslCertificate resource.
+      r"""Deletes the specified SslCertificate resource.
 
       Args:
         request: (ComputeSslCertificatesDeleteRequest) input message
@@ -8457,7 +9063,7 @@ For more information, see Deleting snaphots.
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified SslCertificate resource. Get a list of available SSL certificates by making a list() request.
+      r"""Returns the specified SslCertificate resource. Gets a list of available SSL certificates by making a list() request.
 
       Args:
         request: (ComputeSslCertificatesGetRequest) input message
@@ -8483,7 +9089,7 @@ For more information, see Deleting snaphots.
     )
 
     def Insert(self, request, global_params=None):
-      """Creates a SslCertificate resource in the specified project using the data included in the request.
+      r"""Creates a SslCertificate resource in the specified project using the data included in the request.
 
       Args:
         request: (ComputeSslCertificatesInsertRequest) input message
@@ -8509,7 +9115,7 @@ For more information, see Deleting snaphots.
     )
 
     def List(self, request, global_params=None):
-      """Retrieves the list of SslCertificate resources available to the specified project.
+      r"""Retrieves the list of SslCertificate resources available to the specified project.
 
       Args:
         request: (ComputeSslCertificatesListRequest) input message
@@ -8535,7 +9141,7 @@ For more information, see Deleting snaphots.
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeSslCertificatesTestIamPermissionsRequest) input message
@@ -8571,7 +9177,7 @@ For more information, see Deleting snaphots.
           }
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified SSL policy. The SSL policy resource can be deleted only if it is not in use by any TargetHttpsProxy or TargetSslProxy resources.
+      r"""Deletes the specified SSL policy. The SSL policy resource can be deleted only if it is not in use by any TargetHttpsProxy or TargetSslProxy resources.
 
       Args:
         request: (ComputeSslPoliciesDeleteRequest) input message
@@ -8597,7 +9203,7 @@ For more information, see Deleting snaphots.
     )
 
     def Get(self, request, global_params=None):
-      """List all of the ordered rules present in a single specified policy.
+      r"""Lists all of the ordered rules present in a single specified policy.
 
       Args:
         request: (ComputeSslPoliciesGetRequest) input message
@@ -8623,7 +9229,7 @@ For more information, see Deleting snaphots.
     )
 
     def Insert(self, request, global_params=None):
-      """Returns the specified SSL policy resource. Get a list of available SSL policies by making a list() request.
+      r"""Returns the specified SSL policy resource. Gets a list of available SSL policies by making a list() request.
 
       Args:
         request: (ComputeSslPoliciesInsertRequest) input message
@@ -8649,7 +9255,7 @@ For more information, see Deleting snaphots.
     )
 
     def List(self, request, global_params=None):
-      """List all the SSL policies that have been configured for the specified project.
+      r"""Lists all the SSL policies that have been configured for the specified project.
 
       Args:
         request: (ComputeSslPoliciesListRequest) input message
@@ -8675,7 +9281,7 @@ For more information, see Deleting snaphots.
     )
 
     def ListAvailableFeatures(self, request, global_params=None):
-      """Lists all features that can be specified in the SSL policy when using custom profile.
+      r"""Lists all features that can be specified in the SSL policy when using custom profile.
 
       Args:
         request: (ComputeSslPoliciesListAvailableFeaturesRequest) input message
@@ -8701,7 +9307,7 @@ For more information, see Deleting snaphots.
     )
 
     def Patch(self, request, global_params=None):
-      """Patches the specified SSL policy with the data included in the request.
+      r"""Patches the specified SSL policy with the data included in the request.
 
       Args:
         request: (ComputeSslPoliciesPatchRequest) input message
@@ -8727,7 +9333,7 @@ For more information, see Deleting snaphots.
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeSslPoliciesTestIamPermissionsRequest) input message
@@ -8763,7 +9369,7 @@ For more information, see Deleting snaphots.
           }
 
     def AggregatedList(self, request, global_params=None):
-      """Retrieves an aggregated list of subnetworks.
+      r"""Retrieves an aggregated list of subnetworks.
 
       Args:
         request: (ComputeSubnetworksAggregatedListRequest) input message
@@ -8789,7 +9395,7 @@ For more information, see Deleting snaphots.
     )
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified subnetwork.
+      r"""Deletes the specified subnetwork.
 
       Args:
         request: (ComputeSubnetworksDeleteRequest) input message
@@ -8815,7 +9421,7 @@ For more information, see Deleting snaphots.
     )
 
     def ExpandIpCidrRange(self, request, global_params=None):
-      """Expands the IP CIDR range of the subnetwork to a specified value.
+      r"""Expands the IP CIDR range of the subnetwork to a specified value.
 
       Args:
         request: (ComputeSubnetworksExpandIpCidrRangeRequest) input message
@@ -8841,7 +9447,7 @@ For more information, see Deleting snaphots.
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified subnetwork. Get a list of available subnetworks list() request.
+      r"""Returns the specified subnetwork. Gets a list of available subnetworks list() request.
 
       Args:
         request: (ComputeSubnetworksGetRequest) input message
@@ -8867,7 +9473,7 @@ For more information, see Deleting snaphots.
     )
 
     def GetIamPolicy(self, request, global_params=None):
-      """Gets the access control policy for a resource. May be empty if no such policy or resource exists.
+      r"""Gets the access control policy for a resource. May be empty if no such policy or resource exists.
 
       Args:
         request: (ComputeSubnetworksGetIamPolicyRequest) input message
@@ -8893,7 +9499,7 @@ For more information, see Deleting snaphots.
     )
 
     def Insert(self, request, global_params=None):
-      """Creates a subnetwork in the specified project using the data included in the request.
+      r"""Creates a subnetwork in the specified project using the data included in the request.
 
       Args:
         request: (ComputeSubnetworksInsertRequest) input message
@@ -8919,7 +9525,7 @@ For more information, see Deleting snaphots.
     )
 
     def List(self, request, global_params=None):
-      """Retrieves a list of subnetworks available to the specified project.
+      r"""Retrieves a list of subnetworks available to the specified project.
 
       Args:
         request: (ComputeSubnetworksListRequest) input message
@@ -8945,7 +9551,7 @@ For more information, see Deleting snaphots.
     )
 
     def ListUsable(self, request, global_params=None):
-      """Retrieves an aggregated list of usable subnetworks.
+      r"""Retrieves an aggregated list of usable subnetworks.
 
       Args:
         request: (ComputeSubnetworksListUsableRequest) input message
@@ -8971,7 +9577,7 @@ For more information, see Deleting snaphots.
     )
 
     def Patch(self, request, global_params=None):
-      """Patches the specified subnetwork with the data included in the request. Only the following fields within the subnetwork resource can be specified in the request: secondary_ip_range and allow_subnet_cidr_routes_overlap. It is also mandatory to specify the current fingeprint of the subnetwork resource being patched.
+      r"""Patches the specified subnetwork with the data included in the request. Only the following fields within the subnetwork resource can be specified in the request: secondary_ip_range, allow_subnet_cidr_routes_overlap and role. It is also mandatory to specify the current fingeprint of the subnetwork resource being patched.
 
       Args:
         request: (ComputeSubnetworksPatchRequest) input message
@@ -8997,7 +9603,7 @@ For more information, see Deleting snaphots.
     )
 
     def SetIamPolicy(self, request, global_params=None):
-      """Sets the access control policy on the specified resource. Replaces any existing policy.
+      r"""Sets the access control policy on the specified resource. Replaces any existing policy.
 
       Args:
         request: (ComputeSubnetworksSetIamPolicyRequest) input message
@@ -9016,14 +9622,14 @@ For more information, see Deleting snaphots.
         path_params=[u'project', u'region', u'resource'],
         query_params=[],
         relative_path=u'projects/{project}/regions/{region}/subnetworks/{resource}/setIamPolicy',
-        request_field=u'policy',
+        request_field=u'regionSetPolicyRequest',
         request_type_name=u'ComputeSubnetworksSetIamPolicyRequest',
         response_type_name=u'Policy',
         supports_download=False,
     )
 
     def SetPrivateIpGoogleAccess(self, request, global_params=None):
-      """Set whether VMs in this subnet can access Google services without assigning external IP addresses through Private Google Access.
+      r"""Set whether VMs in this subnet can access Google services without assigning external IP addresses through Private Google Access.
 
       Args:
         request: (ComputeSubnetworksSetPrivateIpGoogleAccessRequest) input message
@@ -9049,7 +9655,7 @@ For more information, see Deleting snaphots.
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeSubnetworksTestIamPermissionsRequest) input message
@@ -9085,7 +9691,7 @@ For more information, see Deleting snaphots.
           }
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified TargetHttpProxy resource.
+      r"""Deletes the specified TargetHttpProxy resource.
 
       Args:
         request: (ComputeTargetHttpProxiesDeleteRequest) input message
@@ -9111,7 +9717,7 @@ For more information, see Deleting snaphots.
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified TargetHttpProxy resource. Get a list of available target HTTP proxies by making a list() request.
+      r"""Returns the specified TargetHttpProxy resource. Gets a list of available target HTTP proxies by making a list() request.
 
       Args:
         request: (ComputeTargetHttpProxiesGetRequest) input message
@@ -9137,7 +9743,7 @@ For more information, see Deleting snaphots.
     )
 
     def Insert(self, request, global_params=None):
-      """Creates a TargetHttpProxy resource in the specified project using the data included in the request.
+      r"""Creates a TargetHttpProxy resource in the specified project using the data included in the request.
 
       Args:
         request: (ComputeTargetHttpProxiesInsertRequest) input message
@@ -9163,7 +9769,7 @@ For more information, see Deleting snaphots.
     )
 
     def List(self, request, global_params=None):
-      """Retrieves the list of TargetHttpProxy resources available to the specified project.
+      r"""Retrieves the list of TargetHttpProxy resources available to the specified project.
 
       Args:
         request: (ComputeTargetHttpProxiesListRequest) input message
@@ -9189,7 +9795,7 @@ For more information, see Deleting snaphots.
     )
 
     def SetUrlMap(self, request, global_params=None):
-      """Changes the URL map for TargetHttpProxy.
+      r"""Changes the URL map for TargetHttpProxy.
 
       Args:
         request: (ComputeTargetHttpProxiesSetUrlMapRequest) input message
@@ -9215,7 +9821,7 @@ For more information, see Deleting snaphots.
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeTargetHttpProxiesTestIamPermissionsRequest) input message
@@ -9251,7 +9857,7 @@ For more information, see Deleting snaphots.
           }
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified TargetHttpsProxy resource.
+      r"""Deletes the specified TargetHttpsProxy resource.
 
       Args:
         request: (ComputeTargetHttpsProxiesDeleteRequest) input message
@@ -9277,7 +9883,7 @@ For more information, see Deleting snaphots.
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified TargetHttpsProxy resource. Get a list of available target HTTPS proxies by making a list() request.
+      r"""Returns the specified TargetHttpsProxy resource. Gets a list of available target HTTPS proxies by making a list() request.
 
       Args:
         request: (ComputeTargetHttpsProxiesGetRequest) input message
@@ -9303,7 +9909,7 @@ For more information, see Deleting snaphots.
     )
 
     def Insert(self, request, global_params=None):
-      """Creates a TargetHttpsProxy resource in the specified project using the data included in the request.
+      r"""Creates a TargetHttpsProxy resource in the specified project using the data included in the request.
 
       Args:
         request: (ComputeTargetHttpsProxiesInsertRequest) input message
@@ -9329,7 +9935,7 @@ For more information, see Deleting snaphots.
     )
 
     def List(self, request, global_params=None):
-      """Retrieves the list of TargetHttpsProxy resources available to the specified project.
+      r"""Retrieves the list of TargetHttpsProxy resources available to the specified project.
 
       Args:
         request: (ComputeTargetHttpsProxiesListRequest) input message
@@ -9355,7 +9961,7 @@ For more information, see Deleting snaphots.
     )
 
     def SetQuicOverride(self, request, global_params=None):
-      """Sets the QUIC override policy for TargetHttpsProxy.
+      r"""Sets the QUIC override policy for TargetHttpsProxy.
 
       Args:
         request: (ComputeTargetHttpsProxiesSetQuicOverrideRequest) input message
@@ -9381,7 +9987,7 @@ For more information, see Deleting snaphots.
     )
 
     def SetSslCertificates(self, request, global_params=None):
-      """Replaces SslCertificates for TargetHttpsProxy.
+      r"""Replaces SslCertificates for TargetHttpsProxy.
 
       Args:
         request: (ComputeTargetHttpsProxiesSetSslCertificatesRequest) input message
@@ -9407,7 +10013,7 @@ For more information, see Deleting snaphots.
     )
 
     def SetSslPolicy(self, request, global_params=None):
-      """Sets the SSL policy for TargetHttpsProxy. The SSL policy specifies the server-side support for SSL features. This affects connections between clients and the HTTPS proxy load balancer. They do not affect the connection between the load balancer and the backends.
+      r"""Sets the SSL policy for TargetHttpsProxy. The SSL policy specifies the server-side support for SSL features. This affects connections between clients and the HTTPS proxy load balancer. They do not affect the connection between the load balancer and the backends.
 
       Args:
         request: (ComputeTargetHttpsProxiesSetSslPolicyRequest) input message
@@ -9433,7 +10039,7 @@ For more information, see Deleting snaphots.
     )
 
     def SetUrlMap(self, request, global_params=None):
-      """Changes the URL map for TargetHttpsProxy.
+      r"""Changes the URL map for TargetHttpsProxy.
 
       Args:
         request: (ComputeTargetHttpsProxiesSetUrlMapRequest) input message
@@ -9459,7 +10065,7 @@ For more information, see Deleting snaphots.
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeTargetHttpsProxiesTestIamPermissionsRequest) input message
@@ -9495,7 +10101,7 @@ For more information, see Deleting snaphots.
           }
 
     def AggregatedList(self, request, global_params=None):
-      """Retrieves an aggregated list of target instances.
+      r"""Retrieves an aggregated list of target instances.
 
       Args:
         request: (ComputeTargetInstancesAggregatedListRequest) input message
@@ -9521,7 +10127,7 @@ For more information, see Deleting snaphots.
     )
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified TargetInstance resource.
+      r"""Deletes the specified TargetInstance resource.
 
       Args:
         request: (ComputeTargetInstancesDeleteRequest) input message
@@ -9547,7 +10153,7 @@ For more information, see Deleting snaphots.
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified TargetInstance resource. Get a list of available target instances by making a list() request.
+      r"""Returns the specified TargetInstance resource. Gets a list of available target instances by making a list() request.
 
       Args:
         request: (ComputeTargetInstancesGetRequest) input message
@@ -9573,7 +10179,7 @@ For more information, see Deleting snaphots.
     )
 
     def Insert(self, request, global_params=None):
-      """Creates a TargetInstance resource in the specified project and zone using the data included in the request.
+      r"""Creates a TargetInstance resource in the specified project and zone using the data included in the request.
 
       Args:
         request: (ComputeTargetInstancesInsertRequest) input message
@@ -9599,7 +10205,7 @@ For more information, see Deleting snaphots.
     )
 
     def List(self, request, global_params=None):
-      """Retrieves a list of TargetInstance resources available to the specified project and zone.
+      r"""Retrieves a list of TargetInstance resources available to the specified project and zone.
 
       Args:
         request: (ComputeTargetInstancesListRequest) input message
@@ -9625,7 +10231,7 @@ For more information, see Deleting snaphots.
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeTargetInstancesTestIamPermissionsRequest) input message
@@ -9661,7 +10267,7 @@ For more information, see Deleting snaphots.
           }
 
     def AddHealthCheck(self, request, global_params=None):
-      """Adds health check URLs to a target pool.
+      r"""Adds health check URLs to a target pool.
 
       Args:
         request: (ComputeTargetPoolsAddHealthCheckRequest) input message
@@ -9687,7 +10293,7 @@ For more information, see Deleting snaphots.
     )
 
     def AddInstance(self, request, global_params=None):
-      """Adds an instance to a target pool.
+      r"""Adds an instance to a target pool.
 
       Args:
         request: (ComputeTargetPoolsAddInstanceRequest) input message
@@ -9713,7 +10319,7 @@ For more information, see Deleting snaphots.
     )
 
     def AggregatedList(self, request, global_params=None):
-      """Retrieves an aggregated list of target pools.
+      r"""Retrieves an aggregated list of target pools.
 
       Args:
         request: (ComputeTargetPoolsAggregatedListRequest) input message
@@ -9739,7 +10345,7 @@ For more information, see Deleting snaphots.
     )
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified target pool.
+      r"""Deletes the specified target pool.
 
       Args:
         request: (ComputeTargetPoolsDeleteRequest) input message
@@ -9765,7 +10371,7 @@ For more information, see Deleting snaphots.
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified target pool. Get a list of available target pools by making a list() request.
+      r"""Returns the specified target pool. Gets a list of available target pools by making a list() request.
 
       Args:
         request: (ComputeTargetPoolsGetRequest) input message
@@ -9791,7 +10397,7 @@ For more information, see Deleting snaphots.
     )
 
     def GetHealth(self, request, global_params=None):
-      """Gets the most recent health check results for each IP for the instance that is referenced by the given target pool.
+      r"""Gets the most recent health check results for each IP for the instance that is referenced by the given target pool.
 
       Args:
         request: (ComputeTargetPoolsGetHealthRequest) input message
@@ -9817,7 +10423,7 @@ For more information, see Deleting snaphots.
     )
 
     def Insert(self, request, global_params=None):
-      """Creates a target pool in the specified project and region using the data included in the request.
+      r"""Creates a target pool in the specified project and region using the data included in the request.
 
       Args:
         request: (ComputeTargetPoolsInsertRequest) input message
@@ -9843,7 +10449,7 @@ For more information, see Deleting snaphots.
     )
 
     def List(self, request, global_params=None):
-      """Retrieves a list of target pools available to the specified project and region.
+      r"""Retrieves a list of target pools available to the specified project and region.
 
       Args:
         request: (ComputeTargetPoolsListRequest) input message
@@ -9869,7 +10475,7 @@ For more information, see Deleting snaphots.
     )
 
     def RemoveHealthCheck(self, request, global_params=None):
-      """Removes health check URL from a target pool.
+      r"""Removes health check URL from a target pool.
 
       Args:
         request: (ComputeTargetPoolsRemoveHealthCheckRequest) input message
@@ -9895,7 +10501,7 @@ For more information, see Deleting snaphots.
     )
 
     def RemoveInstance(self, request, global_params=None):
-      """Removes instance URL from a target pool.
+      r"""Removes instance URL from a target pool.
 
       Args:
         request: (ComputeTargetPoolsRemoveInstanceRequest) input message
@@ -9921,7 +10527,7 @@ For more information, see Deleting snaphots.
     )
 
     def SetBackup(self, request, global_params=None):
-      """Changes a backup target pool's configurations.
+      r"""Changes a backup target pool's configurations.
 
       Args:
         request: (ComputeTargetPoolsSetBackupRequest) input message
@@ -9947,7 +10553,7 @@ For more information, see Deleting snaphots.
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeTargetPoolsTestIamPermissionsRequest) input message
@@ -9983,7 +10589,7 @@ For more information, see Deleting snaphots.
           }
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified TargetSslProxy resource.
+      r"""Deletes the specified TargetSslProxy resource.
 
       Args:
         request: (ComputeTargetSslProxiesDeleteRequest) input message
@@ -10009,7 +10615,7 @@ For more information, see Deleting snaphots.
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified TargetSslProxy resource. Get a list of available target SSL proxies by making a list() request.
+      r"""Returns the specified TargetSslProxy resource. Gets a list of available target SSL proxies by making a list() request.
 
       Args:
         request: (ComputeTargetSslProxiesGetRequest) input message
@@ -10035,7 +10641,7 @@ For more information, see Deleting snaphots.
     )
 
     def Insert(self, request, global_params=None):
-      """Creates a TargetSslProxy resource in the specified project using the data included in the request.
+      r"""Creates a TargetSslProxy resource in the specified project using the data included in the request.
 
       Args:
         request: (ComputeTargetSslProxiesInsertRequest) input message
@@ -10061,7 +10667,7 @@ For more information, see Deleting snaphots.
     )
 
     def List(self, request, global_params=None):
-      """Retrieves the list of TargetSslProxy resources available to the specified project.
+      r"""Retrieves the list of TargetSslProxy resources available to the specified project.
 
       Args:
         request: (ComputeTargetSslProxiesListRequest) input message
@@ -10087,7 +10693,7 @@ For more information, see Deleting snaphots.
     )
 
     def SetBackendService(self, request, global_params=None):
-      """Changes the BackendService for TargetSslProxy.
+      r"""Changes the BackendService for TargetSslProxy.
 
       Args:
         request: (ComputeTargetSslProxiesSetBackendServiceRequest) input message
@@ -10113,7 +10719,7 @@ For more information, see Deleting snaphots.
     )
 
     def SetProxyHeader(self, request, global_params=None):
-      """Changes the ProxyHeaderType for TargetSslProxy.
+      r"""Changes the ProxyHeaderType for TargetSslProxy.
 
       Args:
         request: (ComputeTargetSslProxiesSetProxyHeaderRequest) input message
@@ -10139,7 +10745,7 @@ For more information, see Deleting snaphots.
     )
 
     def SetSslCertificates(self, request, global_params=None):
-      """Changes SslCertificates for TargetSslProxy.
+      r"""Changes SslCertificates for TargetSslProxy.
 
       Args:
         request: (ComputeTargetSslProxiesSetSslCertificatesRequest) input message
@@ -10165,7 +10771,7 @@ For more information, see Deleting snaphots.
     )
 
     def SetSslPolicy(self, request, global_params=None):
-      """Sets the SSL policy for TargetSslProxy. The SSL policy specifies the server-side support for SSL features. This affects connections between clients and the SSL proxy load balancer. They do not affect the connection between the load balancer and the backends.
+      r"""Sets the SSL policy for TargetSslProxy. The SSL policy specifies the server-side support for SSL features. This affects connections between clients and the SSL proxy load balancer. They do not affect the connection between the load balancer and the backends.
 
       Args:
         request: (ComputeTargetSslProxiesSetSslPolicyRequest) input message
@@ -10191,7 +10797,7 @@ For more information, see Deleting snaphots.
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeTargetSslProxiesTestIamPermissionsRequest) input message
@@ -10227,7 +10833,7 @@ For more information, see Deleting snaphots.
           }
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified TargetTcpProxy resource.
+      r"""Deletes the specified TargetTcpProxy resource.
 
       Args:
         request: (ComputeTargetTcpProxiesDeleteRequest) input message
@@ -10253,7 +10859,7 @@ For more information, see Deleting snaphots.
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified TargetTcpProxy resource. Get a list of available target TCP proxies by making a list() request.
+      r"""Returns the specified TargetTcpProxy resource. Gets a list of available target TCP proxies by making a list() request.
 
       Args:
         request: (ComputeTargetTcpProxiesGetRequest) input message
@@ -10279,7 +10885,7 @@ For more information, see Deleting snaphots.
     )
 
     def Insert(self, request, global_params=None):
-      """Creates a TargetTcpProxy resource in the specified project using the data included in the request.
+      r"""Creates a TargetTcpProxy resource in the specified project using the data included in the request.
 
       Args:
         request: (ComputeTargetTcpProxiesInsertRequest) input message
@@ -10305,7 +10911,7 @@ For more information, see Deleting snaphots.
     )
 
     def List(self, request, global_params=None):
-      """Retrieves the list of TargetTcpProxy resources available to the specified project.
+      r"""Retrieves the list of TargetTcpProxy resources available to the specified project.
 
       Args:
         request: (ComputeTargetTcpProxiesListRequest) input message
@@ -10331,7 +10937,7 @@ For more information, see Deleting snaphots.
     )
 
     def SetBackendService(self, request, global_params=None):
-      """Changes the BackendService for TargetTcpProxy.
+      r"""Changes the BackendService for TargetTcpProxy.
 
       Args:
         request: (ComputeTargetTcpProxiesSetBackendServiceRequest) input message
@@ -10357,7 +10963,7 @@ For more information, see Deleting snaphots.
     )
 
     def SetProxyHeader(self, request, global_params=None):
-      """Changes the ProxyHeaderType for TargetTcpProxy.
+      r"""Changes the ProxyHeaderType for TargetTcpProxy.
 
       Args:
         request: (ComputeTargetTcpProxiesSetProxyHeaderRequest) input message
@@ -10393,7 +10999,7 @@ For more information, see Deleting snaphots.
           }
 
     def AggregatedList(self, request, global_params=None):
-      """Retrieves an aggregated list of target VPN gateways.
+      r"""Retrieves an aggregated list of target VPN gateways.
 
       Args:
         request: (ComputeTargetVpnGatewaysAggregatedListRequest) input message
@@ -10419,7 +11025,7 @@ For more information, see Deleting snaphots.
     )
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified target VPN gateway.
+      r"""Deletes the specified target VPN gateway.
 
       Args:
         request: (ComputeTargetVpnGatewaysDeleteRequest) input message
@@ -10445,7 +11051,7 @@ For more information, see Deleting snaphots.
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified target VPN gateway. Get a list of available target VPN gateways by making a list() request.
+      r"""Returns the specified target VPN gateway. Gets a list of available target VPN gateways by making a list() request.
 
       Args:
         request: (ComputeTargetVpnGatewaysGetRequest) input message
@@ -10471,7 +11077,7 @@ For more information, see Deleting snaphots.
     )
 
     def Insert(self, request, global_params=None):
-      """Creates a target VPN gateway in the specified project and region using the data included in the request.
+      r"""Creates a target VPN gateway in the specified project and region using the data included in the request.
 
       Args:
         request: (ComputeTargetVpnGatewaysInsertRequest) input message
@@ -10497,7 +11103,7 @@ For more information, see Deleting snaphots.
     )
 
     def List(self, request, global_params=None):
-      """Retrieves a list of target VPN gateways available to the specified project and region.
+      r"""Retrieves a list of target VPN gateways available to the specified project and region.
 
       Args:
         request: (ComputeTargetVpnGatewaysListRequest) input message
@@ -10523,7 +11129,7 @@ For more information, see Deleting snaphots.
     )
 
     def SetLabels(self, request, global_params=None):
-      """Sets the labels on a TargetVpnGateway. To learn more about labels, read the Labeling Resources documentation.
+      r"""Sets the labels on a TargetVpnGateway. To learn more about labels, read the Labeling Resources documentation.
 
       Args:
         request: (ComputeTargetVpnGatewaysSetLabelsRequest) input message
@@ -10549,7 +11155,7 @@ For more information, see Deleting snaphots.
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeTargetVpnGatewaysTestIamPermissionsRequest) input message
@@ -10585,7 +11191,7 @@ For more information, see Deleting snaphots.
           }
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified UrlMap resource.
+      r"""Deletes the specified UrlMap resource.
 
       Args:
         request: (ComputeUrlMapsDeleteRequest) input message
@@ -10611,7 +11217,7 @@ For more information, see Deleting snaphots.
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified UrlMap resource. Get a list of available URL maps by making a list() request.
+      r"""Returns the specified UrlMap resource. Gets a list of available URL maps by making a list() request.
 
       Args:
         request: (ComputeUrlMapsGetRequest) input message
@@ -10637,7 +11243,7 @@ For more information, see Deleting snaphots.
     )
 
     def Insert(self, request, global_params=None):
-      """Creates a UrlMap resource in the specified project using the data included in the request.
+      r"""Creates a UrlMap resource in the specified project using the data included in the request.
 
       Args:
         request: (ComputeUrlMapsInsertRequest) input message
@@ -10663,7 +11269,7 @@ For more information, see Deleting snaphots.
     )
 
     def InvalidateCache(self, request, global_params=None):
-      """Initiates a cache invalidation operation, invalidating the specified path, scoped to the specified UrlMap.
+      r"""Initiates a cache invalidation operation, invalidating the specified path, scoped to the specified UrlMap.
 
       Args:
         request: (ComputeUrlMapsInvalidateCacheRequest) input message
@@ -10689,7 +11295,7 @@ For more information, see Deleting snaphots.
     )
 
     def List(self, request, global_params=None):
-      """Retrieves the list of UrlMap resources available to the specified project.
+      r"""Retrieves the list of UrlMap resources available to the specified project.
 
       Args:
         request: (ComputeUrlMapsListRequest) input message
@@ -10715,7 +11321,7 @@ For more information, see Deleting snaphots.
     )
 
     def Patch(self, request, global_params=None):
-      """Patches the specified UrlMap resource with the data included in the request. This method supports PATCH semantics and uses the JSON merge patch format and processing rules.
+      r"""Patches the specified UrlMap resource with the data included in the request. This method supports PATCH semantics and uses the JSON merge patch format and processing rules.
 
       Args:
         request: (ComputeUrlMapsPatchRequest) input message
@@ -10741,7 +11347,7 @@ For more information, see Deleting snaphots.
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeUrlMapsTestIamPermissionsRequest) input message
@@ -10767,7 +11373,7 @@ For more information, see Deleting snaphots.
     )
 
     def Update(self, request, global_params=None):
-      """Updates the specified UrlMap resource with the data included in the request.
+      r"""Updates the specified UrlMap resource with the data included in the request.
 
       Args:
         request: (ComputeUrlMapsUpdateRequest) input message
@@ -10793,7 +11399,7 @@ For more information, see Deleting snaphots.
     )
 
     def Validate(self, request, global_params=None):
-      """Runs static validation for the UrlMap. In particular, the tests of the provided UrlMap will be run. Calling this method does NOT create the UrlMap.
+      r"""Runs static validation for the UrlMap. In particular, the tests of the provided UrlMap will be run. Calling this method does NOT create the UrlMap.
 
       Args:
         request: (ComputeUrlMapsValidateRequest) input message
@@ -10829,7 +11435,7 @@ For more information, see Deleting snaphots.
           }
 
     def AggregatedList(self, request, global_params=None):
-      """Retrieves an aggregated list of VPN tunnels.
+      r"""Retrieves an aggregated list of VPN tunnels.
 
       Args:
         request: (ComputeVpnTunnelsAggregatedListRequest) input message
@@ -10855,7 +11461,7 @@ For more information, see Deleting snaphots.
     )
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified VpnTunnel resource.
+      r"""Deletes the specified VpnTunnel resource.
 
       Args:
         request: (ComputeVpnTunnelsDeleteRequest) input message
@@ -10881,7 +11487,7 @@ For more information, see Deleting snaphots.
     )
 
     def Get(self, request, global_params=None):
-      """Returns the specified VpnTunnel resource. Get a list of available VPN tunnels by making a list() request.
+      r"""Returns the specified VpnTunnel resource. Gets a list of available VPN tunnels by making a list() request.
 
       Args:
         request: (ComputeVpnTunnelsGetRequest) input message
@@ -10907,7 +11513,7 @@ For more information, see Deleting snaphots.
     )
 
     def Insert(self, request, global_params=None):
-      """Creates a VpnTunnel resource in the specified project and region using the data included in the request.
+      r"""Creates a VpnTunnel resource in the specified project and region using the data included in the request.
 
       Args:
         request: (ComputeVpnTunnelsInsertRequest) input message
@@ -10933,7 +11539,7 @@ For more information, see Deleting snaphots.
     )
 
     def List(self, request, global_params=None):
-      """Retrieves a list of VpnTunnel resources contained in the specified project and region.
+      r"""Retrieves a list of VpnTunnel resources contained in the specified project and region.
 
       Args:
         request: (ComputeVpnTunnelsListRequest) input message
@@ -10959,7 +11565,7 @@ For more information, see Deleting snaphots.
     )
 
     def SetLabels(self, request, global_params=None):
-      """Sets the labels on a VpnTunnel. To learn more about labels, read the Labeling Resources documentation.
+      r"""Sets the labels on a VpnTunnel. To learn more about labels, read the Labeling Resources documentation.
 
       Args:
         request: (ComputeVpnTunnelsSetLabelsRequest) input message
@@ -10985,7 +11591,7 @@ For more information, see Deleting snaphots.
     )
 
     def TestIamPermissions(self, request, global_params=None):
-      """Returns permissions that a caller has on the specified resource.
+      r"""Returns permissions that a caller has on the specified resource.
 
       Args:
         request: (ComputeVpnTunnelsTestIamPermissionsRequest) input message
@@ -11021,7 +11627,7 @@ For more information, see Deleting snaphots.
           }
 
     def Delete(self, request, global_params=None):
-      """Deletes the specified zone-specific Operations resource.
+      r"""Deletes the specified zone-specific Operations resource.
 
       Args:
         request: (ComputeZoneOperationsDeleteRequest) input message
@@ -11047,7 +11653,7 @@ For more information, see Deleting snaphots.
     )
 
     def Get(self, request, global_params=None):
-      """Retrieves the specified zone-specific Operations resource.
+      r"""Retrieves the specified zone-specific Operations resource.
 
       Args:
         request: (ComputeZoneOperationsGetRequest) input message
@@ -11073,7 +11679,7 @@ For more information, see Deleting snaphots.
     )
 
     def List(self, request, global_params=None):
-      """Retrieves a list of Operation resources contained within the specified zone.
+      r"""Retrieves a list of Operation resources contained within the specified zone.
 
       Args:
         request: (ComputeZoneOperationsListRequest) input message
@@ -11109,7 +11715,7 @@ For more information, see Deleting snaphots.
           }
 
     def Get(self, request, global_params=None):
-      """Returns the specified Zone resource. Get a list of available zones by making a list() request.
+      r"""Returns the specified Zone resource. Gets a list of available zones by making a list() request.
 
       Args:
         request: (ComputeZonesGetRequest) input message
@@ -11135,7 +11741,7 @@ For more information, see Deleting snaphots.
     )
 
     def List(self, request, global_params=None):
-      """Retrieves the list of Zone resources available to the specified project.
+      r"""Retrieves the list of Zone resources available to the specified project.
 
       Args:
         request: (ComputeZonesListRequest) input message

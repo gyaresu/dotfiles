@@ -13,6 +13,8 @@
 # limitations under the License.
 """Command to remove a policy binding from a keyring."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.cloudkms import iam
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.iam import iam_util
@@ -40,6 +42,7 @@ class RemoveIamPolicyBinding(base.Command):
 
   @staticmethod
   def Args(parser):
+    flags.AddLocationFlag(parser, 'keyring')
     flags.AddKeyRingArgument(parser,
                              'from which to remove an IAM policy binding')
     iam_util.AddArgsForRemoveIamPolicyBinding(

@@ -14,6 +14,7 @@
 """The base surface for Binary Authorization signatures."""
 
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import properties
 
 
 @base.Hidden
@@ -39,17 +40,7 @@ class Binauthz(base.Group):
     ARTIFACT_URL="gcr.io/example-project/example-image@sha256:${DIGEST}"
     ```
 
-    Export your keypair's public key:
-
-        ```sh
-        gpg \
-            --armor \
-            --export "${ATTESTING_USER}" \
-            --output build_key1.pgp
-        ```
-
-    Or if you're creating v2 kind=ATTESTATION_AUTHORITY attestations,
-    export your key's fingerprint (note this may differ based on version and
+    Export your key's fingerprint (note this may differ based on version and
     implementations of gpg):
 
         ```sh
@@ -85,15 +76,6 @@ class Binauthz(base.Group):
         ```
 
     Upload the attestation to Container Analysis:
-
-        ```sh
-        {command} attestations create \
-          --public-key-file=build_key1.pgp \
-          --signature-file=example_signature.pgp \
-          --artifact-url="${ARTIFACT_URL}"
-        ```
-
-    Or if you're creating v2 kind=ATTESTATION_AUTHORITY attestations:
 
         ```sh
         {command} attestations create \
@@ -151,3 +133,9 @@ class Binauthz(base.Group):
           ...
         ```
   """
+
+  def Filter(self, context, args):
+    # Explicitly override container group's LEGACY billing configuration.
+    properties.VALUES.billing.quota_project.Set(
+        properties.VALUES.billing.CURRENT_PROJECT)
+    return context

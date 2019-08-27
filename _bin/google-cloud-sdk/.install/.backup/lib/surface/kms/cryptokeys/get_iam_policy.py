@@ -13,6 +13,8 @@
 # limitations under the License.
 """Fetch the IAM policy for a CryptoKey."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.cloudkms import iam
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kms import flags
@@ -36,7 +38,7 @@ class GetIamPolicy(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddCryptoKeyArgument(parser, 'whose IAM policy to fetch')
+    flags.AddKeyResourceArgument(parser, 'whose IAM policy to fetch')
     base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):

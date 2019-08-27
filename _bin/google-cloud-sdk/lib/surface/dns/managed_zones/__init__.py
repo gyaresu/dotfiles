@@ -14,13 +14,16 @@
 
 """gcloud dns managed-zones command group."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
 class ManagedZones(base.Group):
   """Manage your Cloud DNS managed-zones.
 
-  Manage your Cloud DNS managed-zones.
+  Manage your Cloud DNS managed-zones. See
+  [Managing Zones](https://cloud.google.com/dns/zones/) for details.
 
   ## EXAMPLES
 

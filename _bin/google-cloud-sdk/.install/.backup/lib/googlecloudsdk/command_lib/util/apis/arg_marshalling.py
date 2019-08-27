@@ -14,6 +14,8 @@
 
 """Classes that generate and parse arguments for apitools messages."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from apitools.base.protorpclite import messages
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.util.apis import arg_utils
@@ -65,7 +67,7 @@ class DeclarativeArgumentGenerator(object):
     return args
 
   def CreateRequest(self, namespace, static_fields=None,
-                    resource_method_params=None):
+                    resource_method_params=None, use_relative_name=True):
     """Generates the request object for the method call from the parsed args.
 
     Args:
@@ -77,6 +79,7 @@ class DeclarativeArgumentGenerator(object):
       resource_method_params: {str: str}, A mapping of API method parameter name
         to resource ref attribute name when the API method uses non-standard
         names.
+      use_relative_name: Use ref.RelativeName() if True otherwise ref.Name().
 
     Returns:
       The apitools message to be send to the method.
@@ -98,7 +101,8 @@ class DeclarativeArgumentGenerator(object):
     arg_utils.ParseResourceIntoMessage(
         ref, self.method, message,
         resource_method_params=resource_method_params,
-        request_id_field=self.resource_arg.request_id_field)
+        request_id_field=self.resource_arg.request_id_field,
+        use_relative_name=use_relative_name)
     return message
 
   def GetRequestResourceRef(self, namespace):
@@ -158,20 +162,23 @@ class DeclarativeArgumentGenerator(object):
     # the parent resource collection is being used).
     anchor_arg_is_flag = (
         not self.resource_arg.is_positional or self.method.IsList())
+    if self.resource_arg.name_override:
+      flag_name = self.resource_arg.name_override
+    else:
+      flag_name = self.resource_spec.anchor.name
+
     anchor_arg_name = (
-        '--' + self.resource_spec.anchor.name if anchor_arg_is_flag
-        else self.resource_spec.anchor.name)
+        '--' + flag_name if anchor_arg_is_flag
+        else flag_name)
     no_gen = {n: '' for n in resource_arg_schema.IGNORED_FIELDS}
     no_gen.update({n: '' for n in self.resource_arg.removed_flags})
-
-    concept = concept_parsers.ConceptParser([
-        concept_parsers.ResourcePresentationSpec(
-            anchor_arg_name,
-            self.resource_spec,
-            self.resource_arg.group_help,
-            prefixes=False,
-            required=True,
-            flag_name_overrides=no_gen)])
+    concept = concept_parsers.ConceptParser.ForResource(
+        anchor_arg_name,
+        self.resource_spec,
+        self.resource_arg.group_help,
+        prefixes=False,
+        required=True,
+        flag_name_overrides=no_gen)
     return [concept]
 
   def _ParseArguments(self, message, namespace):
@@ -246,6 +253,7 @@ class AutoArgumentGenerator(object):
     args = []
 
     def _UpdateArgs(arguments):
+      """Update args."""
       for arg in arguments:
         try:
           name = arg.name

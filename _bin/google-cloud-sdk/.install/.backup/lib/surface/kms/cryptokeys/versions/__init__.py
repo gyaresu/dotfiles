@@ -13,8 +13,9 @@
 # limitations under the License.
 """The command group for CryptoKeyVersions."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
-from googlecloudsdk.command_lib.kms import flags
 
 
 class Versions(base.Group):
@@ -23,7 +24,3 @@ class Versions(base.Group):
   A CryptoKeyVersion represents an individual cryptographic key and the
   associated key material.
   """
-
-  @staticmethod
-  def Args(parser):
-    flags.AddCryptoKeyFlag(parser)

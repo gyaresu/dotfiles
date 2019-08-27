@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Utilities for dealing with ML versions API."""
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from apitools.base.py import encoding
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.util import apis
@@ -41,7 +43,7 @@ class VersionsClient(object):
 
   _ALLOWED_YAML_FIELDS = set(['autoScaling', 'description', 'deploymentUri',
                               'runtimeVersion', 'manualScaling', 'labels',
-                              'machineType', 'framework'])
+                              'machineType', 'framework', 'pythonVersion'])
 
   def __init__(self, client=None, messages=None):
     self.client = client or GetClientInstance()
@@ -122,7 +124,8 @@ class VersionsClient(object):
                    labels=None,
                    machine_type=None,
                    description=None,
-                   framework=None):
+                   framework=None,
+                   python_version=None):
     """Create a Version object.
 
     The object is based on an optional YAML configuration file and the
@@ -143,6 +146,7 @@ class VersionsClient(object):
       description: str, the version description.
       framework: FrameworkValueValuesEnum, the ML framework used to train this
         version of the model.
+      python_version: str, The version of Python used to train the model.
 
     Returns:
       A Version object (for the corresponding API version).
@@ -182,7 +186,8 @@ class VersionsClient(object):
         'labels': labels,
         'machineType': machine_type,
         'description': description,
-        'framework': framework
+        'framework': framework,
+        'pythonVersion': python_version
     }
     for field_name, value in additional_fields.items():
       if value is not None:

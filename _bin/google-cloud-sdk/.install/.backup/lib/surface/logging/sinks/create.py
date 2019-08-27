@@ -14,6 +14,8 @@
 
 """'logging sinks create' command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import log
@@ -32,7 +34,7 @@ class Create(base.CreateCommand):
   The destination must already exist and Stackdriver Logging must have
   permission to write to it.
   Log entries are exported as soon as the sink is created.
-  See https://cloud.google.com/logging/docs/export/configure_export_v2#destination_authorization
+  See https://cloud.google.com/logging/docs/export/configure_export_v2#dest-auth.
 
   ## EXAMPLES
 

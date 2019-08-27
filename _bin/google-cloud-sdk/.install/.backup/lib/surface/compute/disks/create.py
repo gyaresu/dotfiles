@@ -31,6 +31,8 @@ from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.disks import create
 from googlecloudsdk.command_lib.compute.disks import flags as disks_flags
+from googlecloudsdk.command_lib.compute.resource_policies import flags as resource_flags
+from googlecloudsdk.command_lib.compute.resource_policies import util as resource_util
 from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
@@ -139,11 +141,22 @@ def _CommonArgs(parser, source_snapshot_arg):
   labels_util.AddCreateLabelsFlags(parser)
 
 
-def _ParseGuestOsFeaturesToMessages(args, client_messages, release_track):
+def _AddReplicaZonesArg(parser):
+  parser.add_argument(
+      '--replica-zones',
+      type=arg_parsers.ArgList(min_length=2, max_length=2),
+      metavar='ZONE',
+      help=('A comma-separated list of exactly 2 zones that a regional disk '
+            'will be replicated to. Required when creating regional disk. '
+            'The zones must be in the same region as specified in the '
+            '`--region` flag. See available zones with '
+            '`gcloud compute zones list`.'))
+
+
+def _ParseGuestOsFeaturesToMessages(args, client_messages):
   """Parse GuestOS features."""
   guest_os_feature_messages = []
-  if (release_track in [base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA] and
-      args.guest_os_features):
+  if args.guest_os_features:
     for feature in args.guest_os_features:
       gf_type = client_messages.GuestOsFeature.TypeValueValuesEnum(feature)
       guest_os_feature = client_messages.GuestOsFeature()
@@ -161,6 +174,7 @@ class Create(base.Command):
   def Args(parser):
     Create.disks_arg = disks_flags.MakeDiskArg(plural=True)
     _CommonArgs(parser, disks_flags.SOURCE_SNAPSHOT_ARG)
+    image_utils.AddGuestOsFeaturesArg(parser, base.ReleaseTrack.GA)
 
   def ParseLicenses(self, args):
     """Parse license.
@@ -319,10 +333,12 @@ class Create(base.Command):
           csek_utils.MaybeLookupKeyMessagesByUri(
               csek_keys, compute_holder.resources,
               [source_image_uri, snapshot_uri], client.apitools_client))
+
+    resource_policies = getattr(args, 'resource_policies', None)
     # end of alpha/beta features.
 
     guest_os_feature_messages = _ParseGuestOsFeaturesToMessages(
-        args, client.messages, self.ReleaseTrack())
+        args, client.messages)
 
     requests = []
     for disk_ref in disk_refs:
@@ -348,6 +364,21 @@ class Create(base.Command):
       kwargs['diskEncryptionKey'] = kms_utils.MaybeGetKmsKey(
           args, disk_ref.project, client.apitools_client,
           kwargs.get('diskEncryptionKey', None))
+
+      if resource_policies:
+        if disk_ref.Collection() == 'compute.regionDisks':
+          raise exceptions.InvalidArgumentException(
+              '--resource-policies',
+              'Resource policies are not supported for regional disks.')
+        parsed_resource_policies = []
+        for policy in resource_policies:
+          resource_policy_ref = resource_util.ParseResourcePolicyWithZone(
+              compute_holder.resources,
+              policy,
+              project=disk_ref.project,
+              zone=disk_ref.zone)
+          parsed_resource_policies.append(resource_policy_ref.SelfLink())
+        kwargs['resourcePolicies'] = parsed_resource_policies
 
       # end of alpha/beta features.
 
@@ -404,10 +435,16 @@ class CreateBeta(Create):
 
   @staticmethod
   def Args(parser):
-    Create.disks_arg = disks_flags.MakeDiskArg(plural=True)
+    Create.disks_arg = disks_flags.MakeDiskArgZonalOrRegional(plural=True)
+
     _CommonArgs(parser, disks_flags.SOURCE_SNAPSHOT_ARG)
 
     image_utils.AddGuestOsFeaturesArg(parser, base.ReleaseTrack.BETA)
+
+    _AddReplicaZonesArg(parser)
+
+  def ValidateAndParseDiskRefs(self, args, compute_holder):
+    return _ValidateAndParseDiskRefsRegionalReplica(args, compute_holder)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -417,45 +454,53 @@ class CreateAlpha(Create):
   @staticmethod
   def Args(parser):
     Create.disks_arg = disks_flags.MakeDiskArgZonalOrRegional(plural=True)
-    parser.add_argument(
-        '--replica-zones',
-        type=arg_parsers.ArgList(),
-        metavar='ZONE1, ZONE2',
-        help=('The zones regional disk will be replicated to. Required when '
-              'creating regional disk.'),
-        hidden=True)
 
     image_utils.AddGuestOsFeaturesArg(parser, base.ReleaseTrack.ALPHA)
     kms_utils.AddKmsKeyArgs(parser, resource_type='disk')
+    _AddReplicaZonesArg(parser)
     _CommonArgs(parser, disks_flags.SOURCE_SNAPSHOT_ARG)
+    resource_flags.AddResourcePoliciesArgs(parser, 'added to')
 
   def ValidateAndParseDiskRefs(self, args, compute_holder):
-    if args.replica_zones is None and args.region is not None:
+    return _ValidateAndParseDiskRefsRegionalReplica(args, compute_holder)
+
+
+def _ValidateAndParseDiskRefsRegionalReplica(args, compute_holder):
+  """Validate flags and parse disks references.
+
+  Subclasses may override it to customize parsing.
+
+  Args:
+    args: The argument namespace
+    compute_holder: base_classes.ComputeApiHolder instance
+
+  Returns:
+    List of compute.regionDisks resources.
+  """
+  if not args.IsSpecified('replica_zones') and args.IsSpecified('region'):
+    raise exceptions.RequiredArgumentException(
+        '--replica-zones',
+        '--replica-zones is required for regional disk creation')
+  if args.replica_zones is not None:
+    return create.ParseRegionDisksResources(
+        compute_holder.resources, args.DISK_NAME, args.replica_zones,
+        args.project, args.region)
+
+  disk_refs = Create.disks_arg.ResolveAsResource(
+      args,
+      compute_holder.resources,
+      scope_lister=flags.GetDefaultScopeLister(compute_holder.client))
+
+  # --replica-zones is required for regional disks always - also when region
+  # is selected in prompt.
+  for disk_ref in disk_refs:
+    if disk_ref.Collection() == 'compute.regionDisks':
       raise exceptions.RequiredArgumentException(
           '--replica-zones',
-          '--replica-zones is required for regional disk creation')
-    if args.replica_zones is not None:
-      if len(args.replica_zones) != 2:
-        raise exceptions.InvalidArgumentException(
-            '--replica-zones', 'Exactly two zones are required.')
-      return create.ParseRegionDisksResources(
-          compute_holder.resources, args.DISK_NAME, args.replica_zones,
-          args.project, args.region)
-    disk_refs = Create.disks_arg.ResolveAsResource(
-        args,
-        compute_holder.resources,
-        scope_lister=flags.GetDefaultScopeLister(compute_holder.client))
+          '--replica-zones is required for regional disk creation [{}]'.
+          format(disk_ref.SelfLink()))
 
-    # --replica-zones is required for regional disks always - also when region
-    # is selected in prompt.
-    for disk_ref in disk_refs:
-      if disk_ref.Collection() == 'compute.regionDisks':
-        raise exceptions.RequiredArgumentException(
-            '--replica-zones',
-            '--replica-zones is required for regional disk creation [{}]'.
-            format(disk_ref.SelfLink()))
-
-    return disk_refs
+  return disk_refs
 
 
 Create.detailed_help = DETAILED_HELP

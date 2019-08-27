@@ -13,6 +13,8 @@
 # limitations under the License.
 """The 'gcloud firebase test network-profiles list' command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.firebase.test import util
 from googlecloudsdk.calliope import base
 
@@ -46,6 +48,7 @@ class List(base.ListCommand):
               )"
           )
     """)
+    base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
     """Run the 'gcloud firebase test network-profiles list' command.

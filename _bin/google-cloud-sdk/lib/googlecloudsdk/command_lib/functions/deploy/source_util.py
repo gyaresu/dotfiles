@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """'functions deploy' utilities for function source code."""
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import os
 import random
 import re
@@ -26,9 +28,11 @@ from googlecloudsdk.api_lib.functions import util as api_util
 from googlecloudsdk.api_lib.storage import storage_util
 from googlecloudsdk.command_lib.util import gcloudignore
 from googlecloudsdk.core import http as http_utils
+from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core.util import archive
 from googlecloudsdk.core.util import files as file_utils
+from six.moves import range
 
 
 def _GcloudIgnoreCreationPredicate(directory):
@@ -185,6 +189,14 @@ def SetFunctionSourceProps(function, function_ref, source_arg, stage_bucket):
     source_arg = '.'
   source_arg = source_arg or '.'
   if source_arg.startswith('gs://'):
+    if not source_arg.endswith('.zip'):
+      # Users may have .zip archives with unusual names, and we don't want to
+      # prevent those from being deployed; the deployment should go through so
+      # just warn here.
+      log.warning(
+          '[{}] does not end with extension `.zip`. '
+          'The `--source` argument must designate the zipped source archive '
+          'when providing a Google Cloud Storage URI.'.format(source_arg))
     function.sourceArchiveUrl = source_arg
     return ['sourceArchiveUrl']
   elif source_arg.startswith('https://'):

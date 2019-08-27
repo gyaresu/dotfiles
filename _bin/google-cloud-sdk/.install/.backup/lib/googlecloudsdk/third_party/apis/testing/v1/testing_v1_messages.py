@@ -13,7 +13,7 @@ package = 'testing'
 
 
 class Account(_messages.Message):
-  """Identifies an account and how to log into it
+  r"""Identifies an account and how to log into it
 
   Fields:
     googleAuto: An automatic google login account
@@ -23,7 +23,7 @@ class Account(_messages.Message):
 
 
 class AndroidDevice(_messages.Message):
-  """A single Android device.
+  r"""A single Android device.
 
   Fields:
     androidModelId: The id of the Android device to be used. Use the
@@ -43,7 +43,7 @@ class AndroidDevice(_messages.Message):
 
 
 class AndroidDeviceCatalog(_messages.Message):
-  """The currently supported Android devices.
+  r"""The currently supported Android devices.
 
   Fields:
     models: The set of supported Android device models. @OutputOnly
@@ -58,7 +58,7 @@ class AndroidDeviceCatalog(_messages.Message):
 
 
 class AndroidDeviceList(_messages.Message):
-  """A list of Android device configurations in which the test is to be
+  r"""A list of Android device configurations in which the test is to be
   executed.
 
   Fields:
@@ -69,7 +69,7 @@ class AndroidDeviceList(_messages.Message):
 
 
 class AndroidInstrumentationTest(_messages.Message):
-  """A test of an Android application that can control an Android component
+  r"""A test of an Android application that can control an Android component
   independently of its normal lifecycle. Android instrumentation tests run an
   application APK and test APK inside the same process on a virtual or
   physical AndroidDevice.  They also specify a test runner class, such as
@@ -114,7 +114,7 @@ class AndroidInstrumentationTest(_messages.Message):
   """
 
   class OrchestratorOptionValueValuesEnum(_messages.Enum):
-    """The option of whether running each test within its own invocation of
+    r"""The option of whether running each test within its own invocation of
     instrumentation with Android Test Orchestrator or not. ** Orchestrator is
     only compatible with AndroidJUnitRunner version 1.0 or higher! **
     Orchestrator offers the following benefits:  - No shared state  - Crashes
@@ -147,7 +147,7 @@ class AndroidInstrumentationTest(_messages.Message):
 
 
 class AndroidMatrix(_messages.Message):
-  """A set of Android device configuration permutations is defined by the the
+  r"""A set of Android device configuration permutations is defined by the the
   cross-product of the given axes.  Internally, the given AndroidMatrix will
   be expanded into a set of AndroidDevices.  Only supported permutations will
   be instantiated.  Invalid permutations (e.g., incompatible models/versions)
@@ -171,7 +171,7 @@ class AndroidMatrix(_messages.Message):
 
 
 class AndroidModel(_messages.Message):
-  """A description of an Android device tests may be run on.
+  r"""A description of an Android device tests may be run on.
 
   Enums:
     FormValueValuesEnum: Whether this device is virtual or physical.
@@ -205,10 +205,13 @@ class AndroidModel(_messages.Message):
       @OutputOnly
     tags: Tags for this dimension. Examples: "default", "preview",
       "deprecated"
+    videoRecordingNotSupported: True if and only if tests with this model DO
+      NOT have video output. See also
+      TestSpecification.disable_video_recording @OutputOnly
   """
 
   class FormValueValuesEnum(_messages.Enum):
-    """Whether this device is virtual or physical. @OutputOnly
+    r"""Whether this device is virtual or physical. @OutputOnly
 
     Values:
       DEVICE_FORM_UNSPECIFIED: Do not use.  For proto versioning only.
@@ -231,10 +234,11 @@ class AndroidModel(_messages.Message):
   supportedAbis = _messages.StringField(10, repeated=True)
   supportedVersionIds = _messages.StringField(11, repeated=True)
   tags = _messages.StringField(12, repeated=True)
+  videoRecordingNotSupported = _messages.BooleanField(13)
 
 
 class AndroidRoboTest(_messages.Message):
-  """A test of an android application that explores the application on a
+  r"""A test of an android application that explores the application on a
   virtual or physical Android Device, finding culprits and crashes as it goes.
 
   Fields:
@@ -270,7 +274,7 @@ class AndroidRoboTest(_messages.Message):
 
 
 class AndroidRuntimeConfiguration(_messages.Message):
-  """Configuration that can be selected at the time a test is run.
+  r"""Configuration that can be selected at the time a test is run.
 
   Fields:
     locales: The set of available locales. @OutputOnly
@@ -282,7 +286,7 @@ class AndroidRuntimeConfiguration(_messages.Message):
 
 
 class AndroidTestLoop(_messages.Message):
-  """A test of an Android Application with a Test Loop. The intent <intent-
+  r"""A test of an Android Application with a Test Loop. The intent <intent-
   name> will be implicitly added, since Games is the only user of this api,
   for the time being.
 
@@ -309,7 +313,7 @@ class AndroidTestLoop(_messages.Message):
 
 
 class AndroidVersion(_messages.Message):
-  """A version of the Android OS
+  r"""A version of the Android OS
 
   Fields:
     apiLevel: The API level for this Android version. Examples: 18, 19
@@ -337,7 +341,7 @@ class AndroidVersion(_messages.Message):
 
 
 class Apk(_messages.Message):
-  """An Android package file to install.
+  r"""An Android package file to install.
 
   Fields:
     location: The path to an APK to be installed on the device before the test
@@ -351,8 +355,8 @@ class Apk(_messages.Message):
 
 
 class ApkDetail(_messages.Message):
-  """Android application details based on application manifest and apk archive
-  contents
+  r"""Android application details based on application manifest and apk
+  archive contents
 
   Fields:
     apkManifest: A ApkManifest attribute.
@@ -362,7 +366,7 @@ class ApkDetail(_messages.Message):
 
 
 class ApkManifest(_messages.Message):
-  """An Android app manifest. See
+  r"""An Android app manifest. See
   http://developer.android.com/guide/topics/manifest/manifest-intro.html
 
   Fields:
@@ -383,7 +387,7 @@ class ApkManifest(_messages.Message):
 
 
 class CancelTestMatrixResponse(_messages.Message):
-  """Response containing the current state of the specified test matrix.
+  r"""Response containing the current state of the specified test matrix.
 
   Enums:
     TestStateValueValuesEnum: The current rolled-up state of the test matrix.
@@ -396,7 +400,7 @@ class CancelTestMatrixResponse(_messages.Message):
   """
 
   class TestStateValueValuesEnum(_messages.Enum):
-    """The current rolled-up state of the test matrix. If this state is
+    r"""The current rolled-up state of the test matrix. If this state is
     already final, then the cancelation request will have no effect.
 
     Values:
@@ -444,7 +448,7 @@ class CancelTestMatrixResponse(_messages.Message):
 
 
 class ClientInfo(_messages.Message):
-  """Information about the client which invoked the test.
+  r"""Information about the client which invoked the test.
 
   Fields:
     clientInfoDetails: The list of detailed information about client.
@@ -456,8 +460,8 @@ class ClientInfo(_messages.Message):
 
 
 class ClientInfoDetail(_messages.Message):
-  """Key-value pair of detailed information about the client which invoked the
-  test. For example {'Version', '1.0'}, {'Release Track', 'BETA'}
+  r"""Key-value pair of detailed information about the client which invoked
+  the test. For example {'Version', '1.0'}, {'Release Track', 'BETA'}
 
   Fields:
     key: The key of detailed client information. Required
@@ -469,18 +473,19 @@ class ClientInfoDetail(_messages.Message):
 
 
 class Date(_messages.Message):
-  """Represents a whole calendar date, e.g. date of birth. The time of day and
-  time zone are either specified elsewhere or are not significant. The date is
-  relative to the Proleptic Gregorian Calendar. The day may be 0 to represent
-  a year and month where the day is not significant, e.g. credit card
-  expiration date. The year may be 0 to represent a month and day independent
-  of year, e.g. anniversary date. Related types are google.type.TimeOfDay and
-  `google.protobuf.Timestamp`.
+  r"""Represents a whole calendar date, e.g. date of birth. The time of day
+  and time zone are either specified elsewhere or are not significant. The
+  date is relative to the Proleptic Gregorian Calendar. The day may be 0 to
+  represent a year and month where the day is not significant, e.g. credit
+  card expiration date. The year may be 0 to represent a month and day
+  independent of year, e.g. anniversary date. Related types are
+  google.type.TimeOfDay and `google.protobuf.Timestamp`.
 
   Fields:
     day: Day of month. Must be from 1 to 31 and valid for the year and month,
       or 0 if specifying a year/month where the day is not significant.
-    month: Month of year. Must be from 1 to 12.
+    month: Month of year. Must be from 1 to 12, or 0 if specifying a date
+      without a month.
     year: Year of date. Must be from 1 to 9999, or 0 if specifying a date
       without a year.
   """
@@ -491,7 +496,7 @@ class Date(_messages.Message):
 
 
 class DeviceFile(_messages.Message):
-  """A single device file description.
+  r"""A single device file description.
 
   Fields:
     obbFile: A reference to an opaque binary blob file
@@ -503,7 +508,7 @@ class DeviceFile(_messages.Message):
 
 
 class Distribution(_messages.Message):
-  """Data about the relative number of devices running a given configuration
+  r"""Data about the relative number of devices running a given configuration
   of the Android platform.
 
   Fields:
@@ -517,30 +522,34 @@ class Distribution(_messages.Message):
 
 
 class Environment(_messages.Message):
-  """The environment in which the test is run.
+  r"""The environment in which the test is run.
 
   Fields:
     androidDevice: An Android device which must be used with an Android test.
+    iosDevice: An iOS device which must be used with an iOS test.
   """
 
   androidDevice = _messages.MessageField('AndroidDevice', 1)
+  iosDevice = _messages.MessageField('IosDevice', 2)
 
 
 class EnvironmentMatrix(_messages.Message):
-  """The matrix of environments in which the test is to be executed.
+  r"""The matrix of environments in which the test is to be executed.
 
   Fields:
     androidDeviceList: A list of Android devices; the test will be run only on
       the specified devices.
     androidMatrix: A matrix of Android devices.
+    iosDeviceList: A list of iOS devices.
   """
 
   androidDeviceList = _messages.MessageField('AndroidDeviceList', 1)
   androidMatrix = _messages.MessageField('AndroidMatrix', 2)
+  iosDeviceList = _messages.MessageField('IosDeviceList', 3)
 
 
 class EnvironmentVariable(_messages.Message):
-  """A key-value pair passed as an environment variable to the test
+  r"""A key-value pair passed as an environment variable to the test
 
   Fields:
     key: Key for the environment variable
@@ -552,7 +561,7 @@ class EnvironmentVariable(_messages.Message):
 
 
 class FileReference(_messages.Message):
-  """A reference to a file, used for user inputs.
+  r"""A reference to a file, used for user inputs.
 
   Fields:
     gcsPath: A path to a file in Google Cloud Storage. Example: gs://build-
@@ -563,7 +572,8 @@ class FileReference(_messages.Message):
 
 
 class GetApkDetailsResponse(_messages.Message):
-  """Response containing the details of the specified Android application APK.
+  r"""Response containing the details of the specified Android application
+  APK.
 
   Fields:
     apkDetail: Details of the Android APK.
@@ -573,7 +583,7 @@ class GetApkDetailsResponse(_messages.Message):
 
 
 class GoogleAuto(_messages.Message):
-  """Enables automatic Google account login. If set, the service will
+  r"""Enables automatic Google account login. If set, the service will
   automatically generate a Google test account and add it to the device,
   before executing the test. Note that test accounts might be reused. Many
   applications show their full set of functionalities when an account is
@@ -584,7 +594,7 @@ class GoogleAuto(_messages.Message):
 
 
 class GoogleCloudStorage(_messages.Message):
-  """A storage location within Google cloud storage (GCS).
+  r"""A storage location within Google cloud storage (GCS).
 
   Fields:
     gcsPath: The path to a directory in GCS that will eventually contain the
@@ -596,7 +606,7 @@ class GoogleCloudStorage(_messages.Message):
 
 
 class IntentFilter(_messages.Message):
-  """The <intent-filter> section of an <activity> tag.
+  r"""The <intent-filter> section of an <activity> tag.
   https://developer.android.com/guide/topics/manifest/intent-filter-
   element.html
 
@@ -611,12 +621,128 @@ class IntentFilter(_messages.Message):
   mimeType = _messages.StringField(3)
 
 
+class IosDevice(_messages.Message):
+  r"""A single iOS device.
+
+  Fields:
+    iosModelId: The id of the iOS device to be used. Use the
+      EnvironmentDiscoveryService to get supported options. Required
+    iosVersionId: The id of the iOS major software version to be used. Use the
+      EnvironmentDiscoveryService to get supported options. Required
+    locale: The locale the test device used for testing. Use the
+      EnvironmentDiscoveryService to get supported options. Required
+    orientation: How the device is oriented during the test. Use the
+      EnvironmentDiscoveryService to get supported options. Required
+  """
+
+  iosModelId = _messages.StringField(1)
+  iosVersionId = _messages.StringField(2)
+  locale = _messages.StringField(3)
+  orientation = _messages.StringField(4)
+
+
+class IosDeviceCatalog(_messages.Message):
+  r"""The currently supported iOS devices.
+
+  Fields:
+    models: The set of supported iOS device models. @OutputOnly
+    versions: The set of supported iOS software versions. @OutputOnly
+  """
+
+  models = _messages.MessageField('IosModel', 1, repeated=True)
+  versions = _messages.MessageField('IosVersion', 2, repeated=True)
+
+
+class IosDeviceList(_messages.Message):
+  r"""A list of iOS device configurations in which the test is to be executed.
+
+  Fields:
+    iosDevices: A list of iOS devices Required
+  """
+
+  iosDevices = _messages.MessageField('IosDevice', 1, repeated=True)
+
+
+class IosModel(_messages.Message):
+  r"""A description of an iOS device tests may be run on.
+
+  Fields:
+    id: The unique opaque id for this model. Use this for invoking the
+      TestExecutionService. @OutputOnly
+    name: The human-readable name for this device model. Examples: "iPhone
+      4s", "iPad Mini 2" @OutputOnly
+    supportedVersionIds: The set of iOS major software versions this device
+      supports. @OutputOnly
+    tags: Tags for this dimension. Examples: "default", "preview",
+      "deprecated" @OutputOnly
+  """
+
+  id = _messages.StringField(1)
+  name = _messages.StringField(2)
+  supportedVersionIds = _messages.StringField(3, repeated=True)
+  tags = _messages.StringField(4, repeated=True)
+
+
+class IosTestSetup(_messages.Message):
+  r"""A description of how to set up an iOS device prior to a test.
+
+  Fields:
+    networkProfile: The network traffic profile used for running the test.
+      Optional
+  """
+
+  networkProfile = _messages.StringField(1)
+
+
+class IosVersion(_messages.Message):
+  r"""An iOS version
+
+  Fields:
+    id: An opaque id for this iOS version. Use this id to invoke the
+      TestExecutionService. @OutputOnly
+    majorVersion: A integer representing the major iOS version. Examples: "8",
+      "9" @OutputOnly
+    minorVersion: A integer representing the minor iOS version. Examples: "1",
+      "2" @OutputOnly
+    tags: Tags for this dimension. Examples: "default", "preview",
+      "deprecated" @OutputOnly
+  """
+
+  id = _messages.StringField(1)
+  majorVersion = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+  minorVersion = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  tags = _messages.StringField(4, repeated=True)
+
+
+class IosXcTest(_messages.Message):
+  r"""A test of an iOS application that uses the XCTest framework. Xcode
+  supports the option to "build for testing", which generates an .xctestrun
+  file that contains a test specification (arguments, test methods, etc). This
+  test type accepts a zip file containing the .xctestrun file and its
+  corresponding Debug-iphoneos directory that contains all of the binaries
+  needed to run the tests.
+
+  Fields:
+    testsZip: The .zip containing the .xctestrun file and the Debug-iphoneos
+      directory from DerivedData/Build/Products. The .xctestrun file in this
+      zip is ignored if the xctestrun field is specified. Required
+    xctestrun: An .xctestrun file that will override the .xctestrun file in
+      the tests zip. Because the .xctestrun file contains environment
+      variables along with test methods to run and/or ignore, this can be
+      useful for sharding tests. Optional, default is taken from the tests
+      zip.
+  """
+
+  testsZip = _messages.MessageField('FileReference', 1)
+  xctestrun = _messages.MessageField('FileReference', 2)
+
+
 class LauncherActivityIntent(_messages.Message):
-  """Specifies an intent that starts the main launcher activity."""
+  r"""Specifies an intent that starts the main launcher activity."""
 
 
 class Locale(_messages.Message):
-  """A location/region designation for language.
+  r"""A location/region designation for language.
 
   Fields:
     id: The id for this locale. Example: "en_US" @OutputOnly
@@ -634,7 +760,7 @@ class Locale(_messages.Message):
 
 
 class NetworkConfiguration(_messages.Message):
-  """A NetworkConfiguration object.
+  r"""A NetworkConfiguration object.
 
   Fields:
     downRule: The emulation rule applying to the download traffic
@@ -649,7 +775,7 @@ class NetworkConfiguration(_messages.Message):
 
 
 class NetworkConfigurationCatalog(_messages.Message):
-  """A NetworkConfigurationCatalog object.
+  r"""A NetworkConfigurationCatalog object.
 
   Fields:
     configurations: A NetworkConfiguration attribute.
@@ -659,7 +785,7 @@ class NetworkConfigurationCatalog(_messages.Message):
 
 
 class ObbFile(_messages.Message):
-  """An opaque binary blob file to install on the device before the test
+  r"""An opaque binary blob file to install on the device before the test
   starts
 
   Fields:
@@ -675,7 +801,7 @@ class ObbFile(_messages.Message):
 
 
 class Orientation(_messages.Message):
-  """Screen orientation of the device.
+  r"""Screen orientation of the device.
 
   Fields:
     id: The id for this orientation. Example: "portrait" @OutputOnly
@@ -690,7 +816,7 @@ class Orientation(_messages.Message):
 
 
 class RegularFile(_messages.Message):
-  """A file or directory to install on the device before the test starts
+  r"""A file or directory to install on the device before the test starts
 
   Fields:
     content: Required
@@ -714,7 +840,7 @@ class RegularFile(_messages.Message):
 
 
 class ResultStorage(_messages.Message):
-  """Locations where the results of running the test are stored.
+  r"""Locations where the results of running the test are stored.
 
   Fields:
     googleCloudStorage: Required.
@@ -731,7 +857,7 @@ class ResultStorage(_messages.Message):
 
 
 class RoboDirective(_messages.Message):
-  """Directs Robo to interact with a specific UI element if it is encountered
+  r"""Directs Robo to interact with a specific UI element if it is encountered
   during the crawl. Currently, Robo can perform text entry or element click.
 
   Enums:
@@ -752,7 +878,7 @@ class RoboDirective(_messages.Message):
   """
 
   class ActionTypeValueValuesEnum(_messages.Enum):
-    """The type of action that Robo should perform on the specified element.
+    r"""The type of action that Robo should perform on the specified element.
     Required.
 
     Values:
@@ -772,7 +898,7 @@ class RoboDirective(_messages.Message):
 
 
 class RoboStartingIntent(_messages.Message):
-  """Message for specifying the start activities to crawl
+  r"""Message for specifying the start activities to crawl
 
   Fields:
     launcherActivity: A LauncherActivityIntent attribute.
@@ -784,7 +910,7 @@ class RoboStartingIntent(_messages.Message):
 
 
 class StandardQueryParameters(_messages.Message):
-  """Query parameters accepted by all methods.
+  r"""Query parameters accepted by all methods.
 
   Enums:
     FXgafvValueValuesEnum: V1 error format.
@@ -813,7 +939,7 @@ class StandardQueryParameters(_messages.Message):
   """
 
   class AltValueValuesEnum(_messages.Enum):
-    """Data format for response.
+    r"""Data format for response.
 
     Values:
       json: Responses with Content-Type of application/json
@@ -825,7 +951,7 @@ class StandardQueryParameters(_messages.Message):
     proto = 2
 
   class FXgafvValueValuesEnum(_messages.Enum):
-    """V1 error format.
+    r"""V1 error format.
 
     Values:
       _1: v1 error format
@@ -851,7 +977,7 @@ class StandardQueryParameters(_messages.Message):
 
 
 class StartActivityIntent(_messages.Message):
-  """A starting intent specified by an action, uri, and categories.
+  r"""A starting intent specified by an action, uri, and categories.
 
   Fields:
     action: Action name. Required for START_ACTIVITY.
@@ -865,7 +991,7 @@ class StartActivityIntent(_messages.Message):
 
 
 class TestDetails(_messages.Message):
-  """Additional details about the progress of the running test.
+  r"""Additional details about the progress of the running test.
 
   Fields:
     errorMessage: If the TestState is ERROR, then this string will contain
@@ -874,27 +1000,34 @@ class TestDetails(_messages.Message):
       progress. For example: "Provisioning a device", "Starting Test".  During
       the course of execution new data may be appended to the end of
       progress_messages. @OutputOnly
+    videoRecordingDisabled: Indicates that video will not be recorded for this
+      execution either because the user chose to disable it or the device does
+      not support it. See AndroidModel.video_recording_not_supported
+      @OutputOnly
   """
 
   errorMessage = _messages.StringField(1)
   progressMessages = _messages.StringField(2, repeated=True)
+  videoRecordingDisabled = _messages.BooleanField(3)
 
 
 class TestEnvironmentCatalog(_messages.Message):
-  """A description of a test environment.
+  r"""A description of a test environment.
 
   Fields:
     androidDeviceCatalog: Android devices suitable for running Android
       Instrumentation Tests.
+    iosDeviceCatalog: Supported iOS devices
     networkConfigurationCatalog: Supported network configurations
   """
 
   androidDeviceCatalog = _messages.MessageField('AndroidDeviceCatalog', 1)
-  networkConfigurationCatalog = _messages.MessageField('NetworkConfigurationCatalog', 2)
+  iosDeviceCatalog = _messages.MessageField('IosDeviceCatalog', 2)
+  networkConfigurationCatalog = _messages.MessageField('NetworkConfigurationCatalog', 3)
 
 
 class TestExecution(_messages.Message):
-  """Specifies a single test to be executed in a single environment.
+  r"""Specifies a single test to be executed in a single environment.
 
   Enums:
     StateValueValuesEnum: Indicates the current progress of the test execution
@@ -915,7 +1048,7 @@ class TestExecution(_messages.Message):
   """
 
   class StateValueValuesEnum(_messages.Enum):
-    """Indicates the current progress of the test execution (e.g., FINISHED).
+    r"""Indicates the current progress of the test execution (e.g., FINISHED).
     @OutputOnly
 
     Values:
@@ -971,7 +1104,7 @@ class TestExecution(_messages.Message):
 
 
 class TestMatrix(_messages.Message):
-  """A group of one or more TestExecutions, built by taking a product of
+  r"""A group of one or more TestExecutions, built by taking a product of
   values over a pre-defined set of axes.
 
   Enums:
@@ -998,7 +1131,7 @@ class TestMatrix(_messages.Message):
   """
 
   class InvalidMatrixDetailsValueValuesEnum(_messages.Enum):
-    """Describes why the matrix is considered invalid. Only useful for
+    r"""Describes why the matrix is considered invalid. Only useful for
     matrices in the INVALID state. @OutputOnly
 
     Values:
@@ -1038,10 +1171,24 @@ class TestMatrix(_messages.Message):
         not declared in the manifest.
       DEVICE_ADMIN_RECEIVER: Device administrator applications are not
         allowed.
+      MALFORMED_XC_TEST_ZIP: The zipped XCTest was malformed. The zip did not
+        contain a single .xctestrun file alongside a Debug-iphoneos directory
+        containing the compiled artifacts for the test.
+      BUILT_FOR_IOS_SIMULATOR: The zipped XCTest was built for the iOS
+        simulator rather than for a physical device.
+      NO_TESTS_IN_XC_TEST_ZIP: The .xctestrun file did not specify any test
+        targets.
+      USE_DESTINATION_ARTIFACTS: One or more of the test targets defined in
+        the .xctestrun file specifies "UseDestinationArtifacts", which is
+        disallowed.
       TEST_ONLY_APK: The APK is marked as "testOnly". NOT USED
+      MALFORMED_IPA: The input IPA could not be parsed. NOT USED
       NO_CODE_APK: APK contains no code. See also
         https://developer.android.com/guide/topics/manifest/application-
         element.html#code
+      INVALID_INPUT_APK: Either the provided input APK path was malformed, the
+        APK file does not exist, or the user does not have permission to
+        access the APK file.
     """
     INVALID_MATRIX_DETAILS_UNSPECIFIED = 0
     DETAILS_UNAVAILABLE = 1
@@ -1062,11 +1209,17 @@ class TestMatrix(_messages.Message):
     SCENARIO_LABEL_MALFORMED = 16
     SCENARIO_NOT_DECLARED = 17
     DEVICE_ADMIN_RECEIVER = 18
-    TEST_ONLY_APK = 19
-    NO_CODE_APK = 20
+    MALFORMED_XC_TEST_ZIP = 19
+    BUILT_FOR_IOS_SIMULATOR = 20
+    NO_TESTS_IN_XC_TEST_ZIP = 21
+    USE_DESTINATION_ARTIFACTS = 22
+    TEST_ONLY_APK = 23
+    MALFORMED_IPA = 24
+    NO_CODE_APK = 25
+    INVALID_INPUT_APK = 26
 
   class StateValueValuesEnum(_messages.Enum):
-    """Indicates the current progress of the test matrix (e.g., FINISHED)
+    r"""Indicates the current progress of the test matrix (e.g., FINISHED)
     @OutputOnly
 
     Values:
@@ -1123,7 +1276,7 @@ class TestMatrix(_messages.Message):
 
 
 class TestSetup(_messages.Message):
-  """A description of how to set up the Android device prior to running the
+  r"""A description of how to set up the Android device prior to running the
   test.
 
   Fields:
@@ -1155,7 +1308,7 @@ class TestSetup(_messages.Message):
 
 
 class TestSpecification(_messages.Message):
-  """A description of how to run the test.
+  r"""A description of how to run the test.
 
   Fields:
     androidInstrumentationTest: An Android instrumentation test.
@@ -1171,6 +1324,8 @@ class TestSpecification(_messages.Message):
     disablePerformanceMetrics: Disables performance metrics recording; may
       reduce test latency.
     disableVideoRecording: Disables video recording; may reduce test latency.
+    iosTestSetup: Test setup requirements for iOS. Optional
+    iosXcTest: An iOS XCTest, via an .xctestrun file
     testSetup: Test setup requirements for Android e.g. files to install,
       bootstrap scripts. Optional
     testTimeout: Max time a test execution is allowed to run before it is
@@ -1183,12 +1338,14 @@ class TestSpecification(_messages.Message):
   autoGoogleLogin = _messages.BooleanField(4)
   disablePerformanceMetrics = _messages.BooleanField(5)
   disableVideoRecording = _messages.BooleanField(6)
-  testSetup = _messages.MessageField('TestSetup', 7)
-  testTimeout = _messages.StringField(8)
+  iosTestSetup = _messages.MessageField('IosTestSetup', 7)
+  iosXcTest = _messages.MessageField('IosXcTest', 8)
+  testSetup = _messages.MessageField('TestSetup', 9)
+  testTimeout = _messages.StringField(10)
 
 
 class TestingProjectsTestMatricesCancelRequest(_messages.Message):
-  """A TestingProjectsTestMatricesCancelRequest object.
+  r"""A TestingProjectsTestMatricesCancelRequest object.
 
   Fields:
     projectId: Cloud project that owns the test.
@@ -1200,7 +1357,7 @@ class TestingProjectsTestMatricesCancelRequest(_messages.Message):
 
 
 class TestingProjectsTestMatricesCreateRequest(_messages.Message):
-  """A TestingProjectsTestMatricesCreateRequest object.
+  r"""A TestingProjectsTestMatricesCreateRequest object.
 
   Fields:
     projectId: The GCE project under which this job will run.
@@ -1217,7 +1374,7 @@ class TestingProjectsTestMatricesCreateRequest(_messages.Message):
 
 
 class TestingProjectsTestMatricesGetRequest(_messages.Message):
-  """A TestingProjectsTestMatricesGetRequest object.
+  r"""A TestingProjectsTestMatricesGetRequest object.
 
   Fields:
     projectId: Cloud project that owns the test matrix.
@@ -1229,7 +1386,7 @@ class TestingProjectsTestMatricesGetRequest(_messages.Message):
 
 
 class TestingTestEnvironmentCatalogGetRequest(_messages.Message):
-  """A TestingTestEnvironmentCatalogGetRequest object.
+  r"""A TestingTestEnvironmentCatalogGetRequest object.
 
   Enums:
     EnvironmentTypeValueValuesEnum: The type of environment that should be
@@ -1242,23 +1399,25 @@ class TestingTestEnvironmentCatalogGetRequest(_messages.Message):
   """
 
   class EnvironmentTypeValueValuesEnum(_messages.Enum):
-    """The type of environment that should be listed. Required
+    r"""The type of environment that should be listed. Required
 
     Values:
       ENVIRONMENT_TYPE_UNSPECIFIED: <no description>
       ANDROID: <no description>
+      IOS: <no description>
       NETWORK_CONFIGURATION: <no description>
     """
     ENVIRONMENT_TYPE_UNSPECIFIED = 0
     ANDROID = 1
-    NETWORK_CONFIGURATION = 2
+    IOS = 2
+    NETWORK_CONFIGURATION = 3
 
   environmentType = _messages.EnumField('EnvironmentTypeValueValuesEnum', 1, required=True)
   projectId = _messages.StringField(2)
 
 
 class ToolResultsExecution(_messages.Message):
-  """Represents a tool results execution resource.  This has the results of a
+  r"""Represents a tool results execution resource.  This has the results of a
   TestMatrix.
 
   Fields:
@@ -1274,7 +1433,7 @@ class ToolResultsExecution(_messages.Message):
 
 
 class ToolResultsHistory(_messages.Message):
-  """Represents a tool results history resource.
+  r"""Represents a tool results history resource.
 
   Fields:
     historyId: A tool results history ID. Required
@@ -1286,7 +1445,7 @@ class ToolResultsHistory(_messages.Message):
 
 
 class ToolResultsStep(_messages.Message):
-  """Represents a tool results step resource.  This has the results of a
+  r"""Represents a tool results step resource.  This has the results of a
   TestExecution.
 
   Fields:
@@ -1303,7 +1462,7 @@ class ToolResultsStep(_messages.Message):
 
 
 class TrafficRule(_messages.Message):
-  """Network emulation parameters
+  r"""Network emulation parameters
 
   Fields:
     bandwidth: Bandwidth in kbits/second

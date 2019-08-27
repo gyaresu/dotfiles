@@ -13,6 +13,8 @@
 # limitations under the License.
 """Command util functions for gcloud container commands."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.container import api_adapter
 from googlecloudsdk.api_lib.container import util
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
@@ -40,16 +42,18 @@ def _NodePoolFromCluster(cluster, node_pool_name):
       node_pool_name))
 
 
-def ClusterUpgradeMessage(cluster, master=False, node_pool=None,
-                          new_version=None):
+def ClusterUpgradeMessage(name, cluster=None, master=False, node_pool_name=None,
+                          new_version=None, concurrent_node_count=None):
   """Get a message to print during gcloud container clusters upgrade.
 
   Args:
+    name: str, the name of the cluster being upgraded.
     cluster: the cluster object.
     master: bool, if the upgrade applies to the master version.
-    node_pool: str, the name of the node pool if the upgrade is for a specific
-        node pool.
+    node_pool_name: str, the name of the node pool if the upgrade is for a
+        specific node pool.
     new_version: str, the name of the new version, if given.
+    concurrent_node_count: int, the number of nodes to upgrade concurrently.
 
   Raises:
     NodePoolError: if the node pool name can't be found in the cluster.
@@ -58,27 +62,41 @@ def ClusterUpgradeMessage(cluster, master=False, node_pool=None,
     str, a message about which nodes in the cluster will be upgraded and
         to which version.
   """
+  current_version = None
   if new_version:
     new_version_message = 'version [{}]'.format(new_version)
   else:
     new_version_message = 'master version'
   if master:
     node_message = 'Master'
-    current_version = cluster.currentMasterVersion
-  elif node_pool:
-    node_message = 'All nodes in node pool [{}]'.format(node_pool)
-    node_pool = _NodePoolFromCluster(cluster, node_pool)
-    current_version = node_pool.version
+    if cluster:
+      current_version = cluster.currentMasterVersion
+  elif node_pool_name:
+    node_message = 'All nodes in node pool [{}]'.format(node_pool_name)
+    if cluster:
+      current_version = _NodePoolFromCluster(cluster, node_pool_name).version
   else:
-    node_message = 'All nodes ({} {})'.format(
-        cluster.currentNodeCount,
-        text.Pluralize(cluster.currentNodeCount, 'node'))
-    current_version = cluster.currentNodeVersion
-  return ('{} of cluster [{}] will be upgraded from version [{}] to {}. '
+    if cluster:
+      node_message = 'All nodes ({} {})'.format(
+          cluster.currentNodeCount,
+          text.Pluralize(cluster.currentNodeCount, 'node'))
+      current_version = cluster.currentNodeVersion
+    else:
+      node_message = 'All nodes'
+  concurrent_message = ''
+  if not master and concurrent_node_count:
+    concurrent_message = '{} {} will be upgraded at a time. '.format(
+        concurrent_node_count,
+        text.Pluralize(concurrent_node_count, 'node'))
+  if current_version:
+    version_message = 'version [{}]'.format(current_version)
+  else:
+    version_message = 'its current version'
+  return ('{} of cluster [{}] will be upgraded from {} to {}. {}'
           'This operation is long-running and will block other operations '
           'on the cluster (including delete) until it has run to completion.'
-          .format(node_message, cluster.name, current_version,
-                  new_version_message))
+          .format(node_message, name, version_message,
+                  new_version_message, concurrent_message))
 
 
 def GetZone(args, ignore_property=False, required=True):
@@ -189,8 +207,8 @@ def GetUseV1APIProperty():
     return old_val
   # both use_v1_api and use_v1_api_client are not set
   elif not new_set and not old_set:
-    # default behavior is using v1 api
-    return True
+    # default behavior is using non-v1 api
+    return False
   # both use_v1_api and use_v1_api_client are set
   else:
     # if the values of use_v1_api and use_v1_api match, return either one

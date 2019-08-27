@@ -14,6 +14,8 @@
 
 """The 'gcloud firebase test' sub-group."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import argparse
 
 from googlecloudsdk.api_lib.firebase.test import endpoints
@@ -21,7 +23,6 @@ from googlecloudsdk.api_lib.firebase.test import exceptions
 from googlecloudsdk.api_lib.firebase.test import util
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import base
-from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 
@@ -49,7 +50,9 @@ class Test(base.Group):
     endpoints.ValidateTestServiceEndpoints()
 
     # Create the client for the Testing service.
-    context['testing_client'] = apis.GetClientInstance('testing', 'v1')
+    testing_client = apis.GetClientInstance('testing', 'v1')
+    testing_client.num_retries = 9  # Add extra retries due to b/76429898.
+    context['testing_client'] = testing_client
     context['testing_messages'] = apis.GetMessagesModule('testing', 'v1')
 
     # Create the client for the Tool Results service.
@@ -60,9 +63,5 @@ class Test(base.Group):
 
     # Create the client for the Storage service.
     context['storage_client'] = apis.GetClientInstance('storage', 'v1')
-
-    log.status.Print(
-        '\nHave questions, feedback, or issues? Get support by '
-        'visiting:\n  https://firebase.google.com/support/\n')
 
     return context

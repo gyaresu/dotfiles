@@ -6,7 +6,7 @@
   "canonicalName": "Container",
   "version": "v1beta1",
   "revision": "0",
-  "title": "Google Kubernetes Engine API",
+  "title": "Kubernetes Engine API",
   "description": "The Google Kubernetes Engine API is used for building and managing container based applications, powered by the open source Kubernetes technology.",
   "ownerDomain": "google.com",
   "ownerName": "Google",
@@ -180,7 +180,7 @@
           "type": "string"
         },
         "network": {
-          "description": "The name of the Google Compute Engine\n[network](\/compute\/docs\/networks-and-firewalls#networks) to which the\ncluster is connected. If left unspecified, the `default` network\nwill be used.",
+          "description": "The name of the Google Compute Engine\n[network](\/compute\/docs\/networks-and-firewalls#networks) to which the\ncluster is connected. If left unspecified, the `default` network\nwill be used. On output this shows the network ID instead of\nthe name.",
           "type": "string"
         },
         "clusterIpv4Cidr": {
@@ -192,7 +192,7 @@
           "$ref": "AddonsConfig"
         },
         "subnetwork": {
-          "description": "The name of the Google Compute Engine\n[subnetwork](\/compute\/docs\/subnetworks) to which the\ncluster is connected.",
+          "description": "The name of the Google Compute Engine\n[subnetwork](\/compute\/docs\/subnetworks) to which the\ncluster is connected. On output this shows the subnetwork ID instead of\nthe name.",
           "type": "string"
         },
         "nodePools": {
@@ -214,7 +214,7 @@
           "type": "boolean"
         },
         "resourceLabels": {
-          "description": "The resource labels for the cluster to use to annotate any related GCE\nresources.",
+          "description": "The resource labels for the cluster to use to annotate any related\nGoogle Compute Engine resources.",
           "type": "object",
           "additionalProperties": {
             "type": "string"
@@ -252,9 +252,17 @@
           "description": "Configure the maintenance policy for this cluster.",
           "$ref": "MaintenancePolicy"
         },
+        "binaryAuthorization": {
+          "description": "Configuration for Binary Authorization.",
+          "$ref": "BinaryAuthorization"
+        },
         "podSecurityPolicyConfig": {
           "description": "Configuration for the PodSecurityPolicy feature.",
           "$ref": "PodSecurityPolicyConfig"
+        },
+        "networkConfig": {
+          "description": "Configuration for cluster networking.",
+          "$ref": "NetworkConfig"
         },
         "privateCluster": {
           "description": "If this is a private cluster setup. Private clusters are clusters that, by\ndefault have no external IP addresses on the nodes and where nodes and the\nmaster communicate over private IP addresses.",
@@ -277,7 +285,7 @@
           "type": "string"
         },
         "initialClusterVersion": {
-          "description": "The initial Kubernetes version for this cluster.  Valid versions are those\nfound in validMasterVersions returned by getServerConfig.  The version can\nbe upgraded over time; such upgrades are reflected in\ncurrentMasterVersion and currentNodeVersion.",
+          "description": "The initial Kubernetes version for this cluster.  Valid versions are those\nfound in validMasterVersions returned by getServerConfig.  The version can\nbe upgraded over time; such upgrades are reflected in\ncurrentMasterVersion and currentNodeVersion.\n\nUsers may specify either explicit versions offered by\nKubernetes Engine or version aliases, which have the following behavior:\n\n- \"latest\": picks the highest valid Kubernetes version\n- \"1.X\": picks the highest valid patch+gke.N patch in the 1.X version\n- \"1.X.Y\": picks the highest valid gke.N patch in the 1.X.Y version\n- \"1.X.Y-gke.N\": picks an explicit Kubernetes version\n- \"\",\"-\": picks the default Kubernetes version",
           "type": "string"
         },
         "currentMasterVersion": {
@@ -345,6 +353,14 @@
         },
         "location": {
           "description": "[Output only] The name of the Google Compute Engine\n[zone](\/compute\/docs\/regions-zones\/regions-zones#available) or\n[region](\/compute\/docs\/regions-zones\/regions-zones#available) in which\nthe cluster resides.",
+          "type": "string"
+        },
+        "enableTpu": {
+          "description": "Enable the ability to use Cloud TPUs in this cluster.",
+          "type": "boolean"
+        },
+        "tpuIpv4CidrBlock": {
+          "description": "[Output only] The IP address range of the Cloud TPUs in this cluster, in\n[CIDR](http:\/\/en.wikipedia.org\/wiki\/Classless_Inter-Domain_Routing)\nnotation (e.g. `1.2.3.4\/29`).",
           "type": "string"
         }
       }
@@ -424,11 +440,11 @@
           "type": "boolean"
         },
         "diskType": {
-          "description": "Type of the disk attached to each node (e.g. 'pd-standard' or 'pd-ssd')\n\nIf unspecified, the default disk type is 'pd-standard'\nCurrently restricted because of b\/36071127#comment27",
+          "description": "Type of the disk attached to each node (e.g. 'pd-standard' or 'pd-ssd')\n\nIf unspecified, the default disk type is 'pd-standard'",
           "type": "string"
         },
         "minCpuPlatform": {
-          "description": "Minimum CPU platform to be used by this instance. The instance may be\nscheduled on the specified or newer CPU platform. Applicable values are the\nfriendly names of CPU platforms, such as\n<code>minCpuPlatform: &quot;Intel Haswell&quot;<\/code> or\n<code>minCpuPlatform: &quot;Intel Sandy Bridge&quot;<\/code>. For more\ninformation, read [how to specify min CPU platform](https:\/\/cloud.google.com\/compute\/docs\/instances\/specify-min-cpu-platform)",
+          "description": "Minimum CPU platform to be used by this instance. The instance may be\nscheduled on the specified or newer CPU platform. Applicable values are the\nfriendly names of CPU platforms, such as\n<code>minCpuPlatform: &quot;Intel Haswell&quot;<\/code> or\n<code>minCpuPlatform: &quot;Intel Sandy Bridge&quot;<\/code>. For more\ninformation, read [how to specify min CPU\nplatform](https:\/\/cloud.google.com\/compute\/docs\/instances\/specify-min-cpu-platform)",
           "type": "string"
         },
         "workloadMetadataConfig": {
@@ -887,6 +903,10 @@
         "allowRouteOverlap": {
           "description": "If true, allow allocation of cluster CIDR ranges that overlap with certain\nkinds of network routes. By default we do not allow cluster CIDR ranges to\nintersect with any user declared routes. With allow_route_overlap == true,\nwe allow overlapping with CIDR ranges that are larger than the cluster CIDR\nrange.\n\nIf this field is set to true, then cluster and services CIDRs must be\nfully-specified (e.g. `10.96.0.0\/14`, but not `\/14`), which means:\n1) When `use_ip_aliases` is true, `cluster_ipv4_cidr_block` and\n   `services_ipv4_cidr_block` must be fully-specified.\n2) When `use_ip_aliases` is false, `cluster.cluster_ipv4_cidr` muse be\n   fully-specified.",
           "type": "boolean"
+        },
+        "tpuIpv4CidrBlock": {
+          "description": "The IP address range of the Cloud TPUs in this cluster. If unspecified, a\nrange will be automatically chosen with the default size.\n\nThis field is only applicable when `use_ip_aliases` is true.\n\nIf unspecified, the range will use the default size.\n\nSet to \/netmask (e.g. `\/14`) to have a range chosen with a specific\nnetmask.\n\nSet to a\n[CIDR](http:\/\/en.wikipedia.org\/wiki\/Classless_Inter-Domain_Routing)\nnotation (e.g. `10.96.0.0\/14`) from the RFC-1918 private networks (e.g.\n`10.0.0.0\/8`, `172.16.0.0\/12`, `192.168.0.0\/16`) to pick a specific range\nto use.",
+          "type": "string"
         }
       }
     },
@@ -976,6 +996,17 @@
         }
       }
     },
+    "BinaryAuthorization": {
+      "id": "BinaryAuthorization",
+      "description": "Configuration for Binary Authorization.",
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "description": "Enable Binary Authorization for this cluster. If enabled, all container\nimages will be validated by Google Binauthz.",
+          "type": "boolean"
+        }
+      }
+    },
     "PodSecurityPolicyConfig": {
       "id": "PodSecurityPolicyConfig",
       "description": "Configuration for the PodSecurityPolicy feature.",
@@ -984,6 +1015,21 @@
         "enabled": {
           "description": "Enable the PodSecurityPolicy controller for this cluster. If enabled, pods\nmust be valid under a PodSecurityPolicy to be created.",
           "type": "boolean"
+        }
+      }
+    },
+    "NetworkConfig": {
+      "id": "NetworkConfig",
+      "description": "NetworkConfig reports the relative names of network & subnetwork.",
+      "type": "object",
+      "properties": {
+        "network": {
+          "description": "Output only. The name of the Google Compute Engine\nnetwork(\/compute\/docs\/networks-and-firewalls#networks).\nExample: projects\/my-project\/global\/networks\/my-network",
+          "type": "string"
+        },
+        "subnetwork": {
+          "description": "Output only. The name of the Google Compute Engine\n[subnetwork](\/compute\/docs\/vpc).\nExample: projects\/my-project\/regions\/us-central1\/subnetworks\/my-subnet",
+          "type": "string"
         }
       }
     },
@@ -1114,6 +1160,78 @@
         "endTime": {
           "description": "[Output only] The time the operation completed, in\n[RFC3339](https:\/\/www.ietf.org\/rfc\/rfc3339.txt) text format.",
           "type": "string"
+        },
+        "progress": {
+          "description": "[Output only] Progress information for an operation.",
+          "$ref": "OperationProgress"
+        }
+      }
+    },
+    "OperationProgress": {
+      "id": "OperationProgress",
+      "description": "Information about operation (or operation stage) progress.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "A non-parameterized string describing an operation stage.\nUnset for single-stage operations.",
+          "type": "string"
+        },
+        "status": {
+          "description": "Status of an operation stage.\nUnset for single-stage operations.",
+          "enumDescriptions": [
+            "Not set.",
+            "The operation has been created.",
+            "The operation is currently running.",
+            "The operation is done, either cancelled or completed.",
+            "The operation is aborting."
+          ],
+          "type": "string",
+          "enum": [
+            "STATUS_UNSPECIFIED",
+            "PENDING",
+            "RUNNING",
+            "DONE",
+            "ABORTING"
+          ]
+        },
+        "metrics": {
+          "description": "Progress metric bundle, for example:\n  metrics: [{name: \"nodes done\",     int_value: 15},\n            {name: \"nodes total\",    int_value: 32}]\nor\n  metrics: [{name: \"progress\",       double_value: 0.56},\n            {name: \"progress scale\", double_value: 1.0}]",
+          "type": "array",
+          "items": {
+            "$ref": "Metric"
+          }
+        },
+        "stages": {
+          "description": "Substages of an operation or a stage.",
+          "type": "array",
+          "items": {
+            "$ref": "OperationProgress"
+          }
+        }
+      }
+    },
+    "Metric": {
+      "id": "Metric",
+      "description": "Progress metric is (string, int|float|string) pair.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "Metric name, required.\ne.g., \"nodes total\", \"percent done\"",
+          "type": "string"
+        },
+        "intValue": {
+          "description": "For metrics with integer value.",
+          "type": "string",
+          "format": "int64"
+        },
+        "doubleValue": {
+          "description": "For metrics with floating point value.",
+          "type": "number",
+          "format": "double"
+        },
+        "stringValue": {
+          "description": "For metrics with custom values (ratios, visual progress, etc.).",
+          "type": "string"
         }
       }
     },
@@ -1158,7 +1276,7 @@
       "type": "object",
       "properties": {
         "desiredNodeVersion": {
-          "description": "The Kubernetes version to change the nodes to (typically an\nupgrade). Use `-` to upgrade to the latest version supported by\nthe server.",
+          "description": "The Kubernetes version to change the nodes to (typically an\nupgrade).\n\nUsers may specify either explicit versions offered by\nKubernetes Engine or version aliases, which have the following behavior:\n\n- \"latest\": picks the highest valid Kubernetes version\n- \"1.X\": picks the highest valid patch+gke.N patch in the 1.X version\n- \"1.X.Y\": picks the highest valid gke.N patch in the 1.X.Y version\n- \"1.X.Y-gke.N\": picks an explicit Kubernetes version\n- \"-\": picks the Kubernetes master version",
           "type": "string"
         },
         "desiredMonitoringService": {
@@ -1204,13 +1322,17 @@
           "description": "The desired configuration options for the PodSecurityPolicy feature.",
           "$ref": "PodSecurityPolicyConfig"
         },
-        "concurrentNodes": {
+        "desiredBinaryAuthorization": {
+          "description": "The desired configuration options for the Binary Authorization feature.",
+          "$ref": "BinaryAuthorization"
+        },
+        "concurrentNodeCount": {
           "description": "Controls how many nodes to upgrade in parallel. A maximum of 20 concurrent\nnodes is allowed.",
           "type": "integer",
           "format": "int32"
         },
         "desiredMasterVersion": {
-          "description": "The Kubernetes version to change the master to. The only valid value is the\nlatest supported version. Use \"-\" to have the server automatically select\nthe latest version.",
+          "description": "The Kubernetes version to change the master to. The only valid value is the\nlatest supported version.\n\nUsers may specify either explicit versions offered by\nKubernetes Engine or version aliases, which have the following behavior:\n\n- \"latest\": picks the highest valid Kubernetes version\n- \"1.X\": picks the highest valid patch+gke.N patch in the 1.X version\n- \"1.X.Y\": picks the highest valid gke.N patch in the 1.X.Y version\n- \"1.X.Y-gke.N\": picks an explicit Kubernetes version\n- \"-\": picks the default Kubernetes version",
           "type": "string"
         },
         "desiredMasterMachineType": {
@@ -1297,7 +1419,7 @@
           "type": "string"
         },
         "nodeVersion": {
-          "description": "The Kubernetes version to change the nodes to (typically an\nupgrade). Use `-` to upgrade to the latest version supported by\nthe server.",
+          "description": "The Kubernetes version to change the nodes to (typically an\nupgrade).\n\nUsers may specify either explicit versions offered by Kubernetes Engine or\nversion aliases, which have the following behavior:\n\n- \"latest\": picks the highest valid Kubernetes version\n- \"1.X\": picks the highest valid patch+gke.N patch in the 1.X version\n- \"1.X.Y\": picks the highest valid gke.N patch in the 1.X.Y version\n- \"1.X.Y-gke.N\": picks an explicit Kubernetes version\n- \"-\": picks the Kubernetes master version",
           "type": "string"
         },
         "imageType": {
@@ -1313,7 +1435,7 @@
           "type": "string"
         },
         "name": {
-          "description": "The name (project, location, cluster, node pool) of the node pool to update.\nSpecified in the format 'projects\/*\/locations\/*\/clusters\/*\/nodePools\/*'.",
+          "description": "The name (project, location, cluster, node pool) of the node pool to\nupdate. Specified in the format\n'projects\/*\/locations\/*\/clusters\/*\/nodePools\/*'.",
           "type": "string"
         },
         "version": {
@@ -1502,7 +1624,7 @@
           "type": "string"
         },
         "masterVersion": {
-          "description": "The Kubernetes version to change the master to. The only valid value is the\nlatest supported version. Use \"-\" to have the server automatically select\nthe latest version.",
+          "description": "The Kubernetes version to change the master to.\n\nUsers may specify either explicit versions offered by\nKubernetes Engine or version aliases, which have the following behavior:\n\n- \"latest\": picks the highest valid Kubernetes version\n- \"1.X\": picks the highest valid patch+gke.N patch in the 1.X version\n- \"1.X.Y\": picks the highest valid gke.N patch in the 1.X.Y version\n- \"1.X.Y-gke.N\": picks an explicit Kubernetes version\n- \"-\": picks the default Kubernetes version",
           "type": "string"
         },
         "masterMachineType": {
@@ -1701,7 +1823,7 @@
           "$ref": "NodePool"
         },
         "parent": {
-          "description": "The parent (project, location, cluster id) where the node pool will be created.\nSpecified in the format 'projects\/*\/locations\/*\/clusters\/*\/nodePools\/*'.",
+          "description": "The parent (project, location, cluster id) where the node pool will be\ncreated. Specified in the format\n'projects\/*\/locations\/*\/clusters\/*\/nodePools\/*'.",
           "type": "string"
         },
         "version": {
@@ -1863,8 +1985,12 @@
           "type": "string"
         },
         "name": {
-          "description": "The name (project, location, cluster id) of the cluster to start IP rotation.\nSpecified in the format 'projects\/*\/locations\/*\/clusters\/*'.",
+          "description": "The name (project, location, cluster id) of the cluster to start IP\nrotation. Specified in the format 'projects\/*\/locations\/*\/clusters\/*'.",
           "type": "string"
+        },
+        "rotateCredentials": {
+          "description": "Whether to rotate credentials during IP rotation.",
+          "type": "boolean"
         },
         "version": {
           "description": "API request version that initiates this operation.",
@@ -1890,7 +2016,7 @@
           "type": "string"
         },
         "name": {
-          "description": "The name (project, location, cluster id) of the cluster to complete IP rotation.\nSpecified in the format 'projects\/*\/locations\/*\/clusters\/*'.",
+          "description": "The name (project, location, cluster id) of the cluster to complete IP\nrotation. Specified in the format 'projects\/*\/locations\/*\/clusters\/*'.",
           "type": "string"
         },
         "version": {
@@ -1957,7 +2083,7 @@
           "$ref": "NetworkPolicy"
         },
         "name": {
-          "description": "The name (project, location, cluster id) of the cluster to set networking policy.\nSpecified in the format 'projects\/*\/locations\/*\/clusters\/*'.",
+          "description": "The name (project, location, cluster id) of the cluster to set networking\npolicy. Specified in the format 'projects\/*\/locations\/*\/clusters\/*'.",
           "type": "string"
         },
         "version": {
@@ -1994,6 +2120,94 @@
         "version": {
           "description": "API request version that initiates this operation.",
           "type": "string"
+        }
+      }
+    },
+    "ListUsableSubnetworksResponse": {
+      "id": "ListUsableSubnetworksResponse",
+      "description": "ListUsableSubnetworksResponse is the response of\nListUsableSubnetworksRequest.",
+      "type": "object",
+      "properties": {
+        "subnetworks": {
+          "description": "A list of usable subnetworks in the specified network project.",
+          "type": "array",
+          "items": {
+            "$ref": "UsableSubnetwork"
+          }
+        },
+        "nextPageToken": {
+          "description": "This token allows you to get the next page of results for list requests.\nIf the number of results is larger than `page_size`, use the\n`next_page_token` as a value for the query parameter `page_token` in the\nnext request. The value will become empty when there are no more pages.",
+          "type": "string"
+        },
+        "version": {
+          "description": "API request version that initiates this operation.",
+          "type": "string"
+        }
+      }
+    },
+    "UsableSubnetwork": {
+      "id": "UsableSubnetwork",
+      "description": "UsableSubnetwork resource returns the subnetwork name, its associated network\nand the primary CIDR range.",
+      "type": "object",
+      "properties": {
+        "subnetwork": {
+          "description": "Subnetwork Name.\nExample: projects\/my-project\/regions\/us-central1\/subnetworks\/my-subnet",
+          "type": "string"
+        },
+        "network": {
+          "description": "Network Name.\nExample: projects\/my-project\/global\/networks\/my-network",
+          "type": "string"
+        },
+        "ipCidrRange": {
+          "description": "The range of internal addresses that are owned by this subnetwork.",
+          "type": "string"
+        }
+      }
+    },
+    "ListLocationsResponse": {
+      "id": "ListLocationsResponse",
+      "description": "ListLocationsResponse returns the list of all GKE locations and their\nrecommendation state.",
+      "type": "object",
+      "properties": {
+        "locations": {
+          "description": "A full list of GKE locations.",
+          "type": "array",
+          "items": {
+            "$ref": "Location"
+          }
+        },
+        "nextPageToken": {
+          "description": "Only return ListLocationsResponse that occur after the page_token. This\nvalue should be populated from the ListLocationsResponse.next_page_token if\nthat response token was set (which happens when listing more Locations than\nfit in a single ListLocationsResponse).",
+          "type": "string"
+        }
+      }
+    },
+    "Location": {
+      "id": "Location",
+      "description": "Location returns the location name, and if the location is recommended\nfor GKE cluster scheduling.",
+      "type": "object",
+      "properties": {
+        "type": {
+          "description": "Contains the type of location this Location is for.\nRegional or Zonal.",
+          "enumDescriptions": [
+            "LOCATION_TYPE_UNSPECIFIED means the location type was not determined.",
+            "A GKE Location where Zonal clusters can be created.",
+            "A GKE Location where Regional clusters can be created."
+          ],
+          "type": "string",
+          "enum": [
+            "LOCATION_TYPE_UNSPECIFIED",
+            "ZONE",
+            "REGION"
+          ]
+        },
+        "name": {
+          "description": "Contains the name of the resource requested.\nSpecific in the format 'projects\/*\/locations\/*'.",
+          "type": "string"
+        },
+        "recommended": {
+          "description": "Recommended is a bool combining the drain state of the location (ie- has\nthe region been drained manually?), and the stockout status of any zone\naccording to Zone Advisor. This will be internal only for use by pantheon.",
+          "type": "boolean"
         }
       }
     }
@@ -2042,6 +2256,47 @@
                 "https://www.googleapis.com/auth/cloud-platform"
               ],
               "description": "Returns configuration info about the Kubernetes Engine service."
+            },
+            "list": {
+              "id": "container.projects.locations.list",
+              "path": "v1beta1/{+parent}/locations",
+              "flatPath": "v1beta1/projects/{projectsId}/locations",
+              "httpMethod": "GET",
+              "parameters": {
+                "parent": {
+                  "description": "Contains the name of the resource requested.\nSpecific in the format 'projects\/*\/locations'.",
+                  "location": "path",
+                  "required": true,
+                  "pattern": "^projects\/[^\/]+$",
+                  "type": "string"
+                },
+                "version": {
+                  "description": "API request version that initiates this operation.",
+                  "location": "query",
+                  "type": "string"
+                },
+                "pageSize": {
+                  "description": "Only return up to this many ListLocationsResponse in the response. If not\nspecified the service will pick the maximum number of results.\nNote: Specifying page_size = 0 is equivalent to not specifying a\npage_size, i.e., will result in the service picking a page_size value.\nThis is currently not used and will be honored once we use pagination.",
+                  "location": "query",
+                  "type": "integer",
+                  "format": "int32"
+                },
+                "pageToken": {
+                  "description": "Only return Locations that occur after the page_token. This value\nshould be populated from the\nListLocationsResponse.next_page_token if that response token was\nset (which happens when listing more Locations than fit in a\nsingle ListLocationsResponse).\nThis is currently not used and will be honored once we use pagination.",
+                  "location": "query",
+                  "type": "string"
+                }
+              },
+              "parameterOrder": [
+                "parent"
+              ],
+              "response": {
+                "$ref": "ListLocationsResponse"
+              },
+              "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+              ],
+              "description": ""
             }
           }
           ,
@@ -2131,7 +2386,7 @@
                   "scopes": [
                     "https://www.googleapis.com/auth/cloud-platform"
                   ],
-                  "description": "Gets the details of a specific cluster."
+                  "description": "Gets the details for a specific cluster."
                 },
                 "create": {
                   "id": "container.projects.locations.clusters.create",
@@ -2187,7 +2442,7 @@
                   "scopes": [
                     "https://www.googleapis.com/auth/cloud-platform"
                   ],
-                  "description": "Updates the settings of a specific cluster."
+                  "description": "Updates the settings for a specific cluster."
                 },
                 "setLogging": {
                   "id": "container.projects.locations.clusters.setLogging",
@@ -2215,7 +2470,7 @@
                   "scopes": [
                     "https://www.googleapis.com/auth/cloud-platform"
                   ],
-                  "description": "Sets the logging service of a specific cluster."
+                  "description": "Sets the logging service for a specific cluster."
                 },
                 "setMonitoring": {
                   "id": "container.projects.locations.clusters.setMonitoring",
@@ -2243,7 +2498,7 @@
                   "scopes": [
                     "https://www.googleapis.com/auth/cloud-platform"
                   ],
-                  "description": "Sets the monitoring service of a specific cluster."
+                  "description": "Sets the monitoring service for a specific cluster."
                 },
                 "setAddons": {
                   "id": "container.projects.locations.clusters.setAddons",
@@ -2271,7 +2526,7 @@
                   "scopes": [
                     "https://www.googleapis.com/auth/cloud-platform"
                   ],
-                  "description": "Sets the addons of a specific cluster."
+                  "description": "Sets the addons for a specific cluster."
                 },
                 "setLocations": {
                   "id": "container.projects.locations.clusters.setLocations",
@@ -2299,7 +2554,7 @@
                   "scopes": [
                     "https://www.googleapis.com/auth/cloud-platform"
                   ],
-                  "description": "Sets the locations of a specific cluster."
+                  "description": "Sets the locations for a specific cluster."
                 },
                 "updateMaster": {
                   "id": "container.projects.locations.clusters.updateMaster",
@@ -2327,7 +2582,7 @@
                   "scopes": [
                     "https://www.googleapis.com/auth/cloud-platform"
                   ],
-                  "description": "Updates the master of a specific cluster."
+                  "description": "Updates the master for a specific cluster."
                 },
                 "setMasterAuth": {
                   "id": "container.projects.locations.clusters.setMasterAuth",
@@ -2355,7 +2610,7 @@
                   "scopes": [
                     "https://www.googleapis.com/auth/cloud-platform"
                   ],
-                  "description": "Used to set master auth materials. Currently supports :-\nChanging the admin password of a specific cluster.\nThis can be either via password generation or explicitly set.\nModify basic_auth.csv and reset the K8S API server."
+                  "description": "Used to set master auth materials. Currently supports :-\nChanging the admin password for a specific cluster.\nThis can be either via password generation or explicitly set.\nModify basic_auth.csv and reset the K8S API server."
                 },
                 "delete": {
                   "id": "container.projects.locations.clusters.delete",
@@ -2465,7 +2720,7 @@
                   "httpMethod": "POST",
                   "parameters": {
                     "name": {
-                      "description": "The name (project, location, cluster id) of the cluster to start IP rotation.\nSpecified in the format 'projects\/*\/locations\/*\/clusters\/*'.",
+                      "description": "The name (project, location, cluster id) of the cluster to start IP\nrotation. Specified in the format 'projects\/*\/locations\/*\/clusters\/*'.",
                       "location": "path",
                       "required": true,
                       "pattern": "^projects\/[^\/]+\/locations\/[^\/]+\/clusters\/[^\/]+$",
@@ -2493,7 +2748,7 @@
                   "httpMethod": "POST",
                   "parameters": {
                     "name": {
-                      "description": "The name (project, location, cluster id) of the cluster to complete IP rotation.\nSpecified in the format 'projects\/*\/locations\/*\/clusters\/*'.",
+                      "description": "The name (project, location, cluster id) of the cluster to complete IP\nrotation. Specified in the format 'projects\/*\/locations\/*\/clusters\/*'.",
                       "location": "path",
                       "required": true,
                       "pattern": "^projects\/[^\/]+\/locations\/[^\/]+\/clusters\/[^\/]+$",
@@ -2521,7 +2776,7 @@
                   "httpMethod": "POST",
                   "parameters": {
                     "name": {
-                      "description": "The name (project, location, cluster id) of the cluster to set networking policy.\nSpecified in the format 'projects\/*\/locations\/*\/clusters\/*'.",
+                      "description": "The name (project, location, cluster id) of the cluster to set networking\npolicy. Specified in the format 'projects\/*\/locations\/*\/clusters\/*'.",
                       "location": "path",
                       "required": true,
                       "pattern": "^projects\/[^\/]+\/locations\/[^\/]+\/clusters\/[^\/]+$",
@@ -2582,7 +2837,7 @@
                       "httpMethod": "PUT",
                       "parameters": {
                         "name": {
-                          "description": "The name (project, location, cluster, node pool) of the node pool to update.\nSpecified in the format 'projects\/*\/locations\/*\/clusters\/*\/nodePools\/*'.",
+                          "description": "The name (project, location, cluster, node pool) of the node pool to\nupdate. Specified in the format\n'projects\/*\/locations\/*\/clusters\/*\/nodePools\/*'.",
                           "location": "path",
                           "required": true,
                           "pattern": "^projects\/[^\/]+\/locations\/[^\/]+\/clusters\/[^\/]+\/nodePools\/[^\/]+$",
@@ -2638,7 +2893,7 @@
                       "httpMethod": "GET",
                       "parameters": {
                         "parent": {
-                          "description": "The parent (project, location, cluster id) where the node pools will be listed.\nSpecified in the format 'projects\/*\/locations\/*\/clusters\/*'.",
+                          "description": "The parent (project, location, cluster id) where the node pools will be\nlisted. Specified in the format 'projects\/*\/locations\/*\/clusters\/*'.",
                           "location": "path",
                           "required": true,
                           "pattern": "^projects\/[^\/]+\/locations\/[^\/]+\/clusters\/[^\/]+$",
@@ -2683,7 +2938,7 @@
                       "httpMethod": "GET",
                       "parameters": {
                         "name": {
-                          "description": "The name (project, location, cluster, node pool id) of the node pool to get.\nSpecified in the format 'projects\/*\/locations\/*\/clusters\/*\/nodePools\/*'.",
+                          "description": "The name (project, location, cluster, node pool id) of the node pool to\nget. Specified in the format\n'projects\/*\/locations\/*\/clusters\/*\/nodePools\/*'.",
                           "location": "path",
                           "required": true,
                           "pattern": "^projects\/[^\/]+\/locations\/[^\/]+\/clusters\/[^\/]+\/nodePools\/[^\/]+$",
@@ -2733,7 +2988,7 @@
                       "httpMethod": "POST",
                       "parameters": {
                         "parent": {
-                          "description": "The parent (project, location, cluster id) where the node pool will be created.\nSpecified in the format 'projects\/*\/locations\/*\/clusters\/*\/nodePools\/*'.",
+                          "description": "The parent (project, location, cluster id) where the node pool will be\ncreated. Specified in the format\n'projects\/*\/locations\/*\/clusters\/*\/nodePools\/*'.",
                           "location": "path",
                           "required": true,
                           "pattern": "^projects\/[^\/]+\/locations\/[^\/]+\/clusters\/[^\/]+$",
@@ -2761,7 +3016,7 @@
                       "httpMethod": "DELETE",
                       "parameters": {
                         "name": {
-                          "description": "The name (project, location, cluster, node pool id) of the node pool to delete.\nSpecified in the format 'projects\/*\/locations\/*\/clusters\/*\/nodePools\/*'.",
+                          "description": "The name (project, location, cluster, node pool id) of the node pool to\ndelete. Specified in the format\n'projects\/*\/locations\/*\/clusters\/*\/nodePools\/*'.",
                           "location": "path",
                           "required": true,
                           "pattern": "^projects\/[^\/]+\/locations\/[^\/]+\/clusters\/[^\/]+\/nodePools\/[^\/]+$",
@@ -2886,7 +3141,7 @@
                       "scopes": [
                         "https://www.googleapis.com/auth/cloud-platform"
                       ],
-                      "description": "Sets the size of a specific node pool."
+                      "description": "Sets the size for a specific node pool."
                     }
                   }
                 }
@@ -2913,7 +3168,7 @@
                       "type": "string"
                     },
                     "zone": {
-                      "description": "Deprecated. The name of the Google Compute Engine [zone](\/compute\/docs\/zones#available)\nto return operations for, or `-` for all zones.\nThis field has been deprecated and replaced by the parent field.",
+                      "description": "Deprecated. The name of the Google Compute Engine\n[zone](\/compute\/docs\/zones#available) to return operations for, or `-` for\nall zones. This field has been deprecated and replaced by the parent field.",
                       "location": "query",
                       "type": "string"
                     },
@@ -3146,7 +3401,7 @@
                   "scopes": [
                     "https://www.googleapis.com/auth/cloud-platform"
                   ],
-                  "description": "Gets the details of a specific cluster."
+                  "description": "Gets the details for a specific cluster."
                 },
                 "create": {
                   "id": "container.projects.zones.clusters.create",
@@ -3221,7 +3476,7 @@
                   "scopes": [
                     "https://www.googleapis.com/auth/cloud-platform"
                   ],
-                  "description": "Updates the settings of a specific cluster."
+                  "description": "Updates the settings for a specific cluster."
                 },
                 "logging": {
                   "id": "container.projects.zones.clusters.logging",
@@ -3262,7 +3517,7 @@
                   "scopes": [
                     "https://www.googleapis.com/auth/cloud-platform"
                   ],
-                  "description": "Sets the logging service of a specific cluster."
+                  "description": "Sets the logging service for a specific cluster."
                 },
                 "monitoring": {
                   "id": "container.projects.zones.clusters.monitoring",
@@ -3303,7 +3558,7 @@
                   "scopes": [
                     "https://www.googleapis.com/auth/cloud-platform"
                   ],
-                  "description": "Sets the monitoring service of a specific cluster."
+                  "description": "Sets the monitoring service for a specific cluster."
                 },
                 "addons": {
                   "id": "container.projects.zones.clusters.addons",
@@ -3344,7 +3599,7 @@
                   "scopes": [
                     "https://www.googleapis.com/auth/cloud-platform"
                   ],
-                  "description": "Sets the addons of a specific cluster."
+                  "description": "Sets the addons for a specific cluster."
                 },
                 "locations": {
                   "id": "container.projects.zones.clusters.locations",
@@ -3385,7 +3640,7 @@
                   "scopes": [
                     "https://www.googleapis.com/auth/cloud-platform"
                   ],
-                  "description": "Sets the locations of a specific cluster."
+                  "description": "Sets the locations for a specific cluster."
                 },
                 "master": {
                   "id": "container.projects.zones.clusters.master",
@@ -3426,7 +3681,7 @@
                   "scopes": [
                     "https://www.googleapis.com/auth/cloud-platform"
                   ],
-                  "description": "Updates the master of a specific cluster."
+                  "description": "Updates the master for a specific cluster."
                 },
                 "setMasterAuth": {
                   "id": "container.projects.zones.clusters.setMasterAuth",
@@ -3467,7 +3722,7 @@
                   "scopes": [
                     "https://www.googleapis.com/auth/cloud-platform"
                   ],
-                  "description": "Used to set master auth materials. Currently supports :-\nChanging the admin password of a specific cluster.\nThis can be either via password generation or explicitly set.\nModify basic_auth.csv and reset the K8S API server."
+                  "description": "Used to set master auth materials. Currently supports :-\nChanging the admin password for a specific cluster.\nThis can be either via password generation or explicitly set.\nModify basic_auth.csv and reset the K8S API server."
                 },
                 "delete": {
                   "id": "container.projects.zones.clusters.delete",
@@ -3889,7 +4144,7 @@
                           "type": "string"
                         },
                         "parent": {
-                          "description": "The parent (project, location, cluster id) where the node pools will be listed.\nSpecified in the format 'projects\/*\/locations\/*\/clusters\/*'.",
+                          "description": "The parent (project, location, cluster id) where the node pools will be\nlisted. Specified in the format 'projects\/*\/locations\/*\/clusters\/*'.",
                           "location": "query",
                           "type": "string"
                         },
@@ -3943,7 +4198,7 @@
                           "type": "string"
                         },
                         "name": {
-                          "description": "The name (project, location, cluster, node pool id) of the node pool to get.\nSpecified in the format 'projects\/*\/locations\/*\/clusters\/*\/nodePools\/*'.",
+                          "description": "The name (project, location, cluster, node pool id) of the node pool to\nget. Specified in the format\n'projects\/*\/locations\/*\/clusters\/*\/nodePools\/*'.",
                           "location": "query",
                           "type": "string"
                         },
@@ -4039,7 +4294,7 @@
                           "type": "string"
                         },
                         "name": {
-                          "description": "The name (project, location, cluster, node pool id) of the node pool to delete.\nSpecified in the format 'projects\/*\/locations\/*\/clusters\/*\/nodePools\/*'.",
+                          "description": "The name (project, location, cluster, node pool id) of the node pool to\ndelete. Specified in the format\n'projects\/*\/locations\/*\/clusters\/*\/nodePools\/*'.",
                           "location": "query",
                           "type": "string"
                         },
@@ -4205,7 +4460,7 @@
                       "scopes": [
                         "https://www.googleapis.com/auth/cloud-platform"
                       ],
-                      "description": "Sets the size of a specific node pool."
+                      "description": "Sets the size for a specific node pool."
                     }
                   }
                 }
@@ -4226,7 +4481,7 @@
                       "type": "string"
                     },
                     "zone": {
-                      "description": "Deprecated. The name of the Google Compute Engine [zone](\/compute\/docs\/zones#available)\nto return operations for, or `-` for all zones.\nThis field has been deprecated and replaced by the parent field.",
+                      "description": "Deprecated. The name of the Google Compute Engine\n[zone](\/compute\/docs\/zones#available) to return operations for, or `-` for\nall zones. This field has been deprecated and replaced by the parent field.",
                       "location": "path",
                       "required": true,
                       "type": "string"
@@ -4342,6 +4597,60 @@
                     "https://www.googleapis.com/auth/cloud-platform"
                   ],
                   "description": "Cancels the specified operation."
+                }
+              }
+            }
+          }
+        },
+        "aggregated": {
+          "resources": {
+            "usableSubnetworks": {
+              "methods": {
+                "list": {
+                  "id": "container.projects.aggregated.usableSubnetworks.list",
+                  "path": "v1beta1/{+parent}/aggregated/usableSubnetworks",
+                  "flatPath": "v1beta1/projects/{projectsId}/aggregated/usableSubnetworks",
+                  "httpMethod": "GET",
+                  "parameters": {
+                    "parent": {
+                      "description": "The parent project where subnetworks are usable.\nSpecified in the format 'projects\/*'.",
+                      "location": "path",
+                      "required": true,
+                      "pattern": "^projects\/[^\/]+$",
+                      "type": "string"
+                    },
+                    "filter": {
+                      "description": "Filtering currently only supports equality on the networkProjectId and must\nbe in the form: \"networkProjectId=[PROJECTID]\", where `networkProjectId`\nis the project which owns the listed subnetworks. This defaults to the\nparent project ID.",
+                      "location": "query",
+                      "type": "string"
+                    },
+                    "pageSize": {
+                      "description": "The max number of results per page that should be returned. If the number\nof available results is larger than `page_size`, a `next_page_token` is\nreturned which can be used to get the next page of results in subsequent\nrequests. Acceptable values are 0 to 500, inclusive. (Default: 500)",
+                      "location": "query",
+                      "type": "integer",
+                      "format": "int32"
+                    },
+                    "pageToken": {
+                      "description": "Specifies a page token to use. Set this to the nextPageToken returned by\nprevious list requests to get the next page of results.",
+                      "location": "query",
+                      "type": "string"
+                    },
+                    "version": {
+                      "description": "API request version that initiates this operation.",
+                      "location": "query",
+                      "type": "string"
+                    }
+                  },
+                  "parameterOrder": [
+                    "parent"
+                  ],
+                  "response": {
+                    "$ref": "ListUsableSubnetworksResponse"
+                  },
+                  "scopes": [
+                    "https://www.googleapis.com/auth/cloud-platform"
+                  ],
+                  "description": "Lists subnetworks that are usable for creating clusters in a project."
                 }
               }
             }

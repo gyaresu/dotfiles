@@ -14,12 +14,16 @@
 
 """Command to describe the access policy for a service."""
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.endpoints import services_util
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.endpoints import arg_parsers
 from googlecloudsdk.command_lib.endpoints import common_flags
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.GA)
 class GetIamPolicy(base.ListCommand):
   """Describes the IAM policy for a service.
 

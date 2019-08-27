@@ -13,6 +13,8 @@
 # limitations under the License.
 """Helpers for parsing flags and arguments."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.command_lib.util import completers
 from googlecloudsdk.command_lib.util import parameter_info_lib
@@ -111,19 +113,18 @@ CRYPTO_KEY_VERSION_COLLECTION = (
 
 
 # Flags.
-def AddLocationFlag(parser):
-
+def AddLocationFlag(parser, resource='resource'):
   parser.add_argument(
       '--location',
       completer=LocationCompleter,
-      help='The location of the requested resource.')
+      help='The location of the {0}.'.format(resource))
 
 
-def AddKeyRingFlag(parser):
+def AddKeyRingFlag(parser, resource='resource'):
   parser.add_argument(
       '--keyring',
       completer=KeyRingCompleter,
-      help='The containing keyring.')
+      help='The keyring of the {0}.'.format(resource))
 
 
 def AddCryptoKeyFlag(parser, help_text=None):
@@ -131,6 +132,12 @@ def AddCryptoKeyFlag(parser, help_text=None):
       '--key',
       completer=KeyCompleter,
       help=help_text or 'The containing key.')
+
+
+def AddKeyResourceFlags(parser, help_text=None):
+  AddLocationFlag(parser, 'keyring')
+  AddKeyRingFlag(parser, 'key')
+  AddCryptoKeyFlag(parser, help_text)
 
 
 def AddCryptoKeyVersionFlag(parser, help_action, required=False):
@@ -208,11 +215,22 @@ def AddCryptoKeyArgument(parser, help_action):
       help='Name of the key {0}.'.format(help_action))
 
 
+def AddKeyResourceArgument(parser, help_action):
+  AddLocationFlag(parser, 'key')
+  AddKeyRingFlag(parser, 'key')
+  AddCryptoKeyArgument(parser, help_action)
+
+
 def AddCryptoKeyVersionArgument(parser, help_action):
   parser.add_argument(
       'version',
       completer=KeyVersionCompleter,
       help='Name of the version {0}.'.format(help_action))
+
+
+def AddKeyVersionResourceArgument(parser, help_action):
+  AddKeyResourceFlags(parser)
+  AddCryptoKeyVersionArgument(parser, help_action)
 
 
 # Parsing.

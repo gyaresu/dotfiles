@@ -14,6 +14,8 @@
 
 """Create Android test matrices in Firebase Test Lab."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import os
 import uuid
 
@@ -24,6 +26,7 @@ from googlecloudsdk.api_lib.firebase.test import util
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import config
 from googlecloudsdk.core import log
+import six
 
 
 def CreateMatrix(args, context, history_id, gcs_results_root, release_track):
@@ -79,10 +82,6 @@ class MatrixCreator(object):
   def _GetOrchestratorOption(self):
     orchestrator_options = (self._messages.AndroidInstrumentationTest.
                             OrchestratorOptionValueValuesEnum)
-    if not hasattr(self._args, u'use_orchestrator'):
-      # Do not use orchestrator if orchestrator flag is not registered in this
-      # release track.
-      return orchestrator_options.DO_NOT_USE_ORCHESTRATOR
     if self._args.use_orchestrator is None:
       return orchestrator_options.ORCHESTRATOR_OPTION_UNSPECIFIED
     elif self._args.use_orchestrator:
@@ -98,7 +97,7 @@ class MatrixCreator(object):
         'click': action_types.SINGLE_CLICK,
         'text': action_types.ENTER_TEXT
     }
-    for key, value in (robo_directives_dict or {}).iteritems():
+    for key, value in six.iteritems((robo_directives_dict or {})):
       (action_type, resource_name) = util.ParseRoboDirectiveKey(key)
       robo_directives.append(
           self._messages.RoboDirective(
@@ -130,7 +129,7 @@ class MatrixCreator(object):
         maxSteps=self._args.max_steps,
         appInitialActivity=self._args.app_initial_activity,
         roboDirectives=self._BuildRoboDirectives(self._args.robo_directives))
-    if hasattr(self._args, u'robo_script') and self._args.robo_script:
+    if getattr(self._args, 'robo_script', None):
       spec.androidRoboTest.roboScript = self._BuildFileReference(
           self._args.robo_script)
     return spec
@@ -150,16 +149,22 @@ class MatrixCreator(object):
   def _BuildGenericTestSpec(self):
     """Build a generic TestSpecification without test-type specifics."""
     device_files = []
-    if self._args.obb_files:
-      for obb_file in self._args.obb_files:
-        device_files.append(self._messages.DeviceFile(
-            obbFile=self._messages.ObbFile(
-                obbFileName=os.path.basename(obb_file),
-                obb=self._BuildFileReference(obb_file))))
+    for obb_file in self._args.obb_files or []:
+      device_files.append(
+          self._messages.DeviceFile(
+              obbFile=self._messages.ObbFile(
+                  obbFileName=os.path.basename(obb_file),
+                  obb=self._BuildFileReference(obb_file))))
+    for other_files in getattr(self._args, 'other_files', {}) or {}:
+      device_files.append(
+          self._messages.DeviceFile(
+              regularFile=self._messages.RegularFile(
+                  content=self._BuildFileReference(other_files),
+                  devicePath=self._args.other_files[other_files])))
 
     environment_variables = []
     if self._args.environment_variables:
-      for key, value in self._args.environment_variables.iteritems():
+      for key, value in six.iteritems(self._args.environment_variables):
         environment_variables.append(
             self._messages.EnvironmentVariable(key=key, value=value))
 
@@ -169,12 +174,18 @@ class MatrixCreator(object):
     if self._args.auto_google_login:
       account = self._messages.Account(googleAuto=self._messages.GoogleAuto())
 
+    additional_apks = [
+        self._messages.Apk(location=self._BuildFileReference(additional_apk))
+        for additional_apk in getattr(self._args, 'additional_apks', []) or []
+    ]
+
     setup = self._messages.TestSetup(
         filesToPush=device_files,
         account=account,
         environmentVariables=environment_variables,
         directoriesToPull=directories_to_pull,
-        networkProfile=getattr(self._args, 'network_profile', None))
+        networkProfile=getattr(self._args, 'network_profile', None),
+        additionalApks=additional_apks)
 
     return self._messages.TestSpecification(
         testTimeout=matrix_ops.ReformatDuration(self._args.timeout),

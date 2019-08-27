@@ -13,6 +13,8 @@
 # limitations under the License.
 """ml-engine versions create command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.ml_engine import operations
 from googlecloudsdk.api_lib.ml_engine import versions_api
 from googlecloudsdk.calliope import base
@@ -103,7 +105,7 @@ class CreateGA(base.CreateCommand):
                                 staging_bucket=args.staging_bucket,
                                 runtime_version=args.runtime_version,
                                 config_file=args.config,
-                                async_=args.async,
+                                asyncronous=args.async,
                                 description=args.description,
                                 labels=labels)
 
@@ -122,6 +124,7 @@ class CreateBeta(base.CreateCommand):
   def Args(parser):
     _AddCreateArgs(parser)
     flags.FRAMEWORK_MAPPER.choice_arg.AddToParser(parser)
+    flags.AddPythonVersionFlag(parser, 'when creating the version')
 
   def Run(self, args):
     versions_client = versions_api.VersionsClient()
@@ -135,10 +138,11 @@ class CreateBeta(base.CreateCommand):
                                 staging_bucket=args.staging_bucket,
                                 runtime_version=args.runtime_version,
                                 config_file=args.config,
-                                async_=args.async,
+                                asyncronous=args.async,
                                 description=args.description,
                                 labels=labels,
-                                framework=framework)
+                                framework=framework,
+                                python_version=args.python_version)
 
 
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
@@ -156,6 +160,7 @@ class CreateAlpha(base.CreateCommand):
     _AddCreateArgs(parser)
     flags.MACHINE_TYPE.AddToParser(parser)
     flags.FRAMEWORK_MAPPER.choice_arg.AddToParser(parser)
+    flags.AddPythonVersionFlag(parser, 'when creating the version')
 
   def Run(self, args):
     versions_client = versions_api.VersionsClient()
@@ -169,8 +174,9 @@ class CreateAlpha(base.CreateCommand):
                                 staging_bucket=args.staging_bucket,
                                 runtime_version=args.runtime_version,
                                 config_file=args.config,
-                                async_=args.async,
+                                asyncronous=args.async,
                                 labels=labels,
                                 description=args.description,
                                 machine_type=args.machine_type,
-                                framework=framework)
+                                framework=framework,
+                                python_version=args.python_version)

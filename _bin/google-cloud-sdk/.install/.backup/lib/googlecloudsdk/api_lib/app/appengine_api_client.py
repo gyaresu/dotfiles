@@ -14,6 +14,7 @@
 
 """Functions for creating a client to talk to the App Engine Admin API."""
 
+from __future__ import absolute_import
 import itertools
 import json
 import operator
@@ -21,12 +22,12 @@ import operator
 from apitools.base.py import encoding
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.app import build as app_cloud_build
+from googlecloudsdk.api_lib.app import env
 from googlecloudsdk.api_lib.app import exceptions
 from googlecloudsdk.api_lib.app import instances_util
 from googlecloudsdk.api_lib.app import operations_util
 from googlecloudsdk.api_lib.app import region_util
 from googlecloudsdk.api_lib.app import service_util
-from googlecloudsdk.api_lib.app import util
 from googlecloudsdk.api_lib.app import version_util
 from googlecloudsdk.api_lib.app.api import appengine_api_client_base
 from googlecloudsdk.api_lib.cloudbuild import logs as cloudbuild_logs
@@ -36,6 +37,8 @@ from googlecloudsdk.core import properties
 from googlecloudsdk.core import resources
 from googlecloudsdk.core import yaml
 from googlecloudsdk.third_party.appengine.admin.tools.conversion import convert_yaml
+from six.moves import filter  # pylint: disable=redefined-builtin
+from six.moves import map  # pylint: disable=redefined-builtin
 
 
 APPENGINE_VERSIONS_MAP = {
@@ -164,7 +167,7 @@ class AppengineApiClient(appengine_api_client_base.AppengineApiClientBase):
                                     extra_config_settings)
 
     message = 'Updating service [{service}]'.format(service=service_name)
-    if util.Environment.IsFlexible(service_config.env):
+    if service_config.env in [env.FLEX, env.MANAGED_VMS]:
       message += ' (this may take several minutes)'
 
     operation_metadata_type = self._ResolveMetadataType()
@@ -180,9 +183,10 @@ class AppengineApiClient(appengine_api_client_base.AppengineApiClientBase):
         operation = operations_util.WaitForOperation(
             self.client.apps_operations, operation, message=message,
             poller=poller)
-        build = app_cloud_build.BuildArtifact.MakeBuildIdArtifact(
-            operations_util.GetBuildFromOperation(
-                operation, operation_metadata_type))
+        build_id = operations_util.GetBuildFromOperation(
+            operation, operation_metadata_type)
+        if build_id:
+          build = app_cloud_build.BuildArtifact.MakeBuildIdArtifact(build_id)
     if build and build.IsBuildId():
       build_ref = resources.REGISTRY.Parse(
           build.identifier,
@@ -379,10 +383,10 @@ class AppengineApiClient(appengine_api_client_base.AppengineApiClientBase):
         services, [service] if service else None)
 
     versions = self.ListVersions(services)
-    log.debug('Versions: {0}'.format(map(str, versions)))
+    log.debug('Versions: {0}'.format(list(map(str, versions))))
     versions = version_util.GetMatchingVersions(
         versions, [version] if version else None, service)
-    versions = filter(version_filter, versions)
+    versions = list(filter(version_filter, versions))
 
     return self.ListInstances(versions)
 
@@ -623,7 +627,7 @@ class AppengineApiClient(appengine_api_client_base.AppengineApiClientBase):
       # pylint: disable=protected-access
       schema_parser = convert_yaml.GetSchemaParser(self.client._VERSION)
       json_version_resource = schema_parser.ConvertValue(config_dict)
-    except ValueError, e:
+    except ValueError as e:
       raise exceptions.ConfigError(
           '[{f}] could not be converted to the App Engine configuration '
           'format for the following reason: {msg}'.format(
@@ -662,7 +666,7 @@ class AppengineApiClient(appengine_api_client_base.AppengineApiClientBase):
     if 'betaSettings' in json_version_resource:
       json_dict = json_version_resource.get('betaSettings')
       attributes = []
-      for key, value in sorted(json_dict.iteritems()):
+      for key, value in sorted(json_dict.items()):
         attributes.append(
             self.messages.Version.BetaSettingsValue.AdditionalProperty(
                 key=key, value=value))

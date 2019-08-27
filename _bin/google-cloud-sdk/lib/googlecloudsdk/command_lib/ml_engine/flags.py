@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Provides common arguments for the ML Engine command surface."""
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import argparse
 import functools
 import itertools
@@ -259,14 +261,17 @@ VERSION_NAME = base.Argument('version', help='Name of the model version.')
 
 RUNTIME_VERSION = base.Argument(
     '--runtime-version',
-    help=('The Google Cloud ML Engine runtime version for this job. '
-          'Defaults to the latest stable version. See '
-          'https://cloud.google.com/ml/docs/concepts/runtime-version-list for '
-          'a list of accepted versions.'))
+    help=(
+        'The Google Cloud ML Engine runtime version for this job. Defaults '
+        'to a stable version, which is defined in the documentation along '
+        'with the list of supported versions: '
+        'https://cloud.google.com/ml-engine/docs/tensorflow/runtime-version-list'  # pylint: disable=line-too-long
+    ))
+
 
 POLLING_INTERVAL = base.Argument(
     '--polling-interval',
-    type=arg_parsers.BoundedInt(1, sys.maxint, unlimited=True),
+    type=arg_parsers.BoundedInt(1, sys.maxsize, unlimited=True),
     required=False,
     default=60,
     action=actions.StoreProperty(properties.VALUES.ml_engine.polling_interval),
@@ -295,6 +300,18 @@ FRAMEWORK_MAPPER = arg_utils.ChoiceEnumMapper(
     custom_mappings=_FRAMEWORK_CHOICES,
     help_str=('The ML framework used to train this version of the model. '
               'If not specified, defaults to `tensorflow`'))
+
+
+def AddPythonVersionFlag(parser, context):
+  help_str = (
+      'The version of Python used {context}. If not set, the default '
+      'version is 2.7. Python 3.5 is available when `runtime_version` is '
+      'set to 1.4 and above. Python 2.7 works with all supported runtime '
+      'versions.').format(context=context)
+  version = base.Argument(
+      '--python-version',
+      help=help_str)
+  version.AddToParser(parser)
 
 
 def GetModelName(positional=True, required=False):

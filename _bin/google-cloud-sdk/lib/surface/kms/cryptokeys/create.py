@@ -13,6 +13,8 @@
 # limitations under the License.
 """Create a CryptoKey."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kms import flags
@@ -56,12 +58,12 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddCryptoKeyArgument(parser, 'to create')
+    flags.AddKeyResourceArgument(parser, 'to create')
     flags.AddRotationPeriodFlag(parser)
     flags.AddNextRotationTimeFlag(parser)
     parser.add_argument(
         '--purpose',
-        choices=PURPOSE_MAP.keys(),
+        choices=list(PURPOSE_MAP.keys()),
         required=True,
         help='The "purpose" of the CryptoKey.')
 

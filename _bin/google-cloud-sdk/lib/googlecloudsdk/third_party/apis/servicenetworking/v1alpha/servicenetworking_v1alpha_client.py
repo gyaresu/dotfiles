@@ -24,7 +24,7 @@ class ServicenetworkingV1alpha(base_api.BaseApiClient):
                get_credentials=True, http=None, model=None,
                log_request=False, log_response=False,
                credentials_args=None, default_global_params=None,
-               additional_http_headers=None):
+               additional_http_headers=None, response_encoding=None):
     """Create a new servicenetworking handle."""
     url = url or self.BASE_URL
     super(ServicenetworkingV1alpha, self).__init__(
@@ -33,8 +33,10 @@ class ServicenetworkingV1alpha(base_api.BaseApiClient):
         log_request=log_request, log_response=log_response,
         credentials_args=credentials_args,
         default_global_params=default_global_params,
-        additional_http_headers=additional_http_headers)
+        additional_http_headers=additional_http_headers,
+        response_encoding=response_encoding)
     self.operations = self.OperationsService(self)
+    self.services_peeringStates = self.ServicesPeeringStatesService(self)
     self.services = self.ServicesService(self)
 
   class OperationsService(base_api.BaseApiService):
@@ -48,7 +50,7 @@ class ServicenetworkingV1alpha(base_api.BaseApiClient):
           }
 
     def Get(self, request, global_params=None):
-      """Gets the latest state of a long-running operation.  Clients can use this.
+      r"""Gets the latest state of a long-running operation.  Clients can use this.
 method to poll the operation result at intervals as recommended by the API
 service.
 
@@ -76,6 +78,44 @@ service.
         supports_download=False,
     )
 
+  class ServicesPeeringStatesService(base_api.BaseApiService):
+    """Service class for the services_peeringStates resource."""
+
+    _NAME = u'services_peeringStates'
+
+    def __init__(self, client):
+      super(ServicenetworkingV1alpha.ServicesPeeringStatesService, self).__init__(client)
+      self._upload_configs = {
+          }
+
+    def List(self, request, global_params=None):
+      r"""Service provider or consumer use this method to lists peering states for.
+the given service and consumer project.
+
+      Args:
+        request: (ServicenetworkingServicesPeeringStatesListRequest) input message
+        global_params: (StandardQueryParameters, default: None) global arguments
+      Returns:
+        (ListPeeringStatesResponse) The response message.
+      """
+      config = self.GetMethodConfig('List')
+      return self._RunMethod(
+          config, request, global_params=global_params)
+
+    List.method_config = lambda: base_api.ApiMethodInfo(
+        flat_path=u'v1alpha/services/{servicesId}/{servicesId1}/{servicesId2}/peeringStates',
+        http_method=u'GET',
+        method_id=u'servicenetworking.services.peeringStates.list',
+        ordered_params=[u'parent'],
+        path_params=[u'parent'],
+        query_params=[],
+        relative_path=u'v1alpha/{+parent}/peeringStates',
+        request_field='',
+        request_type_name=u'ServicenetworkingServicesPeeringStatesListRequest',
+        response_type_name=u'ListPeeringStatesResponse',
+        supports_download=False,
+    )
+
   class ServicesService(base_api.BaseApiService):
     """Service class for the services resource."""
 
@@ -87,7 +127,7 @@ service.
           }
 
     def AddSubnetwork(self, request, global_params=None):
-      """Service provider use this method to provision a new subnet in a.
+      r"""Service provider use this method to provision a new subnet in a.
 peered service shared VPC network.
 It will validate previously provided reserved ranges, find non-conflicting
 sub-range of requested size (expressed in
@@ -120,7 +160,7 @@ Operation<response: AddSubnetworkResponse>
     )
 
     def Peer(self, request, global_params=None):
-      """To connect service to a VPC network peering connection.
+      r"""To connect service to a VPC network peering connection.
 must be established prior to service provisioning.
 This method must be invoked by the consumer VPC network administrator
 It will establish a permanent peering connection with a shared

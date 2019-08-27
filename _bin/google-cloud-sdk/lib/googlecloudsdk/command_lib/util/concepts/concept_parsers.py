@@ -23,60 +23,18 @@ of all resources needed for the command, and they should be added all at once
 during calliope's Args method.
 """
 
-from googlecloudsdk.calliope import arg_parsers
-from googlecloudsdk.calliope import base
+from __future__ import absolute_import
+from __future__ import unicode_literals
+from googlecloudsdk.calliope.concepts import deps
 from googlecloudsdk.calliope.concepts import handlers
 from googlecloudsdk.calliope.concepts import util
-from googlecloudsdk.command_lib.util.concepts import completers
+from googlecloudsdk.command_lib.util.concepts import info_holders
+
+import six
 
 
 class PresentationSpec(object):
   """Class that defines how concept arguments are presented in a command."""
-
-  def AddConceptToParser(self, parser):
-    """Adds all attribute args for the concept to argparse.
-
-    Must be overridden in subclasses.
-
-    Args:
-      parser: the parser for the Calliope command.
-    """
-    raise NotImplementedError
-
-  def GetAttributeArgs(self):
-    """Generate args to add to the argument group.
-
-    Must be overridden in subclasses.
-
-    Yields:
-      (calliope.base.Argument), all arguments corresponding to concept
-        attributes.
-    """
-    raise NotImplementedError
-
-  def GetGroupHelp(self):
-    """Get the group help for the group defined by the presentation spec.
-
-    Must be overridden in subclasses.
-
-    Returns:
-      (str) the help text.
-    """
-    raise NotImplementedError
-
-  def GetInfo(self):
-    """Creates a ConceptInfo object to hold dependencies.
-
-    May configure the object with different or additional fallthroughs from the
-    ones present in from the ones present in the ConceptSpec's attributes.
-
-    Must be overridden in subclasses.
-
-    Returns:
-      (googlecloudsdk.calliope.concepts.handlers.ConceptInfo) the created
-        object.
-    """
-    raise NotImplementedError
 
   @property
   def concept_spec(self):
@@ -89,19 +47,35 @@ class PresentationSpec(object):
     """
     raise NotImplementedError
 
-  def __eq__(self, other):
-    if not isinstance(other, type(self)):
-      return False
-    if self.GetGroupHelp() != other.GetGroupHelp():
-      return False
-    if ([(arg.name, arg.kwargs) for arg in self.GetAttributeArgs()]
-        != [(arg.name, arg.kwargs) for arg in other.GetAttributeArgs()]):
-      return False
-    return True
+  @property
+  def attribute_to_args_map(self):
+    """The map of attribute names to associated args.
+
+    Must be overridden in subclasses.
+
+    Returns:
+      {str: str}, the map.
+    """
+    raise NotImplementedError
+
+  def _GenerateInfo(self, fallthroughs_map):
+    """Generate a ConceptInfo object for the ConceptParser.
+
+    Must be overridden in subclasses.
+
+    Args:
+      fallthroughs_map: {str: [googlecloudsdk.calliope.concepts.deps.
+        _FallthroughBase]}, dict keyed by attribute name to lists of
+        fallthroughs.
+
+    Returns:
+      info_holders.ConceptInfo, the ConceptInfo object.
+    """
+    raise NotImplementedError
 
 
 class ResourcePresentationSpec(PresentationSpec):
-  """Class that defines how concept arguments are presented in a command.
+  """Class that specifies how concept arguments are presented in a command.
 
   Attributes:
     name: str, the name of the main arg for the concept. Can be positional or
@@ -113,9 +87,11 @@ class ResourcePresentationSpec(PresentationSpec):
       `--myresource-project`.
     required: bool, whether the anchor argument should be required. If True, the
       command will fail at argparse time if the anchor argument isn't given.
-    attribute_to_args_map: {str: str}, a map from attribute names to arg names.
     plural: bool, True if the resource will be parsed as a list, False
       otherwise.
+    group: the parser or subparser for a Calliope command that the resource
+      arguments should be added to. If not provided, will be added to the main
+      parser.
   """
 
   def __init__(self, name, concept_spec, group_help, prefixes=False,
@@ -149,7 +125,6 @@ class ResourcePresentationSpec(PresentationSpec):
 
     # Create a rename map for the attributes to their flags.
     self._attribute_to_args_map = {}
-    self._skip_flags = []
     for i, attribute in enumerate(self._concept_spec.attributes):
       is_anchor = i == len(self._concept_spec.attributes) - 1
       name = self.GetFlagName(
@@ -157,65 +132,13 @@ class ResourcePresentationSpec(PresentationSpec):
           is_anchor=is_anchor)
       if name:
         self._attribute_to_args_map[attribute.name] = name
-      else:
-        self._skip_flags.append(attribute.name)
-
-  @property
-  def title(self):
-    """The title of the arg group for the spec, in all caps with spaces."""
-    name = self.name.upper()
-    if not util.IsPositional(name):
-      name = name[len(util.PREFIX):].replace('-', ' ')
-    return '{}'.format(name)
-
-  @property
-  def concept_spec(self):
-    return self._concept_spec
-
-  @property
-  def resource_spec(self):
-    return self.concept_spec
 
   @property
   def attribute_to_args_map(self):
     return self._attribute_to_args_map
 
-  @property
-  def args_required(self):
-    """True if the resource is required and any arguments have no fallthroughs.
-
-    If fallthroughs can ever be configured in the ResourceInfo object,
-    a more robust solution will be needed, e.g. a GetFallthroughsForAttribute
-    method.
-
-    Returns:
-      bool, whether the argument group should be required.
-    """
-    if not self.required:
-      return False
-    for attribute in self.concept_spec.attributes:
-      if not attribute.fallthroughs:
-        return True
-    return False
-
-  def GetInfo(self):
-    """Overrides.
-
-    Returns:
-      (handlers.ResourceInfo) the holder for the resource's dependencies.
-    """
-    fallthroughs_map = {attribute.name: attribute.fallthroughs
-                        for attribute in self.concept_spec.attributes}
-    allow_empty = not self.required
-    return handlers.ResourceInfo(
-        self.resource_spec,
-        self.attribute_to_args_map,
-        fallthroughs_map,
-        plural=self.plural,
-        allow_empty=allow_empty)
-
   @staticmethod
-  def GetFlagName(attribute_name, resource_name, flag_name_overrides=None,
+  def GetFlagName(attribute_name, presentation_name, flag_name_overrides=None,
                   prefixes=False, is_anchor=False):
     """Gets the flag name for a given attribute name.
 
@@ -224,8 +147,8 @@ class ResourcePresentationSpec(PresentationSpec):
 
     Args:
       attribute_name: str, the name of the attribute to base the flag name on.
-      resource_name: str, the name of the resource the attribute belongs to
-        (e.g. '--instance').
+      presentation_name: str, the anchor argument name of the resource the
+        attribute belongs to (e.g. '--foo').
       flag_name_overrides: {str: str}, a dict of attribute names to exact string
         of the flag name to use for the attribute. None if no overrides.
       prefixes: bool, whether to use the resource name as a prefix for the flag.
@@ -240,151 +163,69 @@ class ResourcePresentationSpec(PresentationSpec):
     if attribute_name == 'project':
       return ''
     if is_anchor:
-      return resource_name
+      return presentation_name
     prefix = util.PREFIX
     if prefixes:
-      if resource_name.startswith(util.PREFIX):
-        prefix += resource_name[len(util.PREFIX):] + '-'
+      if presentation_name.startswith(util.PREFIX):
+        prefix += presentation_name[len(util.PREFIX):] + '-'
       else:
-        prefix += resource_name.lower().replace('_', '-') + '-'
+        prefix += presentation_name.lower().replace('_', '-') + '-'
     return prefix + attribute_name
 
-  def _KwargsForAttribute(self, name, attribute, is_anchor=False):
-    """Constructs the kwargs for adding an attribute to argparse."""
-    # Argument is modal if it's the anchor, unless there are fallthroughs.
-    # If fallthroughs can ever be configured in the ResourceInfo object,
-    # a more robust solution will be needed, e.g. a GetFallthroughsForAttribute
-    # method.
-    required = is_anchor and not attribute.fallthroughs
-    # If this is the only argument in the group, the help text should be the
-    # "group" help.
-    if len(filter(bool, self.attribute_to_args_map.values())) == 1:
-      help_text = self.group_help
-    else:
-      # Expand the help text.
-      help_text = attribute.help_text.format(resource=self.resource_spec.name)
-    plural = attribute == self.resource_spec.anchor and self.plural
-    if attribute.completer:
-      completer = attribute.completer
-    elif not self.resource_spec.disable_auto_completers:
-      completer = completers.CompleterForAttribute(
-          self.resource_spec,
-          attribute.name)
-    else:
-      completer = None
-    kwargs_dict = {
-        'help': help_text,
-        'type': attribute.value_type,
-        'completer': completer}
-    if util.IsPositional(name):
-      if plural and required:
-        kwargs_dict.update({'nargs': '+'})
-      # The following should not usually happen because anchor args are
-      # required.
-      elif plural and not required:
-        kwargs_dict.update({'nargs': '*'})
-      elif not required:
-        kwargs_dict.update({'nargs': '?'})
-    else:
-      kwargs_dict.update({'metavar': util.MetavarFormat(name)})
-      if required:
-        kwargs_dict.update({'required': True})
-      if plural:
-        kwargs_dict.update({'type': arg_parsers.ArgList()})
-    return kwargs_dict
+  @property
+  def concept_spec(self):
+    return self._concept_spec
 
-  def _GetAttributeArg(self, attribute, is_anchor=False):
-    """Creates argument for a specific attribute."""
-    name = self.attribute_to_args_map.get(attribute.name, None)
-    # Return None for any false value.
-    if not name:
-      return None
-    return base.Argument(
-        name,
-        **self._KwargsForAttribute(name, attribute, is_anchor=is_anchor))
-
-  def GetAttributeArgs(self):
-    """Generate args to add to the argument group."""
-    args = []
-    for attribute in self.resource_spec.attributes[:-1]:
-      arg = self._GetAttributeArg(attribute)
-      if arg:
-        args.append(arg)
-    # If the group is optional, the anchor arg is "modal": it is required only
-    # if another argument in the group is specified.
-    arg = self._GetAttributeArg(
-        self.concept_spec.anchor, is_anchor=True)
-    if arg:
-      args.append(arg)
-
-    return args
-
-  def GetGroupHelp(self):
-    """Build group help for the argument group."""
-    description = ['{} - {} The arguments in this group can be used to specify '
-                   'the attributes of this resource.'.format(self.title,
-                                                             self.group_help)]
-    if self._skip_flags:
-      description.append('(NOTE) Some attributes are not given arguments in '
-                         'this group but can be set in other ways.')
-      for attr_name in self._skip_flags:
-        hint = 'To set the [{}] attribute: {}.'.format(
-            attr_name,
-            '; '.join(self.GetInfo().GetHints(attr_name)))
-        description.append(hint)
-    return ' '.join(description)
-
-  def AddConceptToParser(self, parser):
-    """Adds all attributes of the concept to argparse.
-
-    Creates a group to hold all the attributes and adds an argument for each
-    attribute. If the presentation spec is required, then the anchor attribute
-    argument will be required.
+  def _GenerateInfo(self, fallthroughs_map):
+    """Gets the ResourceInfo object for the ConceptParser.
 
     Args:
-      parser: the parser for the Calliope command.
+      fallthroughs_map: {str: [googlecloudsdk.calliope.concepts.deps.
+        _FallthroughBase]}, dict keyed by attribute name to lists of
+        fallthroughs.
+
+    Returns:
+      info_holders.ResourceInfo, the ResourceInfo object.
     """
-    args = self.GetAttributeArgs()
-    if not args:
-      # Don't create the group if there are not going to be any args generated.
-      return
-    # If this spec is supposed to be added to a subgroup, that overrides the
-    # provided parser.
-    parser = self.group or parser
-
-    resource_group = parser.add_group(
-        help=self.GetGroupHelp(),
-        required=self.args_required)
-    for arg in args:
-      arg.AddToParser(resource_group)
-
-  def GetExampleArgList(self):
-    """Returns a list of command line example arg strings for the concept."""
-    args = self.GetAttributeArgs()
-    examples = []
-    for arg in args:
-      if arg.name.startswith('--'):
-        example = '{}=my-{}'.format(arg.name, arg.name[2:])
-      else:
-        example = 'my-{}'.format(arg.name.lower())
-      examples.append(example)
-    return examples
+    return info_holders.ResourceInfo(
+        self.name,
+        self.concept_spec,
+        self.group_help,
+        self.attribute_to_args_map,
+        fallthroughs_map,
+        required=self.required,
+        plural=self.plural,
+        group=self.group)
 
   def __eq__(self, other):
-    if not super(ResourcePresentationSpec, self).__eq__(other):
+    if not isinstance(other, type(self)):
       return False
-    return self.required == other.required
+    return (self.name == other.name and
+            self.concept_spec == other.concept_spec and
+            self.group_help == other.group_help and
+            self.prefixes == other.prefixes and
+            self.plural == other.plural and
+            self.required == other.required and
+            self.group == other.group)
 
 
 class ConceptParser(object):
   """Class that handles adding concept specs to argparse."""
 
-  def __init__(self, presentation_specs):
+  def __init__(self, presentation_specs, command_level_fallthroughs=None):
     """Initializes a concept holder.
 
     Args:
       presentation_specs: [PresentationSpec], a list of the specs for concepts
         to be added to the parser.
+      command_level_fallthroughs: {str: str}, a map of attributes to argument
+        fallthroughs for those attributes. The format of the key should be FOO.a
+        (the resource presentation name is "FOO" and the attribute name is "a").
+        The format of the value should either be "BAR.b" (where the argument
+        depended upon is the main argument generated for attribute "b" of
+        the resource presentation spec that is named "BAR"), or "--baz", where
+        "--baz" is a non-resource argument that is added separately to the
+        parser.
 
     Raises:
       ValueError: if two presentation specs have the same name or two specs
@@ -395,11 +236,13 @@ class ConceptParser(object):
     self._runtime_handler = handlers.RuntimeHandler()
     for spec in presentation_specs:
       self._AddSpec(spec)
+    self._command_level_fallthroughs = self._ValidateAndFormatFallthroughsMap(
+        command_level_fallthroughs or {})
 
   @classmethod
   def ForResource(cls, name, resource_spec, group_help, required=False,
                   flag_name_overrides=None, plural=False, prefixes=False,
-                  group=None):
+                  group=None, command_level_fallthroughs=None):
     """Constructs a ConceptParser for a single resource argument.
 
     Automatically sets prefixes to False.
@@ -420,6 +263,9 @@ class ConceptParser(object):
       group: the parser or subparser for a Calliope command that the resource
         arguments should be added to. If not provided, will be added to the main
         parser.
+      command_level_fallthroughs: a map of attribute names to lists of command-
+        specific fallthroughs. These will be prioritized over the default
+        fallthroughs for the attribute.
 
     Returns:
       (googlecloudsdk.calliope.concepts.concept_parsers.ConceptParser) The fully
@@ -434,7 +280,12 @@ class ConceptParser(object):
         plural=plural,
         prefixes=prefixes,
         group=group)
-    return cls([presentation_spec])
+    fallthroughs_map = {}
+    for attribute_name, fallthroughs in six.iteritems(
+        command_level_fallthroughs or {}):
+      key = '{}.{}'.format(presentation_spec.name, attribute_name)
+      fallthroughs_map[key] = fallthroughs
+    return cls([presentation_spec], fallthroughs_map)
 
   def _ArgNameMatches(self, name, other_name):
     """Checks if two argument names match in the namespace.
@@ -475,8 +326,8 @@ class ConceptParser(object):
                          'arguments: [{}, {}]'.format(spec_name,
                                                       presentation_spec.name))
 
-    # Also check for duplicate attribute names.
-    for a, arg_name in presentation_spec.attribute_to_args_map.iteritems():
+    # Also check for duplicate argument names.
+    for a, arg_name in six.iteritems(presentation_spec.attribute_to_args_map):
       del a  # Unused.
       name = util.NormalizeFormat(arg_name)
       if name in self._all_args:
@@ -486,6 +337,53 @@ class ConceptParser(object):
 
     self._specs[presentation_spec.name] = presentation_spec
 
+  def _ValidateAndFormatFallthroughsMap(self, command_level_fallthroughs):
+    """Validate formatting of fallthroughs and build map keyed to spec name."""
+    spec_map = {}
+    for key, fallthroughs_list in six.iteritems(command_level_fallthroughs):
+      keys = key.split('.')
+      if len(keys) != 2:
+        raise ValueError('invalid fallthrough key: [{}]. Must be in format '
+                         '"FOO.a" where FOO is the presentation spec name and '
+                         'a is the attribute name.'.format(key))
+      spec_name, attribute_name = keys
+      self._ValidateSpecAndAttributeExist('key', spec_name, attribute_name)
+      for fallthrough_string in fallthroughs_list:
+        values = fallthrough_string.split('.')
+        if len(values) not in [1, 2]:
+          raise ValueError('invalid fallthrough value: [{}]. Must be in the '
+                           'form BAR.b or --baz'.format(fallthrough_string))
+        if len(values) == 2:
+          value_spec_name, value_attribute_name = values
+          self._ValidateSpecAndAttributeExist('value',
+                                              value_spec_name,
+                                              value_attribute_name)
+      spec_map.setdefault(spec_name, {})[attribute_name] = fallthroughs_list
+    return spec_map
+
+  def _ValidateSpecAndAttributeExist(self, location, spec_name, attribute_name):
+    """Raises if a formatted string refers to non-existent spec or attribute."""
+    if spec_name not in self.specs:
+      raise ValueError('invalid fallthrough {}: [{}]. Spec name is not '
+                       'present in the presentation specs. Available names: '
+                       '[{}]'.format(
+                           location,
+                           '{}.{}'.format(spec_name, attribute_name),
+                           ', '.join(sorted(list(self.specs.keys())))))
+    spec = self.specs.get(spec_name)
+    if attribute_name not in [
+        attribute.name for attribute in spec.concept_spec.attributes]:
+      raise ValueError('invalid fallthrough {}: [{}]. spec named [{}] has no '
+                       'attribute named [{}]'.format(
+                           location,
+                           '{}.{}'.format(spec_name, attribute_name),
+                           spec_name,
+                           attribute_name))
+
+  @property
+  def specs(self):
+    return self._specs
+
   def AddToParser(self, parser):
     """Adds attribute args for all presentation specs to argparse.
 
@@ -493,17 +391,20 @@ class ConceptParser(object):
       parser: the parser for a Calliope command.
     """
     parser.add_concepts(self._runtime_handler)
-    for spec_name, spec in self._specs.iteritems():
+    for spec_name, spec in six.iteritems(self._specs):
+      concept_info = self.GetInfo(spec_name)
+      concept_info.AddToParser(parser)
       self._runtime_handler.AddConcept(
-          util.NormalizeFormat(spec_name), spec.GetInfo(),
+          util.NormalizeFormat(spec_name),
+          concept_info,
           required=spec.required)
-      spec.AddConceptToParser(parser)
 
   def GetExampleArgString(self):
     """Returns a command line example arg string for the concept."""
     examples = []
-    for _, spec in self._specs.iteritems():
-      args = spec.GetExampleArgList()
+    for spec_name in self._specs:
+      info = self.GetInfo(spec_name)
+      args = info.GetExampleArgList()
       if args:
         examples.extend(args)
 
@@ -512,3 +413,42 @@ class ConceptParser(object):
       return prefix + arg
 
     return ' '.join(sorted(examples, key=_PositionalsFirst))
+
+  def _MakeFallthrough(self, fallthrough_string):
+    """Make an ArgFallthrough from a formatted string."""
+    values = fallthrough_string.split('.')
+    if len(values) == 1:
+      arg_name = values
+      return deps.ArgFallthrough(values[0])
+    elif len(values) == 2:
+      spec_name, attribute_name = values
+      spec = self.specs.get(spec_name)
+      arg_name = spec.attribute_to_args_map.get(attribute_name, None)
+      if not arg_name:
+        raise ValueError(
+            'Invalid fallthrough value [{}]: No argument associated with '
+            'attribute [{}] in concept argument named [{}]'.format(
+                fallthrough_string,
+                attribute_name,
+                spec_name))
+      return deps.ArgFallthrough(arg_name)
+    else:
+      # Defensive only, should be validated earlier
+      raise ValueError('bad fallthrough string [{}]'.format(fallthrough_string))
+
+  def GetInfo(self, presentation_spec_name):
+    """Build ConceptInfo object for the spec with the given name."""
+    if presentation_spec_name not in self.specs:
+      raise ValueError('Presentation spec with name [{}] has not been added '
+                       'to the concept parser, cannot generate info.'.format(
+                           presentation_spec_name))
+    presentation_spec = self.specs[presentation_spec_name]
+    fallthroughs_map = {}
+    for attribute in presentation_spec.concept_spec.attributes:
+      fallthrough_strings = self._command_level_fallthroughs.get(
+          presentation_spec.name, {}).get(attribute.name, [])
+      fallthroughs = [self._MakeFallthrough(fallthrough_string)
+                      for fallthrough_string in fallthrough_strings]
+      fallthroughs_map[attribute.name] = fallthroughs + attribute.fallthroughs
+
+    return presentation_spec._GenerateInfo(fallthroughs_map)  # pylint: disable=protected-access

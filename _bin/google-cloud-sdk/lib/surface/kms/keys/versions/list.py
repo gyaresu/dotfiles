@@ -13,6 +13,8 @@
 # limitations under the License.
 """List the versions within a key."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base
@@ -36,6 +38,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
+    flags.AddKeyResourceFlags(parser)
     parser.display_info.AddFormat('table(name, state)')
 
   def Run(self, args):

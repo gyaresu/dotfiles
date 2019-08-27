@@ -13,10 +13,11 @@
 # limitations under the License.
 """gcloud dns operations command group."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class DnsOperations(base.Group):
   """Manage your Cloud DNS operations."""
   pass

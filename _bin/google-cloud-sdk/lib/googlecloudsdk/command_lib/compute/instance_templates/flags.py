@@ -13,6 +13,8 @@
 # limitations under the License.
 """Flags and helpers for the compute instance groups commands."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import flags
 

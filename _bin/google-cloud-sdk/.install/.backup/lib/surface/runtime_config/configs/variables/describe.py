@@ -14,6 +14,8 @@
 
 """The configs variables describe command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.runtime_config import util
 from googlecloudsdk.command_lib.runtime_config import base_commands
 
@@ -35,4 +37,5 @@ class Describe(base_commands.VariableRetrieverCommand):
 
   def Run(self, args):
     result = super(Describe, self).Run(args)
-    return util.FormatVariable(result)
+    # Describe always returns the value.
+    return util.FormatVariable(result, True)

@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command for listing health checks."""
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.calliope import base
@@ -138,7 +140,6 @@ class ListAlpha(List):
     # Returns a list of whitelisted protocols.
     whitelist = super(ListAlpha, self)._ProtocolWhitelist()
     whitelist.append(self.messages.HealthCheck.TypeValueValuesEnum.HTTP2.number)
-    whitelist.append(self.messages.HealthCheck.TypeValueValuesEnum.UDP.number)
     return whitelist
 
   def _Format(self, args):

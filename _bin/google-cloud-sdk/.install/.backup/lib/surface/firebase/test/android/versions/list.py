@@ -14,6 +14,8 @@
 
 """The 'gcloud firebase test android versions list' command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.firebase.test import util
 from googlecloudsdk.calliope import base
 
@@ -39,6 +41,7 @@ class List(base.ListCommand):
             tags.list().color(green=default,red=deprecated,yellow=preview)
           )
     """)
+    base.URI_FLAG.RemoveFromParser(parser)
 
   def Run(self, args):
     """Run the 'gcloud firebase test android versions list' command.

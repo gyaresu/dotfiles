@@ -13,7 +13,11 @@
 # limitations under the License.
 """The base surface for Binary Authorization signatures."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 from googlecloudsdk.calliope import base
+from googlecloudsdk.core import properties
 
 
 @base.Hidden
@@ -39,17 +43,7 @@ class Binauthz(base.Group):
     ARTIFACT_URL="gcr.io/example-project/example-image@sha256:${DIGEST}"
     ```
 
-    Export your keypair's public key:
-
-        ```sh
-        gpg \
-            --armor \
-            --export "${ATTESTING_USER}" \
-            --output build_key1.pgp
-        ```
-
-    Or if you're creating v2 kind=ATTESTATION_AUTHORITY attestations,
-    export your key's fingerprint (note this may differ based on version and
+    Export your key's fingerprint (note this may differ based on version and
     implementations of gpg):
 
         ```sh
@@ -88,19 +82,10 @@ class Binauthz(base.Group):
 
         ```sh
         {command} attestations create \
-          --public-key-file=build_key1.pgp \
-          --signature-file=example_signature.pgp \
-          --artifact-url="${ARTIFACT_URL}"
-        ```
-
-    Or if you're creating v2 kind=ATTESTATION_AUTHORITY attestations:
-
-        ```sh
-        {command} attestations create \
           --pgp-key-fingerprint=${KEY_FINGERPRINT} \
           --signature-file=example_signature.pgp \
           --artifact-url="${ARTIFACT_URL}" \
-          --attestation-authority-note=providers/example-prj/notes/note-id
+          --attestation-authority-note=projects/example-prj/notes/note-id
         ```
 
     List the attestation by artifact URL.  `--format` can be passed to
@@ -145,9 +130,15 @@ class Binauthz(base.Group):
         ```sh
         {command} attestations list \
           --artifact-url="${ARTIFACT_URL}" \
-          --attestation-authority-note=providers/exmple-prj/notes/note-id \
+          --attestation-authority-note=projects/exmple-prj/notes/note-id \
           --format=yaml
 
           ...
         ```
   """
+
+  def Filter(self, context, args):
+    # Explicitly override container group's LEGACY billing configuration.
+    properties.VALUES.billing.quota_project.Set(
+        properties.VALUES.billing.CURRENT_PROJECT)
+    return context

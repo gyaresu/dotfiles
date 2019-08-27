@@ -17,11 +17,12 @@ Based on the runtime and environment, this can entail generating a new
 .gcloudignore, using an existing .gcloudignore, or using existing skip_files.
 """
 
+from __future__ import absolute_import
 import os
-import re
 
+from googlecloudsdk.api_lib.app import env
+from googlecloudsdk.api_lib.app import runtime_registry
 from googlecloudsdk.api_lib.app import util
-from googlecloudsdk.command_lib.app import runtime_registry
 from googlecloudsdk.command_lib.util import gcloudignore
 from googlecloudsdk.core import exceptions as core_exceptions
 
@@ -42,29 +43,27 @@ _PHP_GCLOUDIGNORE = '\n'.join([
 
 _GCLOUDIGNORE_REGISTRY = {
     runtime_registry.RegistryEntry(
-        re.compile(r'nodejs\d*'), {util.Environment.STANDARD}):
-        _NODE_GCLOUDIGNORE,
+        env.NODE_TI_RUNTIME_EXPR, {env.STANDARD}): _NODE_GCLOUDIGNORE,
     runtime_registry.RegistryEntry(
-        re.compile(r'php[789]\d*'), {util.Environment.STANDARD}):
-        _PHP_GCLOUDIGNORE,
+        env.PHP_TI_RUNTIME_EXPR, {env.STANDARD}): _PHP_GCLOUDIGNORE,
+    runtime_registry.RegistryEntry(
+        env.PYTHON_TI_RUNTIME_EXPR, {env.STANDARD}):
+    gcloudignore.DEFAULT_IGNORE_FILE,
 }
 
 
-class SkipFilesGcloudignoreConflictError(core_exceptions.Error):
+class SkipFilesError(core_exceptions.Error):
 
-  def __init__(self):
-    super(SkipFilesGcloudignoreConflictError, self).__init__(
-        ('Cannot have both a .gcloudignore file and skip_files defined in '
-         'the same application. We recommend you translate your skip_files '
-         'ignore patterns to your .gcloudignore file.'))
+  def __init__(self, error_message):
+    super(SkipFilesError, self).__init__(error_message)
 
 
 def _GetGcloudignoreRegistry():
-  return runtime_registry.Registry(_GCLOUDIGNORE_REGISTRY)
+  return runtime_registry.Registry(_GCLOUDIGNORE_REGISTRY, default=False)
 
 
 def GetSourceFileIterator(source_dir, skip_files_regex, has_explicit_skip_files,
-                          runtime, env):
+                          runtime, environment):
   """Returns an iterator for accessing all source files to be uploaded.
 
   This method uses several implementations based on the provided runtime and
@@ -87,20 +86,29 @@ def GetSourceFileIterator(source_dir, skip_files_regex, has_explicit_skip_files,
     has_explicit_skip_files: bool, indicating whether skip_files_regex was
       explicitly defined by the user
     runtime: str, runtime as defined in app.yaml
-    env: util.Environment enum
+    environment: env.Environment enum
 
   Raises:
-    SkipFilesGcloudignoreConflictError: if using a runtime that still supports
-      skip_files, and both skip_files and .gcloudignore are present.
+    SkipFilesError: if you are using a runtime that no longer supports
+      skip_files (such as those defined in _GCLOUDIGNORE_REGISTRY), or if using
+      a runtime that still supports skip_files, but both skip_files and
+      a. gcloudignore file are present.
 
   Returns:
-    An object that can act as an iterable. The returned values are path names
-    of source files that should be uploaded for deployment.
+    An iterable object. The returned values are path names of source files that
+    should be uploaded for deployment.
   """
   gcloudignore_registry = _GetGcloudignoreRegistry()
-  registry_entry = gcloudignore_registry.Get(runtime, env)
+  registry_entry = gcloudignore_registry.Get(runtime, environment)
 
   if registry_entry:
+    if has_explicit_skip_files:
+      raise SkipFilesError(
+          'You cannot use skip_files and have a .gcloudignore file in the same '
+          'application. You should convert your skip_files patterns and put '
+          'them in your .gcloudignore file. For information on the format and '
+          'syntax of .gcloudignore files, see '
+          'https://cloud.google.com/sdk/gcloud/reference/topic/gcloudignore.')
     file_chooser = gcloudignore.GetFileChooserForDir(
         source_dir,
         default_ignore_file=registry_entry,
@@ -110,7 +118,12 @@ def GetSourceFileIterator(source_dir, skip_files_regex, has_explicit_skip_files,
     return file_chooser.GetIncludedFiles(source_dir, include_dirs=False)
   elif os.path.exists(os.path.join(source_dir, gcloudignore.IGNORE_FILE_NAME)):
     if has_explicit_skip_files:
-      raise SkipFilesGcloudignoreConflictError()
+      raise SkipFilesError(
+          'Cannot have both a .gcloudignore file and skip_files defined in '
+          'the same application. We recommend you translate your skip_files '
+          'ignore patterns to your .gcloudignore file. See '
+          'https://cloud.google.com/sdk/gcloud/reference/topic/gcloudignore '
+          'for more information about gcloudignore.')
     return gcloudignore.GetFileChooserForDir(source_dir).GetIncludedFiles(
         source_dir, include_dirs=False)
   else:

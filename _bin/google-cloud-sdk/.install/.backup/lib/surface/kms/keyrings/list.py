@@ -13,6 +13,8 @@
 # limitations under the License.
 """List keyrings within a location."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base
@@ -34,6 +36,7 @@ class List(base.ListCommand):
 
   @staticmethod
   def Args(parser):
+    flags.AddLocationFlag(parser, 'keyring')
     parser.display_info.AddFormat('table(name)')
 
   def Run(self, args):

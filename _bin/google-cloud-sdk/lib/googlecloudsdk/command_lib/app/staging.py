@@ -30,14 +30,15 @@ The interface is defined as follows:
   STDOUT and STDERR of the staging command (which are surfaced to the user as an
   ERROR message).
 """
+from __future__ import absolute_import
 import abc
 import cStringIO
 import os
 import re
 import tempfile
 
-from googlecloudsdk.api_lib.app import util
-from googlecloudsdk.command_lib.app import runtime_registry
+from googlecloudsdk.api_lib.app import env
+from googlecloudsdk.api_lib.app import runtime_registry
 from googlecloudsdk.command_lib.util import java
 from googlecloudsdk.core import config
 from googlecloudsdk.core import exceptions
@@ -46,6 +47,7 @@ from googlecloudsdk.core import log
 from googlecloudsdk.core.updater import update_manager
 from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import platforms
+import six
 
 
 _JAVA_APPCFG_ENTRY_POINT = 'com.google.appengine.tools.admin.AppCfg'
@@ -103,7 +105,7 @@ def _JavaStagingMapper(command_path, descriptor, app_dir, staging_dir):
   return args
 
 
-class _Command(object):
+class _Command(six.with_metaclass(abc.ABCMeta, object)):
   """Interface for a staging command to be invoked on the user source.
 
   This abstract class facilitates running an executable command that conforms to
@@ -112,8 +114,6 @@ class _Command(object):
   It implements the parts that are common to any such command while allowing
   interface implementors to swap out how the command is created.
   """
-
-  __metaclass__ = abc.ABCMeta
 
   @abc.abstractmethod
   def EnsureInstalled(self):
@@ -324,14 +324,14 @@ _APPENGINE_TOOLS_JAR = os.path.join(
 _STAGING_REGISTRY = {
     runtime_registry.RegistryEntry(
         re.compile(r'(go|go1\..+)$'), {
-            util.Environment.FLEX, util.Environment.STANDARD,
-            util.Environment.MANAGED_VMS
+            env.FLEX, env.STANDARD,
+            env.MANAGED_VMS
         }):
         _BundledCommand(
             os.path.join(_GO_APP_STAGER_DIR, 'go-app-stager'),
             os.path.join(_GO_APP_STAGER_DIR, 'go-app-stager.exe'),
             component='app-engine-go'),
-    runtime_registry.RegistryEntry('java-xml', {util.Environment.STANDARD}):
+    runtime_registry.RegistryEntry('java-xml', {env.STANDARD}):
         _BundledCommand(
             _APPENGINE_TOOLS_JAR,
             _APPENGINE_TOOLS_JAR,
@@ -357,7 +357,7 @@ class Stager(object):
       descriptor: str, path to the unstaged <service>.yaml or appengine-web.xml
       app_dir: str, path to the unstaged app directory
       runtime: str, the name of the runtime for the application to stage
-      environment: api_lib.app.util.Environment, the environment for the
+      environment: api_lib.app.env.Environment, the environment for the
           application to stage
 
     Returns:

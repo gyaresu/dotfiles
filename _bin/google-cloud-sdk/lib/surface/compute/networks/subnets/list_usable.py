@@ -13,13 +13,15 @@
 # limitations under the License.
 """Command for list subnetworks which the current user has permission to use."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import properties
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class ListUsableSubnets(base.ListCommand):
   """List subnetworks which the current user has permission to use."""
 
@@ -29,14 +31,15 @@ class ListUsableSubnets(base.ListCommand):
 
   @staticmethod
   def Args(parser):
-    display_format = 'table({fields})'.format(fields=','.join([
-        'subnetwork.segment(-5):label=PROJECT',
-        'subnetwork.segment(-3):label=REGION',
-        'network.segment(-1):label=NETWORK',
-        'subnetwork.segment(-1):label=SUBNET',
-        'ipCidrRange:label=RANGE',
-    ]))
-    parser.display_info.AddFormat(display_format)
+    parser.display_info.AddFormat("""\
+        table(
+          subnetwork.segment(-5):label=PROJECT,
+          subnetwork.segment(-3):label=REGION,
+          network.segment(-1):label=NETWORK,
+          subnetwork.segment(-1):label=SUBNET,
+          ipCidrRange:label=RANGE,
+          secondaryIpRanges.map().format("{0} {1}", rangeName, ipCidrRange).list(separator="\n"):label=SECONDARY_RANGES
+        )""")
 
   def Collection(self):
     return 'compute.subnetworks'

@@ -14,6 +14,8 @@
 
 """Flags and helpers for the compute forwarding-rules commands."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import textwrap
 
 from googlecloudsdk.calliope import arg_parsers
@@ -105,6 +107,19 @@ def ForwardingRuleArgumentPlural(required=True):
       required=required,
       regional_collection='compute.forwardingRules',
       global_collection='compute.globalForwardingRules',
+      region_explanation=compute_flags.REGION_PROPERTY_EXPLANATION)
+
+
+def ForwardingRuleArgumentForRoute(required=True):
+  return compute_flags.ResourceArgument(
+      resource_name='forwarding rule',
+      name='--next-hop-ilb',
+      completer=ForwardingRulesCompleter,
+      plural=False,
+      required=required,
+      regional_collection='compute.forwardingRules',
+      short_help=
+      'The target forwarding rule that will receive forwarded traffic.',
       region_explanation=compute_flags.REGION_PROPERTY_EXPLANATION)
 
 
@@ -386,12 +401,12 @@ def AddPortsAndPortRange(parser):
       """)
 
 
-def AddNetworkTier(parser, include_alpha, for_update):
+def AddNetworkTier(parser, supports_network_tier_flag, for_update):
   """Adds network tier flag."""
 
   # This arg is a string simulating enum NetworkTier because one of the
   # option SELECT is hidden since it's not advertised to all customers.
-  if include_alpha:
+  if supports_network_tier_flag:
     if for_update:
       parser.add_argument(
           '--network-tier',

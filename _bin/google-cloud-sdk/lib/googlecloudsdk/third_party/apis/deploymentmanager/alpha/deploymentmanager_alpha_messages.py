@@ -12,7 +12,7 @@ package = 'deploymentmanager'
 
 
 class AsyncOptions(_messages.Message):
-  """Async options that determine when a resource should finish.
+  r"""Async options that determine when a resource should finish.
 
   Fields:
     methodMatch: Method regex where this policy will apply.
@@ -26,7 +26,7 @@ class AsyncOptions(_messages.Message):
 
 
 class AuditConfig(_messages.Message):
-  """Specifies the audit configuration for a service. The configuration
+  r"""Specifies the audit configuration for a service. The configuration
   determines which permission types are logged, and what identities, if any,
   are exempted from logging. An AuditConfig must have one or more
   AuditLogConfigs.  If there are AuditConfigs for both `allServices` and a
@@ -57,8 +57,8 @@ class AuditConfig(_messages.Message):
 
 
 class AuditLogConfig(_messages.Message):
-  """Provides the configuration for logging a type of permissions. Example:  {
-  "audit_log_configs": [ { "log_type": "DATA_READ", "exempted_members": [
+  r"""Provides the configuration for logging a type of permissions. Example:
+  { "audit_log_configs": [ { "log_type": "DATA_READ", "exempted_members": [
   "user:foo@gmail.com" ] }, { "log_type": "DATA_WRITE", } ] }  This enables
   'DATA_READ' and 'DATA_WRITE' logging, while exempting foo@gmail.com from
   DATA_READ logging.
@@ -74,7 +74,7 @@ class AuditLogConfig(_messages.Message):
 
 
 class AuthorizationLoggingOptions(_messages.Message):
-  """Authorization-related information used by Cloud Audit Logging.
+  r"""Authorization-related information used by Cloud Audit Logging.
 
   Fields:
     permissionType: The type of the permission that was checked.
@@ -84,7 +84,7 @@ class AuthorizationLoggingOptions(_messages.Message):
 
 
 class BasicAuth(_messages.Message):
-  """Basic Auth used as a credential.
+  r"""Basic Auth used as a credential.
 
   Fields:
     password: A string attribute.
@@ -96,7 +96,7 @@ class BasicAuth(_messages.Message):
 
 
 class Binding(_messages.Message):
-  """Associates `members` with a `role`.
+  r"""Associates `members` with a `role`.
 
   Fields:
     condition: The condition that is associated with this binding. NOTE: an
@@ -110,13 +110,13 @@ class Binding(_messages.Message):
       or without a Google account.  * `allAuthenticatedUsers`: A special
       identifier that represents anyone who is authenticated with a Google
       account or a service account.  * `user:{emailid}`: An email address that
-      represents a specific Google account. For example, `alice@gmail.com` or
-      `joe@example.com`.    * `serviceAccount:{emailid}`: An email address
-      that represents a service account. For example, `my-other-
-      app@appspot.gserviceaccount.com`.  * `group:{emailid}`: An email address
-      that represents a Google group. For example, `admins@example.com`.    *
-      `domain:{domain}`: A Google Apps domain name that represents all the
-      users of that domain. For example, `google.com` or `example.com`.
+      represents a specific Google account. For example, `alice@gmail.com` .
+      * `serviceAccount:{emailid}`: An email address that represents a service
+      account. For example, `my-other-app@appspot.gserviceaccount.com`.  *
+      `group:{emailid}`: An email address that represents a Google group. For
+      example, `admins@example.com`.    * `domain:{domain}`: A Google Apps
+      domain name that represents all the users of that domain. For example,
+      `google.com` or `example.com`.
     role: Role that is assigned to `members`. For example, `roles/viewer`,
       `roles/editor`, or `roles/owner`.
   """
@@ -127,7 +127,7 @@ class Binding(_messages.Message):
 
 
 class CollectionOverride(_messages.Message):
-  """CollectionOverride allows resource handling overrides for specific
+  r"""CollectionOverride allows resource handling overrides for specific
   resources within a BaseType
 
   Fields:
@@ -144,7 +144,7 @@ class CollectionOverride(_messages.Message):
 
 
 class CompositeType(_messages.Message):
-  """Holds the composite type.
+  r"""Holds the composite type.
 
   Fields:
     description: An optional textual description of the resource; provided by
@@ -180,7 +180,7 @@ class CompositeType(_messages.Message):
 
 
 class CompositeTypeLabelEntry(_messages.Message):
-  """A CompositeTypeLabelEntry object.
+  r"""A CompositeTypeLabelEntry object.
 
   Fields:
     key: A string attribute.
@@ -192,7 +192,7 @@ class CompositeTypeLabelEntry(_messages.Message):
 
 
 class CompositeTypesListResponse(_messages.Message):
-  """A response that returns all Composite Types supported by Deployment
+  r"""A response that returns all Composite Types supported by Deployment
   Manager
 
   Fields:
@@ -206,7 +206,7 @@ class CompositeTypesListResponse(_messages.Message):
 
 
 class Condition(_messages.Message):
-  """A condition to be met.
+  r"""A condition to be met.
 
   Fields:
     iam: Trusted attributes supplied by the IAM system.
@@ -228,7 +228,7 @@ class Condition(_messages.Message):
 
 
 class ConfigFile(_messages.Message):
-  """ConfigFile message type.
+  r"""ConfigFile message type.
 
   Fields:
     content: The contents of the file.
@@ -238,7 +238,7 @@ class ConfigFile(_messages.Message):
 
 
 class ConfigurableService(_messages.Message):
-  """BaseType that describes a service-backed Type.
+  r"""BaseType that describes a service-backed Type.
 
   Fields:
     collectionOverrides: Allows resource handling overrides for specific
@@ -255,7 +255,7 @@ class ConfigurableService(_messages.Message):
 
 
 class Credential(_messages.Message):
-  """The credential used by Deployment Manager and TypeProvider. Only one of
+  r"""The credential used by Deployment Manager and TypeProvider. Only one of
   the options is permitted.
 
   Fields:
@@ -271,7 +271,7 @@ class Credential(_messages.Message):
 
 
 class Deployment(_messages.Message):
-  """Deployment message type.
+  r"""Deployment message type.
 
   Fields:
     credential: User provided default credential for the deployment.
@@ -331,7 +331,7 @@ class Deployment(_messages.Message):
 
 
 class DeploymentLabelEntry(_messages.Message):
-  """A DeploymentLabelEntry object.
+  r"""A DeploymentLabelEntry object.
 
   Fields:
     key: A string attribute.
@@ -343,7 +343,7 @@ class DeploymentLabelEntry(_messages.Message):
 
 
 class DeploymentOutputsEntry(_messages.Message):
-  """A DeploymentOutputsEntry object.
+  r"""A DeploymentOutputsEntry object.
 
   Fields:
     key: A string attribute.
@@ -355,7 +355,7 @@ class DeploymentOutputsEntry(_messages.Message):
 
 
 class DeploymentUpdate(_messages.Message):
-  """DeploymentUpdate message type.
+  r"""DeploymentUpdate message type.
 
   Fields:
     credential: Output only. The user-provided default credential to use when
@@ -379,7 +379,7 @@ class DeploymentUpdate(_messages.Message):
 
 
 class DeploymentUpdateLabelEntry(_messages.Message):
-  """A DeploymentUpdateLabelEntry object.
+  r"""A DeploymentUpdateLabelEntry object.
 
   Fields:
     key: A string attribute.
@@ -391,7 +391,7 @@ class DeploymentUpdateLabelEntry(_messages.Message):
 
 
 class DeploymentmanagerCompositeTypesDeleteRequest(_messages.Message):
-  """A DeploymentmanagerCompositeTypesDeleteRequest object.
+  r"""A DeploymentmanagerCompositeTypesDeleteRequest object.
 
   Fields:
     compositeType: The name of the type for this request.
@@ -403,7 +403,7 @@ class DeploymentmanagerCompositeTypesDeleteRequest(_messages.Message):
 
 
 class DeploymentmanagerCompositeTypesGetRequest(_messages.Message):
-  """A DeploymentmanagerCompositeTypesGetRequest object.
+  r"""A DeploymentmanagerCompositeTypesGetRequest object.
 
   Fields:
     compositeType: The name of the composite type for this request.
@@ -415,7 +415,7 @@ class DeploymentmanagerCompositeTypesGetRequest(_messages.Message):
 
 
 class DeploymentmanagerCompositeTypesInsertRequest(_messages.Message):
-  """A DeploymentmanagerCompositeTypesInsertRequest object.
+  r"""A DeploymentmanagerCompositeTypesInsertRequest object.
 
   Fields:
     compositeType: A CompositeType resource to be passed as the request body.
@@ -427,7 +427,7 @@ class DeploymentmanagerCompositeTypesInsertRequest(_messages.Message):
 
 
 class DeploymentmanagerCompositeTypesListRequest(_messages.Message):
-  """A DeploymentmanagerCompositeTypesListRequest object.
+  r"""A DeploymentmanagerCompositeTypesListRequest object.
 
   Fields:
     filter: A filter expression that filters resources listed in the response.
@@ -473,7 +473,7 @@ class DeploymentmanagerCompositeTypesListRequest(_messages.Message):
 
 
 class DeploymentmanagerCompositeTypesPatchRequest(_messages.Message):
-  """A DeploymentmanagerCompositeTypesPatchRequest object.
+  r"""A DeploymentmanagerCompositeTypesPatchRequest object.
 
   Fields:
     compositeType: The name of the composite type for this request.
@@ -488,7 +488,7 @@ class DeploymentmanagerCompositeTypesPatchRequest(_messages.Message):
 
 
 class DeploymentmanagerCompositeTypesUpdateRequest(_messages.Message):
-  """A DeploymentmanagerCompositeTypesUpdateRequest object.
+  r"""A DeploymentmanagerCompositeTypesUpdateRequest object.
 
   Fields:
     compositeType: The name of the composite type for this request.
@@ -503,7 +503,7 @@ class DeploymentmanagerCompositeTypesUpdateRequest(_messages.Message):
 
 
 class DeploymentmanagerDeploymentsCancelPreviewRequest(_messages.Message):
-  """A DeploymentmanagerDeploymentsCancelPreviewRequest object.
+  r"""A DeploymentmanagerDeploymentsCancelPreviewRequest object.
 
   Fields:
     deployment: The name of the deployment for this request.
@@ -518,7 +518,7 @@ class DeploymentmanagerDeploymentsCancelPreviewRequest(_messages.Message):
 
 
 class DeploymentmanagerDeploymentsDeleteRequest(_messages.Message):
-  """A DeploymentmanagerDeploymentsDeleteRequest object.
+  r"""A DeploymentmanagerDeploymentsDeleteRequest object.
 
   Enums:
     DeletePolicyValueValuesEnum: Sets the policy to use for deleting
@@ -531,7 +531,7 @@ class DeploymentmanagerDeploymentsDeleteRequest(_messages.Message):
   """
 
   class DeletePolicyValueValuesEnum(_messages.Enum):
-    """Sets the policy to use for deleting resources.
+    r"""Sets the policy to use for deleting resources.
 
     Values:
       ABANDON: <no description>
@@ -546,7 +546,7 @@ class DeploymentmanagerDeploymentsDeleteRequest(_messages.Message):
 
 
 class DeploymentmanagerDeploymentsGetIamPolicyRequest(_messages.Message):
-  """A DeploymentmanagerDeploymentsGetIamPolicyRequest object.
+  r"""A DeploymentmanagerDeploymentsGetIamPolicyRequest object.
 
   Fields:
     project: Project ID for this request.
@@ -558,7 +558,7 @@ class DeploymentmanagerDeploymentsGetIamPolicyRequest(_messages.Message):
 
 
 class DeploymentmanagerDeploymentsGetRequest(_messages.Message):
-  """A DeploymentmanagerDeploymentsGetRequest object.
+  r"""A DeploymentmanagerDeploymentsGetRequest object.
 
   Fields:
     deployment: The name of the deployment for this request.
@@ -570,13 +570,14 @@ class DeploymentmanagerDeploymentsGetRequest(_messages.Message):
 
 
 class DeploymentmanagerDeploymentsInsertRequest(_messages.Message):
-  """A DeploymentmanagerDeploymentsInsertRequest object.
+  r"""A DeploymentmanagerDeploymentsInsertRequest object.
 
   Enums:
-    CreatePolicyValueValuesEnum:
+    CreatePolicyValueValuesEnum: Sets the policy to use for creating new
+      resources.
 
   Fields:
-    createPolicy:
+    createPolicy: Sets the policy to use for creating new resources.
     deployment: A Deployment resource to be passed as the request body.
     preview: If set to true, creates a deployment and creates "shell"
       resources but does not actually instantiate these resources. This allows
@@ -590,7 +591,7 @@ class DeploymentmanagerDeploymentsInsertRequest(_messages.Message):
   """
 
   class CreatePolicyValueValuesEnum(_messages.Enum):
-    """CreatePolicyValueValuesEnum enum type.
+    r"""Sets the policy to use for creating new resources.
 
     Values:
       ACQUIRE: <no description>
@@ -608,7 +609,7 @@ class DeploymentmanagerDeploymentsInsertRequest(_messages.Message):
 
 
 class DeploymentmanagerDeploymentsListRequest(_messages.Message):
-  """A DeploymentmanagerDeploymentsListRequest object.
+  r"""A DeploymentmanagerDeploymentsListRequest object.
 
   Fields:
     filter: A filter expression that filters resources listed in the response.
@@ -654,7 +655,7 @@ class DeploymentmanagerDeploymentsListRequest(_messages.Message):
 
 
 class DeploymentmanagerDeploymentsPatchRequest(_messages.Message):
-  """A DeploymentmanagerDeploymentsPatchRequest object.
+  r"""A DeploymentmanagerDeploymentsPatchRequest object.
 
   Enums:
     CreatePolicyValueValuesEnum: Sets the policy to use for creating new
@@ -682,7 +683,7 @@ class DeploymentmanagerDeploymentsPatchRequest(_messages.Message):
   """
 
   class CreatePolicyValueValuesEnum(_messages.Enum):
-    """Sets the policy to use for creating new resources.
+    r"""Sets the policy to use for creating new resources.
 
     Values:
       ACQUIRE: <no description>
@@ -694,7 +695,7 @@ class DeploymentmanagerDeploymentsPatchRequest(_messages.Message):
     CREATE_OR_ACQUIRE = 2
 
   class DeletePolicyValueValuesEnum(_messages.Enum):
-    """Sets the policy to use for deleting resources.
+    r"""Sets the policy to use for deleting resources.
 
     Values:
       ABANDON: <no description>
@@ -712,21 +713,22 @@ class DeploymentmanagerDeploymentsPatchRequest(_messages.Message):
 
 
 class DeploymentmanagerDeploymentsSetIamPolicyRequest(_messages.Message):
-  """A DeploymentmanagerDeploymentsSetIamPolicyRequest object.
+  r"""A DeploymentmanagerDeploymentsSetIamPolicyRequest object.
 
   Fields:
-    policy: A Policy resource to be passed as the request body.
+    globalSetPolicyRequest: A GlobalSetPolicyRequest resource to be passed as
+      the request body.
     project: Project ID for this request.
     resource: Name of the resource for this request.
   """
 
-  policy = _messages.MessageField('Policy', 1)
+  globalSetPolicyRequest = _messages.MessageField('GlobalSetPolicyRequest', 1)
   project = _messages.StringField(2, required=True)
   resource = _messages.StringField(3, required=True)
 
 
 class DeploymentmanagerDeploymentsStopRequest(_messages.Message):
-  """A DeploymentmanagerDeploymentsStopRequest object.
+  r"""A DeploymentmanagerDeploymentsStopRequest object.
 
   Fields:
     deployment: The name of the deployment for this request.
@@ -741,7 +743,7 @@ class DeploymentmanagerDeploymentsStopRequest(_messages.Message):
 
 
 class DeploymentmanagerDeploymentsTestIamPermissionsRequest(_messages.Message):
-  """A DeploymentmanagerDeploymentsTestIamPermissionsRequest object.
+  r"""A DeploymentmanagerDeploymentsTestIamPermissionsRequest object.
 
   Fields:
     project: Project ID for this request.
@@ -756,7 +758,7 @@ class DeploymentmanagerDeploymentsTestIamPermissionsRequest(_messages.Message):
 
 
 class DeploymentmanagerDeploymentsUpdateRequest(_messages.Message):
-  """A DeploymentmanagerDeploymentsUpdateRequest object.
+  r"""A DeploymentmanagerDeploymentsUpdateRequest object.
 
   Enums:
     CreatePolicyValueValuesEnum: Sets the policy to use for creating new
@@ -784,7 +786,7 @@ class DeploymentmanagerDeploymentsUpdateRequest(_messages.Message):
   """
 
   class CreatePolicyValueValuesEnum(_messages.Enum):
-    """Sets the policy to use for creating new resources.
+    r"""Sets the policy to use for creating new resources.
 
     Values:
       ACQUIRE: <no description>
@@ -796,7 +798,7 @@ class DeploymentmanagerDeploymentsUpdateRequest(_messages.Message):
     CREATE_OR_ACQUIRE = 2
 
   class DeletePolicyValueValuesEnum(_messages.Enum):
-    """Sets the policy to use for deleting resources.
+    r"""Sets the policy to use for deleting resources.
 
     Values:
       ABANDON: <no description>
@@ -814,7 +816,7 @@ class DeploymentmanagerDeploymentsUpdateRequest(_messages.Message):
 
 
 class DeploymentmanagerManifestsGetRequest(_messages.Message):
-  """A DeploymentmanagerManifestsGetRequest object.
+  r"""A DeploymentmanagerManifestsGetRequest object.
 
   Fields:
     deployment: The name of the deployment for this request.
@@ -828,7 +830,7 @@ class DeploymentmanagerManifestsGetRequest(_messages.Message):
 
 
 class DeploymentmanagerManifestsListRequest(_messages.Message):
-  """A DeploymentmanagerManifestsListRequest object.
+  r"""A DeploymentmanagerManifestsListRequest object.
 
   Fields:
     deployment: The name of the deployment for this request.
@@ -876,7 +878,7 @@ class DeploymentmanagerManifestsListRequest(_messages.Message):
 
 
 class DeploymentmanagerOperationsGetRequest(_messages.Message):
-  """A DeploymentmanagerOperationsGetRequest object.
+  r"""A DeploymentmanagerOperationsGetRequest object.
 
   Fields:
     operation: The name of the operation for this request.
@@ -888,7 +890,7 @@ class DeploymentmanagerOperationsGetRequest(_messages.Message):
 
 
 class DeploymentmanagerOperationsListRequest(_messages.Message):
-  """A DeploymentmanagerOperationsListRequest object.
+  r"""A DeploymentmanagerOperationsListRequest object.
 
   Fields:
     filter: A filter expression that filters resources listed in the response.
@@ -934,7 +936,7 @@ class DeploymentmanagerOperationsListRequest(_messages.Message):
 
 
 class DeploymentmanagerResourcesGetRequest(_messages.Message):
-  """A DeploymentmanagerResourcesGetRequest object.
+  r"""A DeploymentmanagerResourcesGetRequest object.
 
   Fields:
     deployment: The name of the deployment for this request.
@@ -948,7 +950,7 @@ class DeploymentmanagerResourcesGetRequest(_messages.Message):
 
 
 class DeploymentmanagerResourcesListRequest(_messages.Message):
-  """A DeploymentmanagerResourcesListRequest object.
+  r"""A DeploymentmanagerResourcesListRequest object.
 
   Fields:
     deployment: The name of the deployment for this request.
@@ -996,7 +998,7 @@ class DeploymentmanagerResourcesListRequest(_messages.Message):
 
 
 class DeploymentmanagerTypeProvidersDeleteRequest(_messages.Message):
-  """A DeploymentmanagerTypeProvidersDeleteRequest object.
+  r"""A DeploymentmanagerTypeProvidersDeleteRequest object.
 
   Fields:
     project: The project ID for this request.
@@ -1008,7 +1010,7 @@ class DeploymentmanagerTypeProvidersDeleteRequest(_messages.Message):
 
 
 class DeploymentmanagerTypeProvidersGetRequest(_messages.Message):
-  """A DeploymentmanagerTypeProvidersGetRequest object.
+  r"""A DeploymentmanagerTypeProvidersGetRequest object.
 
   Fields:
     project: The project ID for this request.
@@ -1020,7 +1022,7 @@ class DeploymentmanagerTypeProvidersGetRequest(_messages.Message):
 
 
 class DeploymentmanagerTypeProvidersGetTypeRequest(_messages.Message):
-  """A DeploymentmanagerTypeProvidersGetTypeRequest object.
+  r"""A DeploymentmanagerTypeProvidersGetTypeRequest object.
 
   Fields:
     project: The project ID for this request.
@@ -1034,7 +1036,7 @@ class DeploymentmanagerTypeProvidersGetTypeRequest(_messages.Message):
 
 
 class DeploymentmanagerTypeProvidersInsertRequest(_messages.Message):
-  """A DeploymentmanagerTypeProvidersInsertRequest object.
+  r"""A DeploymentmanagerTypeProvidersInsertRequest object.
 
   Fields:
     project: The project ID for this request.
@@ -1046,7 +1048,7 @@ class DeploymentmanagerTypeProvidersInsertRequest(_messages.Message):
 
 
 class DeploymentmanagerTypeProvidersListRequest(_messages.Message):
-  """A DeploymentmanagerTypeProvidersListRequest object.
+  r"""A DeploymentmanagerTypeProvidersListRequest object.
 
   Fields:
     filter: A filter expression that filters resources listed in the response.
@@ -1092,7 +1094,7 @@ class DeploymentmanagerTypeProvidersListRequest(_messages.Message):
 
 
 class DeploymentmanagerTypeProvidersListTypesRequest(_messages.Message):
-  """A DeploymentmanagerTypeProvidersListTypesRequest object.
+  r"""A DeploymentmanagerTypeProvidersListTypesRequest object.
 
   Fields:
     filter: A filter expression that filters resources listed in the response.
@@ -1140,7 +1142,7 @@ class DeploymentmanagerTypeProvidersListTypesRequest(_messages.Message):
 
 
 class DeploymentmanagerTypeProvidersPatchRequest(_messages.Message):
-  """A DeploymentmanagerTypeProvidersPatchRequest object.
+  r"""A DeploymentmanagerTypeProvidersPatchRequest object.
 
   Fields:
     project: The project ID for this request.
@@ -1155,7 +1157,7 @@ class DeploymentmanagerTypeProvidersPatchRequest(_messages.Message):
 
 
 class DeploymentmanagerTypeProvidersUpdateRequest(_messages.Message):
-  """A DeploymentmanagerTypeProvidersUpdateRequest object.
+  r"""A DeploymentmanagerTypeProvidersUpdateRequest object.
 
   Fields:
     project: The project ID for this request.
@@ -1170,7 +1172,7 @@ class DeploymentmanagerTypeProvidersUpdateRequest(_messages.Message):
 
 
 class DeploymentmanagerTypesDeleteRequest(_messages.Message):
-  """A DeploymentmanagerTypesDeleteRequest object.
+  r"""A DeploymentmanagerTypesDeleteRequest object.
 
   Fields:
     project: The project ID for this request.
@@ -1182,7 +1184,7 @@ class DeploymentmanagerTypesDeleteRequest(_messages.Message):
 
 
 class DeploymentmanagerTypesGetRequest(_messages.Message):
-  """A DeploymentmanagerTypesGetRequest object.
+  r"""A DeploymentmanagerTypesGetRequest object.
 
   Fields:
     project: The project ID for this request.
@@ -1194,7 +1196,7 @@ class DeploymentmanagerTypesGetRequest(_messages.Message):
 
 
 class DeploymentmanagerTypesInsertRequest(_messages.Message):
-  """A DeploymentmanagerTypesInsertRequest object.
+  r"""A DeploymentmanagerTypesInsertRequest object.
 
   Fields:
     project: The project ID for this request.
@@ -1206,7 +1208,7 @@ class DeploymentmanagerTypesInsertRequest(_messages.Message):
 
 
 class DeploymentmanagerTypesListRequest(_messages.Message):
-  """A DeploymentmanagerTypesListRequest object.
+  r"""A DeploymentmanagerTypesListRequest object.
 
   Fields:
     filter: A filter expression that filters resources listed in the response.
@@ -1252,7 +1254,7 @@ class DeploymentmanagerTypesListRequest(_messages.Message):
 
 
 class DeploymentmanagerTypesPatchRequest(_messages.Message):
-  """A DeploymentmanagerTypesPatchRequest object.
+  r"""A DeploymentmanagerTypesPatchRequest object.
 
   Fields:
     project: The project ID for this request.
@@ -1266,7 +1268,7 @@ class DeploymentmanagerTypesPatchRequest(_messages.Message):
 
 
 class DeploymentmanagerTypesUpdateRequest(_messages.Message):
-  """A DeploymentmanagerTypesUpdateRequest object.
+  r"""A DeploymentmanagerTypesUpdateRequest object.
 
   Fields:
     project: The project ID for this request.
@@ -1280,7 +1282,7 @@ class DeploymentmanagerTypesUpdateRequest(_messages.Message):
 
 
 class DeploymentsCancelPreviewRequest(_messages.Message):
-  """DeploymentsCancelPreviewRequest message type.
+  r"""DeploymentsCancelPreviewRequest message type.
 
   Fields:
     fingerprint: Specifies a fingerprint for cancelPreview() requests. A
@@ -1298,8 +1300,8 @@ class DeploymentsCancelPreviewRequest(_messages.Message):
 
 
 class DeploymentsListResponse(_messages.Message):
-  """A response containing a partial list of deployments and a page token used
-  to build the next request if the request has been truncated.
+  r"""A response containing a partial list of deployments and a page token
+  used to build the next request if the request has been truncated.
 
   Fields:
     deployments: Output only. The deployments contained in this response.
@@ -1312,7 +1314,7 @@ class DeploymentsListResponse(_messages.Message):
 
 
 class DeploymentsStopRequest(_messages.Message):
-  """DeploymentsStopRequest message type.
+  r"""DeploymentsStopRequest message type.
 
   Fields:
     fingerprint: Specifies a fingerprint for stop() requests. A fingerprint is
@@ -1330,7 +1332,7 @@ class DeploymentsStopRequest(_messages.Message):
 
 
 class Diagnostic(_messages.Message):
-  """Diagnostic message type.
+  r"""Diagnostic message type.
 
   Fields:
     field: JsonPath expression on the resource that if non empty, indicates
@@ -1343,7 +1345,7 @@ class Diagnostic(_messages.Message):
 
 
 class Expr(_messages.Message):
-  """Represents an expression text. Example:  title: "User account presence"
+  r"""Represents an expression text. Example:  title: "User account presence"
   description: "Determines whether the request has a user account" expression:
   "size(request.user) > 0"
 
@@ -1366,8 +1368,27 @@ class Expr(_messages.Message):
   title = _messages.StringField(4)
 
 
+class GlobalSetPolicyRequest(_messages.Message):
+  r"""A GlobalSetPolicyRequest object.
+
+  Fields:
+    bindings: Flatten Policy to create a backwacd compatible wire-format.
+      Deprecated. Use 'policy' to specify bindings.
+    etag: Flatten Policy to create a backward compatible wire-format.
+      Deprecated. Use 'policy' to specify the etag.
+    policy: REQUIRED: The complete policy to be applied to the 'resource'. The
+      size of the policy is limited to a few 10s of KB. An empty policy is in
+      general a valid policy but certain services (like Projects) might reject
+      them.
+  """
+
+  bindings = _messages.MessageField('Binding', 1, repeated=True)
+  etag = _messages.BytesField(2)
+  policy = _messages.MessageField('Policy', 3)
+
+
 class ImportFile(_messages.Message):
-  """ImportFile message type.
+  r"""ImportFile message type.
 
   Fields:
     content: The contents of the file.
@@ -1379,7 +1400,7 @@ class ImportFile(_messages.Message):
 
 
 class InputMapping(_messages.Message):
-  """InputMapping creates a 'virtual' property that will be injected into the
+  r"""InputMapping creates a 'virtual' property that will be injected into the
   properties before sending the request to the underlying API.
 
   Fields:
@@ -1396,7 +1417,7 @@ class InputMapping(_messages.Message):
 
 
 class LogConfig(_messages.Message):
-  """Specifies what kind of log the caller must write
+  r"""Specifies what kind of log the caller must write
 
   Fields:
     cloudAudit: Cloud audit options.
@@ -1410,7 +1431,7 @@ class LogConfig(_messages.Message):
 
 
 class LogConfigCloudAuditOptions(_messages.Message):
-  """Write a Cloud Audit log
+  r"""Write a Cloud Audit log
 
   Fields:
     authorizationLoggingOptions: Information used by the Cloud Audit Logging
@@ -1423,7 +1444,7 @@ class LogConfigCloudAuditOptions(_messages.Message):
 
 
 class LogConfigCounterOptions(_messages.Message):
-  """Increment a streamz counter with the specified metric and field names.
+  r"""Increment a streamz counter with the specified metric and field names.
   Metric names should start with a '/', generally be lowercase-only, and end
   in "_count". Field names should not contain an initial slash. The actual
   exported metric names will have "/iam/policy" prepended.  Field names
@@ -1447,7 +1468,7 @@ class LogConfigCounterOptions(_messages.Message):
 
 
 class LogConfigDataAccessOptions(_messages.Message):
-  """Write a Data Access (Gin) log
+  r"""Write a Data Access (Gin) log
 
   Fields:
     logMode: Whether Gin logging should happen in a fail-closed manner at the
@@ -1458,7 +1479,7 @@ class LogConfigDataAccessOptions(_messages.Message):
 
 
 class Manifest(_messages.Message):
-  """Manifest message type.
+  r"""Manifest message type.
 
   Fields:
     config: Output only. The YAML configuration for this manifest.
@@ -1485,7 +1506,7 @@ class Manifest(_messages.Message):
 
 
 class ManifestsListResponse(_messages.Message):
-  """A response containing a partial list of manifests and a page token used
+  r"""A response containing a partial list of manifests and a page token used
   to build the next request if the request has been truncated.
 
   Fields:
@@ -1499,7 +1520,7 @@ class ManifestsListResponse(_messages.Message):
 
 
 class MethodMap(_messages.Message):
-  """Deployment Manager will call these methods during the events of
+  r"""Deployment Manager will call these methods during the events of
   creation/deletion/update/get/setIamPolicy
 
   Fields:
@@ -1523,7 +1544,7 @@ class MethodMap(_messages.Message):
 
 
 class Operation(_messages.Message):
-  """An Operation resource, used to manage asynchronous API requests. (==
+  r"""An Operation resource, used to manage asynchronous API requests. (==
   resource_for v1.globalOperations ==) (== resource_for beta.globalOperations
   ==) (== resource_for v1.regionOperations ==) (== resource_for
   beta.regionOperations ==) (== resource_for v1.zoneOperations ==) (==
@@ -1535,7 +1556,8 @@ class Operation(_messages.Message):
     WarningsValueListEntry: A WarningsValueListEntry object.
 
   Fields:
-    clientOperationId: [Output Only] Reserved for future use.
+    clientOperationId: [Output Only] The value of `requestId` if you provided
+      it in the request. Not present otherwise.
     creationTimestamp: [Deprecated] This field is deprecated.
     description: [Output Only] A textual description of the operation, which
       is set when the operation is created.
@@ -1589,7 +1611,7 @@ class Operation(_messages.Message):
   """
 
   class ErrorValue(_messages.Message):
-    """[Output Only] If errors are generated during processing of the
+    r"""[Output Only] If errors are generated during processing of the
     operation, this field will be populated.
 
     Messages:
@@ -1601,7 +1623,7 @@ class Operation(_messages.Message):
     """
 
     class ErrorsValueListEntry(_messages.Message):
-      """A ErrorsValueListEntry object.
+      r"""A ErrorsValueListEntry object.
 
       Fields:
         code: [Output Only] The error type identifier for this error.
@@ -1617,7 +1639,7 @@ class Operation(_messages.Message):
     errors = _messages.MessageField('ErrorsValueListEntry', 1, repeated=True)
 
   class WarningsValueListEntry(_messages.Message):
-    """A WarningsValueListEntry object.
+    r"""A WarningsValueListEntry object.
 
     Messages:
       DataValueListEntry: A DataValueListEntry object.
@@ -1632,7 +1654,7 @@ class Operation(_messages.Message):
     """
 
     class DataValueListEntry(_messages.Message):
-      """A DataValueListEntry object.
+      r"""A DataValueListEntry object.
 
       Fields:
         key: [Output Only] A key that provides more detail on the warning
@@ -1679,7 +1701,7 @@ class Operation(_messages.Message):
 
 
 class OperationsListResponse(_messages.Message):
-  """A response containing a partial list of operations and a page token used
+  r"""A response containing a partial list of operations and a page token used
   to build the next request if the request has been truncated.
 
   Fields:
@@ -1693,7 +1715,7 @@ class OperationsListResponse(_messages.Message):
 
 
 class Options(_messages.Message):
-  """Options allows customized resource handling by Deployment Manager.
+  r"""Options allows customized resource handling by Deployment Manager.
 
   Fields:
     asyncOptions: Options regarding how to thread async requests.
@@ -1712,17 +1734,21 @@ class Options(_messages.Message):
 
 
 class Policy(_messages.Message):
-  """Defines an Identity and Access Management (IAM) policy. It is used to
+  r"""Defines an Identity and Access Management (IAM) policy. It is used to
   specify access control policies for Cloud Platform resources.    A `Policy`
-  consists of a list of `bindings`. A `Binding` binds a list of `members` to a
+  consists of a list of `bindings`. A `binding` binds a list of `members` to a
   `role`, where the members can be user accounts, Google groups, Google
   domains, and service accounts. A `role` is a named list of permissions
-  defined by IAM.  **Example**  { "bindings": [ { "role": "roles/owner",
+  defined by IAM.  **JSON Example**  { "bindings": [ { "role": "roles/owner",
   "members": [ "user:mike@example.com", "group:admins@example.com",
   "domain:google.com", "serviceAccount:my-other-
-  app@appspot.gserviceaccount.com", ] }, { "role": "roles/viewer", "members":
-  ["user:sean@example.com"] } ] }  For a description of IAM and its features,
-  see the [IAM developer's guide](https://cloud.google.com/iam/docs).
+  app@appspot.gserviceaccount.com" ] }, { "role": "roles/viewer", "members":
+  ["user:sean@example.com"] } ] }  **YAML Example**  bindings: - members: -
+  user:mike@example.com - group:admins@example.com - domain:google.com -
+  serviceAccount:my-other-app@appspot.gserviceaccount.com role: roles/owner -
+  members: - user:sean@example.com role: roles/viewer    For a description of
+  IAM and its features, see the [IAM developer's
+  guide](https://cloud.google.com/iam/docs).
 
   Fields:
     auditConfigs: Specifies cloud audit logging configuration for this policy.
@@ -1757,7 +1783,7 @@ class Policy(_messages.Message):
 
 
 class PollingOptions(_messages.Message):
-  """PollingOptions message type.
+  r"""PollingOptions message type.
 
   Fields:
     diagnostics: An array of diagnostics to be collected by Deployment
@@ -1779,7 +1805,7 @@ class PollingOptions(_messages.Message):
 
 
 class Resource(_messages.Message):
-  """Resource message type.
+  r"""Resource message type.
 
   Messages:
     WarningsValueListEntry: A WarningsValueListEntry object.
@@ -1815,7 +1841,7 @@ class Resource(_messages.Message):
   """
 
   class WarningsValueListEntry(_messages.Message):
-    """A WarningsValueListEntry object.
+    r"""A WarningsValueListEntry object.
 
     Messages:
       DataValueListEntry: A DataValueListEntry object.
@@ -1830,7 +1856,7 @@ class Resource(_messages.Message):
     """
 
     class DataValueListEntry(_messages.Message):
-      """A DataValueListEntry object.
+      r"""A DataValueListEntry object.
 
       Fields:
         key: [Output Only] A key that provides more detail on the warning
@@ -1868,7 +1894,7 @@ class Resource(_messages.Message):
 
 
 class ResourceAccessControl(_messages.Message):
-  """The access controls set on the resource.
+  r"""The access controls set on the resource.
 
   Fields:
     gcpIamPolicy: The GCP IAM Policy to set on the resource.
@@ -1878,7 +1904,7 @@ class ResourceAccessControl(_messages.Message):
 
 
 class ResourceUpdate(_messages.Message):
-  """ResourceUpdate message type.
+  r"""ResourceUpdate message type.
 
   Messages:
     ErrorValue: Output only. If errors are generated during update of the
@@ -1909,7 +1935,7 @@ class ResourceUpdate(_messages.Message):
   """
 
   class ErrorValue(_messages.Message):
-    """Output only. If errors are generated during update of the resource,
+    r"""Output only. If errors are generated during update of the resource,
     this field will be populated.
 
     Messages:
@@ -1921,7 +1947,7 @@ class ResourceUpdate(_messages.Message):
     """
 
     class ErrorsValueListEntry(_messages.Message):
-      """A ErrorsValueListEntry object.
+      r"""A ErrorsValueListEntry object.
 
       Fields:
         code: [Output Only] The error type identifier for this error.
@@ -1937,7 +1963,7 @@ class ResourceUpdate(_messages.Message):
     errors = _messages.MessageField('ErrorsValueListEntry', 1, repeated=True)
 
   class WarningsValueListEntry(_messages.Message):
-    """A WarningsValueListEntry object.
+    r"""A WarningsValueListEntry object.
 
     Messages:
       DataValueListEntry: A DataValueListEntry object.
@@ -1952,7 +1978,7 @@ class ResourceUpdate(_messages.Message):
     """
 
     class DataValueListEntry(_messages.Message):
-      """A DataValueListEntry object.
+      r"""A DataValueListEntry object.
 
       Fields:
         key: [Output Only] A key that provides more detail on the warning
@@ -1986,7 +2012,7 @@ class ResourceUpdate(_messages.Message):
 
 
 class ResourcesListResponse(_messages.Message):
-  """A response containing a partial list of resources and a page token used
+  r"""A response containing a partial list of resources and a page token used
   to build the next request if the request has been truncated.
 
   Fields:
@@ -1999,7 +2025,7 @@ class ResourcesListResponse(_messages.Message):
 
 
 class Rule(_messages.Message):
-  """A rule to be applied in a Policy.
+  r"""A rule to be applied in a Policy.
 
   Fields:
     action: Required
@@ -2027,7 +2053,7 @@ class Rule(_messages.Message):
 
 
 class ServiceAccount(_messages.Message):
-  """Service Account used as a credential.
+  r"""Service Account used as a credential.
 
   Fields:
     email: The IAM service account email address like
@@ -2038,7 +2064,7 @@ class ServiceAccount(_messages.Message):
 
 
 class StandardQueryParameters(_messages.Message):
-  """Query parameters accepted by all methods.
+  r"""Query parameters accepted by all methods.
 
   Enums:
     AltValueValuesEnum: Data format for the response.
@@ -2051,17 +2077,15 @@ class StandardQueryParameters(_messages.Message):
       token.
     oauth_token: OAuth 2.0 token for the current user.
     prettyPrint: Returns response with indentations and line breaks.
-    quotaUser: Available to use for quota purposes for server-side
-      applications. Can be any arbitrary string assigned to a user, but should
-      not exceed 40 characters. Overrides userIp if both are provided.
+    quotaUser: An opaque string that represents a user for quota purposes.
+      Must not exceed 40 characters.
     trace: A tracing token of the form "token:<tokenid>" to include in api
       requests.
-    userIp: IP address of the site where the request originates. Use this if
-      you want to enforce per-user limits.
+    userIp: Deprecated. Please use quotaUser instead.
   """
 
   class AltValueValuesEnum(_messages.Enum):
-    """Data format for the response.
+    r"""Data format for the response.
 
     Values:
       json: Responses with Content-Type of application/json
@@ -2079,7 +2103,7 @@ class StandardQueryParameters(_messages.Message):
 
 
 class TargetConfiguration(_messages.Message):
-  """TargetConfiguration message type.
+  r"""TargetConfiguration message type.
 
   Fields:
     config: The configuration to use for this deployment.
@@ -2093,7 +2117,7 @@ class TargetConfiguration(_messages.Message):
 
 
 class TemplateContents(_messages.Message):
-  """Files that make up the template contents of a template type.
+  r"""Files that make up the template contents of a template type.
 
   Fields:
     imports: Import files referenced by the main template.
@@ -2112,7 +2136,7 @@ class TemplateContents(_messages.Message):
 
 
 class TestPermissionsRequest(_messages.Message):
-  """A TestPermissionsRequest object.
+  r"""A TestPermissionsRequest object.
 
   Fields:
     permissions: The set of permissions to check for the 'resource'.
@@ -2123,7 +2147,7 @@ class TestPermissionsRequest(_messages.Message):
 
 
 class TestPermissionsResponse(_messages.Message):
-  """A TestPermissionsResponse object.
+  r"""A TestPermissionsResponse object.
 
   Fields:
     permissions: A subset of `TestPermissionsRequest.permissions` that the
@@ -2134,7 +2158,7 @@ class TestPermissionsResponse(_messages.Message):
 
 
 class Type(_messages.Message):
-  """A resource type supported by Deployment Manager.
+  r"""A resource type supported by Deployment Manager.
 
   Fields:
     configurableService: Base Type (configurable service) that backs this
@@ -2168,7 +2192,7 @@ class Type(_messages.Message):
 
 
 class TypeInfo(_messages.Message):
-  """Contains detailed information about a composite type, base type, or base
+  r"""Contains detailed information about a composite type, base type, or base
   type with specific collection.
 
   Fields:
@@ -2194,7 +2218,7 @@ class TypeInfo(_messages.Message):
 
 
 class TypeInfoSchemaInfo(_messages.Message):
-  """TypeInfoSchemaInfo message type.
+  r"""TypeInfoSchemaInfo message type.
 
   Fields:
     input: The properties that this composite type or base type collection
@@ -2210,7 +2234,7 @@ class TypeInfoSchemaInfo(_messages.Message):
 
 
 class TypeLabelEntry(_messages.Message):
-  """A TypeLabelEntry object.
+  r"""A TypeLabelEntry object.
 
   Fields:
     key: A string attribute.
@@ -2222,7 +2246,7 @@ class TypeLabelEntry(_messages.Message):
 
 
 class TypeProvider(_messages.Message):
-  """A type provider that describes a service-backed Type.
+  r"""A type provider that describes a service-backed Type.
 
   Fields:
     collectionOverrides: Allows resource handling overrides for specific
@@ -2268,7 +2292,7 @@ class TypeProvider(_messages.Message):
 
 
 class TypeProviderLabelEntry(_messages.Message):
-  """A TypeProviderLabelEntry object.
+  r"""A TypeProviderLabelEntry object.
 
   Fields:
     key: A string attribute.
@@ -2280,7 +2304,7 @@ class TypeProviderLabelEntry(_messages.Message):
 
 
 class TypeProvidersListResponse(_messages.Message):
-  """A response that returns all Type Providers supported by Deployment
+  r"""A response that returns all Type Providers supported by Deployment
   Manager
 
   Fields:
@@ -2294,7 +2318,7 @@ class TypeProvidersListResponse(_messages.Message):
 
 
 class TypeProvidersListTypesResponse(_messages.Message):
-  """TypeProvidersListTypesResponse message type.
+  r"""TypeProvidersListTypesResponse message type.
 
   Fields:
     nextPageToken: A token used to continue a truncated list request.
@@ -2306,7 +2330,7 @@ class TypeProvidersListTypesResponse(_messages.Message):
 
 
 class TypesListResponse(_messages.Message):
-  """A response that returns all Types supported by Deployment Manager
+  r"""A response that returns all Types supported by Deployment Manager
 
   Fields:
     nextPageToken: A token used to continue a truncated list request.
@@ -2319,7 +2343,7 @@ class TypesListResponse(_messages.Message):
 
 
 class ValidationOptions(_messages.Message):
-  """Options for how to validate and process properties on a resource.
+  r"""Options for how to validate and process properties on a resource.
 
   Fields:
     schemaValidation: Customize how deployment manager will validate the

@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command for updating health checks."""
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import health_checks_utils
 from googlecloudsdk.calliope import base
@@ -21,6 +23,7 @@ from googlecloudsdk.core import exceptions as core_exceptions
 from googlecloudsdk.core import log
 
 
+@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Update(base.UpdateCommand):
   """Update a UDP health check.

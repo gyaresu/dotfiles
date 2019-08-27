@@ -13,6 +13,8 @@
 # limitations under the License.
 """Make a version active."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.api_lib.cloudkms import cryptokeyversions
 from googlecloudsdk.calliope import base
@@ -36,7 +38,7 @@ class Enable(base.Command):
 
   @staticmethod
   def Args(parser):
-    flags.AddCryptoKeyVersionArgument(parser, 'to enable')
+    flags.AddKeyVersionResourceArgument(parser, 'to enable')
 
   def Run(self, args):
     messages = cloudkms_base.GetMessagesModule()

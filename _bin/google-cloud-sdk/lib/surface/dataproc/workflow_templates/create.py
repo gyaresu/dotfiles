@@ -13,6 +13,8 @@
 # limitations under the License.
 """Create workflow template command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
@@ -27,7 +29,6 @@ class Create(base.CreateCommand):
   @staticmethod
   def Args(parser):
     labels_util.AddCreateLabelsFlags(parser)
-    flags.AddZoneFlag(parser)
     flags.AddTemplateFlag(parser, 'create')
 
   def Run(self, args):

@@ -13,6 +13,8 @@
 # limitations under the License.
 """Describe a version."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -34,7 +36,7 @@ class Describe(base.DescribeCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddCryptoKeyVersionArgument(parser, 'to describe')
+    flags.AddKeyVersionResourceArgument(parser, 'to describe')
 
   def Run(self, args):
     client = cloudkms_base.GetClientInstance()

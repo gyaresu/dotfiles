@@ -14,9 +14,10 @@
 
 """Module to parse .yaml files for an appengine app."""
 
+from __future__ import absolute_import
 import os
 
-from googlecloudsdk.api_lib.app import util
+from googlecloudsdk.api_lib.app import env
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.third_party.appengine.api import appinfo
@@ -31,13 +32,18 @@ from googlecloudsdk.third_party.appengine.api import yaml_errors
 from googlecloudsdk.third_party.appengine.datastore import datastore_index
 
 
-HINT_PROJECT = ('Project name should instead be specified either by '
+HINT_PROJECT = ('This field is not used by gcloud and must be removed. '
+                'Project name should instead be specified either by '
                 '`gcloud config set project MY_PROJECT` or by setting the '
                 '`--project` flag on individual command executions.')
 
-HINT_VERSION = ('Versions are generated automatically by default but can also '
+HINT_VERSION = ('This field is not used by gcloud and must be removed. '
+                'Versions are generated automatically by default but can also '
                 'be manually specified by setting the `--version` flag on '
                 'individual command executions.')
+
+HINT_THREADSAFE = ('This field is not supported with runtime [{}] and can '
+                   'safely be removed.')
 
 MANAGED_VMS_DEPRECATION_WARNING = """\
 Deployments using `vm: true` have been deprecated.  Please update your \
@@ -62,6 +68,14 @@ PYTHON_SSL_WARNING = (
     'you specify SSL library [latest] or [2.7.11].'
     'For more information, visit {}.'
 ).format('https://cloud.google.com/appengine/docs/deprecations/python-ssl-27')
+
+FLEX_PY34_WARNING = (
+    'You are using a deprecated version [3.4] of Python on the App '
+    'Engine Flexible environment. Please update your app.yaml file to specify '
+    '[python_version: latest]. Python 3.4 will be decommissioned on March 29, '
+    '2019. After this date, new deployments will fail. For more information '
+    'about this deprecation, visit  {}.'
+).format('https://cloud.google.com/appengine/docs/deprecations/python34')
 
 # This is the equivalent of the following in app.yaml:
 # skip_files:
@@ -183,9 +197,10 @@ class ConfigYamlInfo(_YamlInfo):
     Returns:
       A ConfigYamlInfo object for the parsed file.
     """
-    (base, _) = os.path.splitext(os.path.basename(file_path))
+    base, ext = os.path.splitext(os.path.basename(file_path))
     parser = (ConfigYamlInfo.CONFIG_YAML_PARSERS.get(base)
-              if os.path.isfile(file_path) else None)
+              if os.path.isfile(file_path) and ext.lower() in ['.yaml', '.yml']
+              else None)
     if not parser:
       return None
     try:
@@ -219,17 +234,17 @@ class ServiceYamlInfo(_YamlInfo):
     super(ServiceYamlInfo, self).__init__(file_path, parsed)
     self.module = parsed.service or ServiceYamlInfo.DEFAULT_SERVICE_NAME
 
-    if util.IsFlex(parsed.env):
-      self.env = util.Environment.FLEX
+    if parsed.env in ['2', 'flex', 'flexible']:
+      self.env = env.FLEX
     elif parsed.vm or parsed.runtime == 'vm':
-      self.env = util.Environment.MANAGED_VMS
+      self.env = env.MANAGED_VMS
     else:
-      self.env = util.Environment.STANDARD
+      self.env = env.STANDARD
 
     # All `env: flex` apps are hermetic. All `env: standard` apps are not
     # hermetic. All `vm: true` apps are hermetic IFF they don't use static
     # files.
-    if self.env is util.Environment.FLEX:
+    if self.env is env.FLEX:
       self.is_hermetic = True
     elif parsed.vm:
       for urlmap in parsed.handlers:
@@ -244,11 +259,14 @@ class ServiceYamlInfo(_YamlInfo):
     self._InitializeHasExplicitSkipFiles(file_path, parsed)
     self._UpdateSkipFiles(parsed)
 
-    if (self.env is util.Environment.MANAGED_VMS) or self.is_hermetic:
+    if (self.env is env.MANAGED_VMS) or self.is_hermetic:
       self.runtime = parsed.GetEffectiveRuntime()
       self._UpdateVMSettings()
     else:
       self.runtime = parsed.runtime
+
+    # New "Ti" style runtimes
+    self.is_ti_runtime = env.GetTiRuntimeRegistry().Get(self.runtime, self.env)
 
   @staticmethod
   def FromFile(file_path):
@@ -269,66 +287,88 @@ class ServiceYamlInfo(_YamlInfo):
     except (yaml_errors.Error, appinfo_errors.Error) as e:
       raise YamlParseError(file_path, e)
 
-    if parsed.runtime == 'vm':
-      vm_runtime = parsed.GetEffectiveRuntime()
+    info = ServiceYamlInfo(file_path, parsed)
+    info.Validate()
+    return info
+
+  def Validate(self):
+    """Displays warnings and raises exceptions for non-schema errors.
+
+    Raises:
+      YamlValidationError: If validation of parsed info fails.
+    """
+    if self.parsed.runtime == 'vm':
+      vm_runtime = self.parsed.GetEffectiveRuntime()
     else:
       vm_runtime = None
-      if parsed.runtime == 'python':
+      if self.parsed.runtime == 'python':
         raise YamlValidationError(
             'Service [{service}] uses unsupported Python 2.5 runtime. '
             'Please use [runtime: python27] instead.'.format(
-                service=(
-                    parsed.service or ServiceYamlInfo.DEFAULT_SERVICE_NAME)))
-      elif parsed.runtime == 'python-compat':
+                service=(self.parsed.service or
+                         ServiceYamlInfo.DEFAULT_SERVICE_NAME)))
+      elif self.parsed.runtime == 'python-compat':
         raise YamlValidationError(
             '"python-compat" is not a supported runtime.')
-      elif parsed.runtime == 'custom' and not parsed.env:
+      elif self.parsed.runtime == 'custom' and not self.parsed.env:
         raise YamlValidationError(
             'runtime "custom" requires that env be explicitly specified.')
 
-    if parsed.vm:
+    if self.env is env.MANAGED_VMS:
       log.warning(MANAGED_VMS_DEPRECATION_WARNING)
 
-    if (util.IsFlex(parsed.env) and parsed.beta_settings and
-        parsed.beta_settings.get('enable_app_engine_apis')):
+    if (self.env is env.FLEX and self.parsed.beta_settings and
+        self.parsed.beta_settings.get('enable_app_engine_apis')):
       log.warning(APP_ENGINE_APIS_DEPRECATION_WARNING)
 
-    if util.IsFlex(parsed.env) and vm_runtime == 'python27':
+    if self.env is env.FLEX and vm_runtime == 'python27':
       raise YamlValidationError(
           'The "python27" is not a valid runtime in env: flex.  '
           'Please use [python] instead.')
 
-    if util.IsFlex(parsed.env) and vm_runtime == 'python-compat':
+    if self.env is env.FLEX and vm_runtime == 'python-compat':
       log.warning('[runtime: {}] is deprecated.  Please use [runtime: python] '
                   'instead.  See {} for more info.'
                   .format(vm_runtime, UPGRADE_FLEX_PYTHON_URL))
 
-    for warn_text in parsed.GetWarnings():
-      log.warning('In file [{0}]: {1}'.format(file_path, warn_text))
+    for warn_text in self.parsed.GetWarnings():
+      log.warning('In file [{0}]: {1}'.format(self.file, warn_text))
 
-    if (util.IsStandard(parsed.env) and parsed.runtime == 'python27' and
-        HasLib(parsed, 'ssl', '2.7')):
+    if (self.env is env.STANDARD and
+        self.parsed.runtime == 'python27' and
+        HasLib(self.parsed, 'ssl', '2.7')):
       log.warning(PYTHON_SSL_WARNING)
+
+    if (self.env is env.FLEX and
+        vm_runtime == 'python' and
+        GetRuntimeConfigAttr(self.parsed, 'python_version') == '3.4'):
+      log.warning(FLEX_PY34_WARNING)
+
+    if self.is_ti_runtime:
+      _CheckIllegalAttribute(
+          name='threadsafe',
+          yaml_info=self.parsed,
+          extractor_func=lambda yaml: yaml.threadsafe,
+          file_path=self.file,
+          msg=HINT_THREADSAFE.format(self.runtime))
 
     _CheckIllegalAttribute(
         name='application',
-        yaml_info=parsed,
+        yaml_info=self.parsed,
         extractor_func=lambda yaml: yaml.application,
-        file_path=file_path,
+        file_path=self.file,
         msg=HINT_PROJECT)
 
     _CheckIllegalAttribute(
         name='version',
-        yaml_info=parsed,
+        yaml_info=self.parsed,
         extractor_func=lambda yaml: yaml.version,
-        file_path=file_path,
+        file_path=self.file,
         msg=HINT_VERSION)
-
-    return ServiceYamlInfo(file_path, parsed)
 
   def RequiresImage(self):
     """Returns True if we'll need to build a docker image."""
-    return self.env is util.Environment.MANAGED_VMS or self.is_hermetic
+    return self.env is env.MANAGED_VMS or self.is_hermetic
 
   def _UpdateVMSettings(self):
     """Overwrites vm_settings for App Engine services with VMs.
@@ -338,7 +378,7 @@ class ServiceYamlInfo(_YamlInfo):
     Raises:
       AppConfigError: if the function was called for a standard service
     """
-    if self.env not in [util.Environment.MANAGED_VMS, util.Environment.FLEX]:
+    if self.env not in [env.MANAGED_VMS, env.FLEX]:
       raise AppConfigError(
           'This is not an App Engine Flexible service. Please set `env` '
           'field to `flex`.')
@@ -397,6 +437,19 @@ def HasLib(parsed, name, version=None):
     return any(lib.name == name for lib in libs)
 
 
+def GetRuntimeConfigAttr(parsed, attr):
+  """Retrieve an attribute under runtime_config section.
+
+  Args:
+    parsed: parsed from yaml to python object
+    attr: str, Attribute name, e.g. `runtime_version`
+
+  Returns:
+    The value of runtime_config.attr or None if the attribute isn't set.
+  """
+  return (parsed.runtime_config or {}).get(attr)
+
+
 def _CheckIllegalAttribute(name, yaml_info, extractor_func, file_path, msg=''):
   """Validates that an illegal attribute is not set.
 
@@ -416,5 +469,5 @@ def _CheckIllegalAttribute(name, yaml_info, extractor_func, file_path, msg=''):
   if attribute is not None:
     # Disallow use of the given attribute.
     raise YamlValidationError(
-        'The [{0}] field is specified in file [{1}]. This field is not used '
-        'by gcloud and must be removed. '.format(name, file_path) + msg)
+        'The [{0}] field is specified in file [{1}]. '.format(name, file_path)
+        + msg)

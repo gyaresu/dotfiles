@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Utilities for ml-engine models commands."""
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.ml_engine import models
 from googlecloudsdk.command_lib.iam import iam_util
 from googlecloudsdk.command_lib.util.args import labels_util
@@ -97,9 +99,8 @@ def GetIamPolicy(models_client, model):
 
 def SetIamPolicy(models_client, model, policy_file):
   model_ref = ParseModel(model)
-  policy = iam_util.ParsePolicyFile(
+  policy, update_mask = iam_util.ParsePolicyFileWithUpdateMask(
       policy_file, models_client.messages.GoogleIamV1Policy)
-  update_mask = iam_util.ConstructUpdateMaskFromPolicy(policy_file)
   iam_util.LogSetIamPolicy(model_ref.Name(), 'model')
   return models_client.SetIamPolicy(model_ref, policy, update_mask)
 

@@ -14,7 +14,18 @@
 
 """Regions service."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import constants
+
+
+def Get(region, compute_client, project):
+  """Return region resource."""
+  client = compute_client.apitools_client
+  messages = compute_client.messages
+  request = (client.regions, 'Get',
+             messages.ComputeRegionsGetRequest(region=region, project=project))
+  return compute_client.MakeRequests([request])
 
 
 def List(compute_client, project):

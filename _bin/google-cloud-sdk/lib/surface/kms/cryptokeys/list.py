@@ -13,6 +13,8 @@
 # limitations under the License.
 """List the CryptoKeys within a KeyRing."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from apitools.base.py import list_pager
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base
@@ -35,6 +37,11 @@ class List(base.ListCommand):
 
   def GetUriFunc(self):
     return cloudkms_base.MakeGetUriFunc(self)
+
+  @staticmethod
+  def Args(parser):
+    flags.AddKeyRingFlag(parser, 'key')
+    flags.AddLocationFlag(parser, 'key')
 
   def Run(self, args):
     client = cloudkms_base.GetClientInstance()

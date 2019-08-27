@@ -13,6 +13,8 @@
 # limitations under the License.
 """CRM API Folders utilities."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.core import resources
 
@@ -55,7 +57,7 @@ def GetFolder(folder_id):
 def GetIamPolicy(folder_id):
   messages = FoldersMessages()
   request = messages.CloudresourcemanagerFoldersGetIamPolicyRequest(
-      foldersId=folder_id, getIamPolicyRequest=messages.GetIamPolicyRequest())
+      foldersId=folder_id)
   return FoldersService().GetIamPolicy(request)
 
 

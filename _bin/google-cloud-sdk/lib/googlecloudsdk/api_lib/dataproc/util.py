@@ -14,6 +14,8 @@
 
 """Common utilities for the gcloud dataproc tool."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import time
 import uuid
 
@@ -24,9 +26,11 @@ from googlecloudsdk.api_lib.dataproc import exceptions
 from googlecloudsdk.api_lib.dataproc import storage_helpers
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core import yaml
 from googlecloudsdk.core.console import console_attr
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.console import progress_tracker
+import six
 
 
 def FormatRpcError(error):
@@ -39,12 +43,7 @@ def FormatRpcError(error):
     A ready-to-print string representation of the error.
   """
   log.debug('Error:\n' + encoding.MessageToJson(error))
-  formatted_error = error.message
-  # Only display details if the log level is INFO or finer.
-  if error.details and log.GetVerbosity() <= log.info:
-    formatted_error += (
-        '\nDetails:\n' + encoding.MessageToJson(error.details))
-  return formatted_error
+  return error.message
 
 
 def WaitForResourceDeletion(
@@ -85,7 +84,7 @@ class Bunch(object):
   """
 
   def __init__(self, dictionary):
-    for key, value in dictionary.iteritems():
+    for key, value in six.iteritems(dictionary):
       if isinstance(value, dict):
         value = Bunch(value)
       self.__dict__[key] = value
@@ -204,22 +203,15 @@ def PrintWorkflowMetadata(metadata, status, operations, errors):
     if hasattr(metadata.createCluster,
                'error') and metadata.createCluster.error is not None:
       log.status.Print(metadata.createCluster.error)
+    elif hasattr(metadata.createCluster,
+                 'done') and metadata.createCluster.done is not None:
+      log.status.Print('Created cluster: {0}.'.format(metadata.clusterName))
     elif hasattr(
         metadata.createCluster,
         'operationId') and metadata.createCluster.operationId is not None:
       log.status.Print('Creating cluster: Operation ID [{0}].'.format(
           metadata.createCluster.operationId))
     operations['createCluster'] = metadata.createCluster
-  if metadata.deleteCluster != operations['deleteCluster']:
-    if hasattr(metadata.deleteCluster,
-               'error') and metadata.deleteCluster.error is not None:
-      log.status.Print(metadata.deleteCluster.error)
-    elif hasattr(
-        metadata.deleteCluster,
-        'operationId') and metadata.deleteCluster.operationId is not None:
-      log.status.Print('Deleting cluster: Operation ID [{0}].'.format(
-          metadata.deleteCluster.operationId))
-    operations['deleteCluster'] = metadata.deleteCluster
   if hasattr(metadata.graph, 'nodes'):
     for node in metadata.graph.nodes:
       if not node.jobId:
@@ -231,12 +223,25 @@ def PrintWorkflowMetadata(metadata, status, operations, errors):
                          errors[node.jobId] != node.error):
         log.status.Print('Job ID {0} error: {1}'.format(node.jobId, node.error))
         errors[node.jobId] = node.error
+  if metadata.deleteCluster != operations['deleteCluster']:
+    if hasattr(metadata.deleteCluster,
+               'error') and metadata.deleteCluster.error is not None:
+      log.status.Print(metadata.deleteCluster.error)
+    elif hasattr(metadata.deleteCluster,
+                 'done') and metadata.deleteCluster.done is not None:
+      log.status.Print('Deleted cluster: {0}.'.format(metadata.clusterName))
+    elif hasattr(
+        metadata.deleteCluster,
+        'operationId') and metadata.deleteCluster.operationId is not None:
+      log.status.Print('Deleting cluster: Operation ID [{0}].'.format(
+          metadata.deleteCluster.operationId))
+    operations['deleteCluster'] = metadata.deleteCluster
 
 
 # TODO(b/36056506): Use api_lib.utils.waiter
 def WaitForWorkflowTemplateOperation(dataproc,
                                      operation,
-                                     timeout_s,
+                                     timeout_s=None,
                                      poll_period_s=5):
   """Poll dataproc Operation until its status is done or timeout reached.
 
@@ -261,7 +266,8 @@ def WaitForWorkflowTemplateOperation(dataproc,
   status = {}
   errors = {}
 
-  while timeout_s > (time.time() - start_time):
+  # If no timeout is specified, poll forever.
+  while timeout_s is None or timeout_s > (time.time() - start_time):
     try:
       operation = dataproc.client.projects_regions_operations.Get(request)
       metadata = ParseOperationJsonMetadata(operation.metadata,
@@ -487,3 +493,19 @@ def ParseRegion(dataproc):
       },
       collection='dataproc.projects.regions')
   return ref
+
+
+def ReadYaml(file_path, message_type):
+  parsed_yaml = yaml.load_path(file_path)
+  try:
+    message = encoding.PyValueToMessage(message_type, parsed_yaml)
+  except Exception as e:
+    raise exceptions.ParseError('Cannot parse YAML from file {0}: [{1}]'.format(
+        file_path, e))
+  return message
+
+
+def WriteYaml(file_path, message):
+  py_value = encoding.MessageToPyValue(message)
+  with open(file_path, 'w') as f:
+    yaml.dump(py_value, stream=f)

@@ -13,6 +13,8 @@
 # limitations under the License.
 """Useful commands for interacting with the Cloud Resource Management API."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.cloudresourcemanager import projects_util
@@ -137,7 +139,6 @@ def GetIamPolicy(project_ref):
 
   policy_request = messages.CloudresourcemanagerProjectsGetIamPolicyRequest(
       resource=project_ref.Name(),
-      getIamPolicyRequest=messages.GetIamPolicyRequest(),
   )
   return client.projects.GetIamPolicy(policy_request)
 

@@ -16,13 +16,19 @@
 
 from __future__ import absolute_import
 from __future__ import division
+from __future__ import unicode_literals
+from collections import OrderedDict
 import contextlib
+
+import json
 import os
 import re
 import subprocess
 import sys
 import textwrap
+import threading
 
+import enum
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
@@ -105,7 +111,10 @@ def _RawInput(prompt=None):
   """
   if prompt:
     sys.stderr.write(_DoWrap(prompt))
+  return _GetInput()
 
+
+def _GetInput():
   try:
     return input()
   except EOFError:
@@ -258,6 +267,7 @@ def PromptContinue(message=None, prompt_string=None, default=True,
   sys.stderr.write(_DoWrap(prompt_string))
 
   def GetAnswer():
+    """Get answer to input prompt."""
     while True:
       answer = _RawInput()
       # pylint:disable=g-explicit-bool-comparison, We explicitly want to
@@ -646,7 +656,7 @@ def ProgressBar(label, stream=log.status, total_ticks=60, first=True,
   """
   style = properties.VALUES.core.interactive_ux_style.Get()
   if style == properties.VALUES.core.InteractiveUXStyles.OFF.name:
-    return _NoOpProgressBar()
+    return NoOpProgressBar()
   elif style == properties.VALUES.core.InteractiveUXStyles.TESTING.name:
     return _StubProgressBar(label, stream)
   else:
@@ -748,15 +758,15 @@ class _NormalProgressBar(object):
       label += ' ' * diff
     left = self._box.d_vr + self._box.d_h
     right = self._box.d_h + self._box.d_vl
-    self._label = u'{left} {label} {right}'.format(left=left, label=label,
-                                                   right=right)
+    self._label = '{left} {label} {right}'.format(
+        left=left, label=label, right=right)
 
   def Start(self):
     """Starts the progress bar by writing the top rule and label."""
     if self._first or self._redraw:
       left = self._box.d_dr if self._first else self._box.d_vr
       right = self._box.d_dl if self._first else self._box.d_vl
-      rule = u'{left}{middle}{right}\n'.format(
+      rule = '{left}{middle}{right}\n'.format(
           left=left, middle=self._box.d_h * self._total_ticks, right=right)
       self._Write(rule)
     self._Write(self._label + '\n')
@@ -800,7 +810,7 @@ class _NormalProgressBar(object):
     self.Finish()
 
 
-class _NoOpProgressBar(object):
+class NoOpProgressBar(object):
   """A progress bar that outputs nothing at all."""
 
   def __init__(self):
@@ -836,7 +846,8 @@ class _StubProgressBar(object):
     self._stream = stream
 
   def Start(self):
-    self._stream.write('<START PROGRESS BAR>' + self._raw_label + '\n')
+    self._stream.write(JsonUXStub(UXElementType.PROGRESS_BAR,
+                                  message=self._raw_label))
 
   def SetProgress(self, progress_factor):
     pass
@@ -844,7 +855,7 @@ class _StubProgressBar(object):
   def Finish(self):
     """Mark the progress as done."""
     self.SetProgress(1)
-    self._stream.write('<END PROGRESS BAR>\n')
+    self._stream.write('\n')
 
   def __enter__(self):
     self.Start()
@@ -900,12 +911,13 @@ def More(contents, out=None, prompt=None, check_pager=True):
 
 
 class TickableProgressBar(object):
-  """A progress bar with a discrete number of tasks."""
+  """A thread safe progress bar with a discrete number of tasks."""
 
   def __init__(self, total, *args, **kwargs):
     self.completed = 0
     self.total = total
     self._progress_bar = ProgressBar(*args, **kwargs)
+    self._lock = threading.Lock()
 
   def __enter__(self):
     self._progress_bar.__enter__()
@@ -915,5 +927,37 @@ class TickableProgressBar(object):
     self._progress_bar.__exit__(exc_type, exc_value, traceback)
 
   def Tick(self):
-    self.completed += 1
-    self._progress_bar.SetProgress(self.completed / self.total)
+    with self._lock:
+      self.completed += 1
+      self._progress_bar.SetProgress(self.completed / self.total)
+
+
+def JsonUXStub(ux_type, **kwargs):
+  """Generates a stub message for UX console output."""
+  output = OrderedDict()
+  output['ux'] = ux_type.name
+  extra_args = list(set(kwargs) - set(ux_type.GetDataFields()))
+  if extra_args:
+    raise ValueError('Extraneous args for Ux Element {}: {}'.format(
+        ux_type.name, extra_args))
+  for field in ux_type.GetDataFields():
+    val = kwargs.get(field, None)
+    if val:
+      output[field] = val
+  return json.dumps(output)
+
+
+class UXElementType(enum.Enum):
+  """Describes the type of a ux element."""
+  PROGRESS_BAR = (['message'])
+  PROGRESS_TRACKER = (['message', 'aborted_message', 'status'])
+  PROMPT_CONTINUE = (['message', 'prompt_string', 'cancel_string'])
+  PROMPT_RESPONSE = (['choices'])
+  PROMPT_CHOICE = (['choices', 'prompt_string'])
+
+  def __init__(self, data_fields):
+    self._data_fields = data_fields
+
+  def GetDataFields(self):
+    """Returns the ordered list of additional fields in the UX Element."""
+    return self._data_fields

@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """ml-engine jobs submit training command."""
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.ml_engine import jobs
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
@@ -34,6 +36,7 @@ def _AddSubmitTrainingArgs(parser):
   flags.GetUserArgs(local=False).AddToParser(parser)
   jobs_util.ScaleTierFlagMap().choice_arg.AddToParser(parser)
   flags.RUNTIME_VERSION.AddToParser(parser)
+  flags.AddPythonVersionFlag(parser, 'during training')
 
   sync_group = parser.add_mutually_exclusive_group()
   # TODO(b/36195821): Use the flag deprecation machinery when it supports the
@@ -78,6 +81,7 @@ class Train(base.Command):
         config=args.config,
         module_name=args.module_name,
         runtime_version=args.runtime_version,
+        python_version=args.python_version,
         labels=labels,
         stream_logs=stream_logs,
         user_args=args.user_args)

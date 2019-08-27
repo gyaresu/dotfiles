@@ -14,6 +14,8 @@
 
 """'logging metrics create' command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.logging import util
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
@@ -99,8 +101,8 @@ class CreateBeta(base.CreateCommand):
 
             $ {command} my_metric --config-from-file=$PATH_TO_FILE
 
-          The config file should be in YAML format. Detailed information about
-          how to configure metrics can be found at: [](https://cloud.google.com/logging/docs/reference/v2/rest/v2/projects.metrics#LogMetric).
+          The config file can be in YAML or JSON format. Detailed information
+          about how to configure metrics can be found at: [](https://cloud.google.com/logging/docs/reference/v2/rest/v2/projects.metrics#LogMetric).
       """,
   }
 
@@ -122,8 +124,8 @@ class CreateBeta(base.CreateCommand):
         '--log-filter', required=True,
         help='The metric\'s filter expression.')
     config_group.add_argument('--config-from-file',
-                              help=('A path to a YAML file specifying the logs-'
-                                    'based metric to create.'),
+                              help=('A path to a YAML or JSON file specifying '
+                                    'the logs-based metric to create.'),
                               type=arg_parsers.BufferedFileInput())
 
   def Run(self, args):

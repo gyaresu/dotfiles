@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command to list all billing accounts associated with the active user."""
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.billing import billing_client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.core import resources
@@ -20,8 +22,8 @@ from googlecloudsdk.core import resources
 class List(base.ListCommand):
   """List all active billing accounts.
 
-  `{command}` lists all billing accounts owned by the currently
-  authenticated user.
+  `{command}` lists all billing accounts and subaccounts owned by the currently
+  authenticated user. Subaccounts have a non-empty MASTER_ACCOUNT_ID value.
 
   ## EXAMPLES
 
@@ -39,9 +41,10 @@ class List(base.ListCommand):
   def Args(parser):
     parser.display_info.AddFormat("""
           table(
-            name.basename():label=ID,
+            name.basename():label=ACCOUNT_ID,
             displayName:label=NAME,
-            open
+            open,
+            masterBillingAccount.basename():label=MASTER_ACCOUNT_ID
           )
     """)
     parser.display_info.AddUriFunc(List.ToSelfLink)

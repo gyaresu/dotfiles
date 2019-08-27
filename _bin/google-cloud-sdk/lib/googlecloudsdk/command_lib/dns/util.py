@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Helper functions for DNS commands."""
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.command_lib.dns import flags
 
 
@@ -80,13 +82,13 @@ def ParseDnssecConfigArgs(args, messages):
   if key_specs:
     dnssec_config_args['defaultKeySpecs'] = key_specs
   if getattr(args, 'denial_of_existence', None) is not None:
-    dnssec_config_args['nonExistence'] = (flags.GetDoeFlagMapper()
-                                          .GetEnumForChoice(
-                                              args.denial_of_existence))
+    dnssec_config_args['nonExistence'] = (
+        flags.GetDoeFlagMapper(messages).GetEnumForChoice(
+            args.denial_of_existence))
   if args.dnssec_state is not None:
-    dnssec_config_args['state'] = (flags.GetDnsSecStateFlagMapper()
-                                   .GetEnumForChoice(
-                                       args.dnssec_state))
+    dnssec_config_args['state'] = (
+        flags.GetDnsSecStateFlagMapper(messages)
+        .GetEnumForChoice(args.dnssec_state))
 
   if dnssec_config_args:
     dnssec_config = messages.ManagedZoneDnsSecConfig(**dnssec_config_args)

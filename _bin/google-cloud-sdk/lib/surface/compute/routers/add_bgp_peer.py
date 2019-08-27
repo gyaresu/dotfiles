@@ -13,6 +13,8 @@
 # limitations under the License.
 """Command for adding a BGP peer to a Google Compute Engine router."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.operations import poller
 from googlecloudsdk.api_lib.util import waiter
@@ -21,6 +23,7 @@ from googlecloudsdk.command_lib.compute.routers import flags
 from googlecloudsdk.command_lib.compute.routers import router_utils
 from googlecloudsdk.core import log
 from googlecloudsdk.core import resources
+import six
 
 
 class AddBgpPeer(base.UpdateCommand):
@@ -60,7 +63,7 @@ class AddBgpPeer(base.UpdateCommand):
           'advertisedIpRanges': ranges,
       }
 
-      for attr, value in attrs.iteritems():
+      for attr, value in six.iteritems(attrs):
         if value is not None:
           setattr(peer, attr, value)
 
@@ -86,7 +89,7 @@ class AddBgpPeer(base.UpdateCommand):
           operation_ref,
           kind='router [{0}] to add peer [{1}]'.format(router_ref.Name(),
                                                        peer.name),
-          async=True,
+          is_async=True,
           details='Run the [gcloud compute operations describe] command '
           'to check the status of this operation.')
       return result

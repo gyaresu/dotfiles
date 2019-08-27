@@ -14,6 +14,8 @@
 
 """A shared library to support implementation of Firebase Test Lab commands."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import json
 
 from apitools.base.py import exceptions as apitools_exceptions
@@ -23,7 +25,6 @@ from googlecloudsdk.api_lib.util import apis
 from googlecloudsdk.calliope import exceptions as calliope_exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
-
 
 OUTCOMES_FORMAT = """
           table[box](
@@ -112,9 +113,36 @@ def GetAndroidCatalog(context=None):
     client = apis.GetClientInstance('testing', 'v1')
     messages = apis.GetMessagesModule('testing', 'v1')
 
-  env_type = (messages.TestingTestEnvironmentCatalogGetRequest.
-              EnvironmentTypeValueValuesEnum.ANDROID)
+  env_type = (
+      messages.TestingTestEnvironmentCatalogGetRequest.
+      EnvironmentTypeValueValuesEnum.ANDROID)
   return _GetCatalog(client, messages, env_type).androidDeviceCatalog
+
+
+def GetIosCatalog(context=None):
+  """Gets the iOS catalog from the TestEnvironmentDiscoveryService.
+
+  Args:
+    context: {str:object}, The current context, which is a set of key-value
+      pairs that can be used for common initialization among commands.
+
+  Returns:
+    The iOS catalog.
+
+  Raises:
+    calliope_exceptions.HttpException: If it could not connect to the service.
+  """
+  if context:
+    client = context['testing_client']
+    messages = context['testing_messages']
+  else:
+    client = apis.GetClientInstance('testing', 'v1')
+    messages = apis.GetMessagesModule('testing', 'v1')
+
+  env_type = (
+      messages.TestingTestEnvironmentCatalogGetRequest.
+      EnvironmentTypeValueValuesEnum.IOS)
+  return _GetCatalog(client, messages, env_type).iosDeviceCatalog
 
 
 def GetNetworkProfileCatalog(context=None):
@@ -137,8 +165,9 @@ def GetNetworkProfileCatalog(context=None):
     client = apis.GetClientInstance('testing', 'v1')
     messages = apis.GetMessagesModule('testing', 'v1')
 
-  env_type = (messages.TestingTestEnvironmentCatalogGetRequest.
-              EnvironmentTypeValueValuesEnum.NETWORK_CONFIGURATION)
+  env_type = (
+      messages.TestingTestEnvironmentCatalogGetRequest.
+      EnvironmentTypeValueValuesEnum.NETWORK_CONFIGURATION)
   return _GetCatalog(client, messages, env_type).networkConfigurationCatalog
 
 
@@ -156,12 +185,30 @@ def _GetCatalog(client, messages, environment_type):
   Raises:
     calliope_exceptions.HttpException: If it could not connect to the service.
   """
+  project_id = properties.VALUES.core.project.Get()
   request = messages.TestingTestEnvironmentCatalogGetRequest(
       environmentType=environment_type,
-      projectId=properties.VALUES.core.project.Get())
+      projectId=project_id)
   try:
     return client.testEnvironmentCatalog.Get(request)
   except apitools_exceptions.HttpError as error:
+    # During alpha, the iOS Testing API is under access control via a whitelist.
+    # TODO(b/77573927): remove custom 400 error handling when iOS leaves alpha.
+    # Also add a unit test for this error.
+    env_ios = (
+        messages.TestingTestEnvironmentCatalogGetRequest.
+        EnvironmentTypeValueValuesEnum.IOS)
+    if GetErrorCodeAndMessage(error)[0] == 400 and environment_type == env_ios:
+      project_id = project_id or 'CURRENT_PROJECT'
+      raise exceptions.RestrictedServiceError(
+          'Unable to access the test environment catalog. Firebase Test Lab '
+          'for iOS is currently in beta. Request access for your project via '
+          'the following form:\n  https://goo.gl/forms/wAxbiNEP2pxeIRG82 \n\n'
+          'If this project has already been granted access, please make sure '
+          'you are using a project on the Blaze or Flame billing plans, and '
+          'that you have run\n`gcloud config set billing/quota_project {p}`\n'
+          '\nIf you are still having issues, please email '
+          'ftl-ios-feedback@google.com for support.'.format(p=project_id))
     raise calliope_exceptions.HttpException(
         'Unable to access the test environment catalog: ' + GetError(error))
   except:
@@ -209,3 +256,13 @@ def ParseRoboDirectiveKey(key):
               action_type, ', '.join(supported_action_types)))
 
   return (action_type, resource_name)
+
+
+def GetDeprecatedTagWarning(models):
+  """Returns a warning string iff any device model is marked deprecated."""
+  for model in models:
+    for tag in model.tags:
+      if 'deprecated' in tag:
+        return ('Some devices are deprecated. Learn more at https://firebase.'
+                'google.com/docs/test-lab/available-testing-devices#deprecated')
+  return None

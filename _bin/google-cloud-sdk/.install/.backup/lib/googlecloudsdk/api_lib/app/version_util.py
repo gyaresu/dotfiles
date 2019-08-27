@@ -14,18 +14,20 @@
 
 """Utilities for dealing with version resources."""
 
+from __future__ import absolute_import
 import re
 
 from apitools.base.py import exceptions as apitools_exceptions
+from googlecloudsdk.api_lib.app import env
 from googlecloudsdk.api_lib.app import metric_names
 from googlecloudsdk.api_lib.app import operations_util
-from googlecloudsdk.api_lib.app import util
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import metrics
 from googlecloudsdk.core.util import retry
 from googlecloudsdk.core.util import text
 from googlecloudsdk.core.util import times
+from six.moves import map  # pylint: disable=redefined-builtin
 
 
 class VersionValidationError(exceptions.Error):
@@ -92,13 +94,13 @@ class Version(object):
     except ValueError:
       pass
     if version.env == 'flexible':
-      env = util.Environment.FLEX
+      environment = env.FLEX
     elif version.vm:
-      env = util.Environment.MANAGED_VMS
+      environment = env.MANAGED_VMS
     else:
-      env = util.Environment.STANDARD
+      environment = env.STANDARD
     return cls(project, service_id, version.id, traffic_split=traffic_split,
-               last_deployed_time=last_deployed, environment=env,
+               last_deployed_time=last_deployed, environment=environment,
                version_resource=version)
 
   def IsReceivingAllTraffic(self):
@@ -157,7 +159,7 @@ def ParseVersionResourcePaths(paths, project):
     VersionValidationError: If not all versions are valid resource paths for the
       current project.
   """
-  versions = map(Version.FromResourcePath, paths)
+  versions = list(map(Version.FromResourcePath, paths))
 
   for version in versions:
     if not (version.project or version.service):

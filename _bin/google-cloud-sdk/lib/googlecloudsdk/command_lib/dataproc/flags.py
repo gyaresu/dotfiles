@@ -13,6 +13,8 @@
 # limitations under the License.
 """Flags for workflow templates related commands."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.calliope import actions
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.core import properties
@@ -40,6 +42,14 @@ def AddTemplateFlag(parser, action):
       'template', help='The ID of the workflow template to {0}.'.format(action))
 
 
+def AddFileFlag(parser, input_type, action):
+  # Examples: workflow template to run/export/import, cluster to create.
+  parser.add_argument(
+      '--file',
+      help='The YAML file containing the {0} to {1}'.format(input_type, action),
+      required=True)
+
+
 def AddJobFlag(parser, action):
   parser.add_argument(
       'job', help='The ID of the job to {0}.'.format(action))
@@ -59,6 +69,21 @@ def AddTimeoutFlag(parser, default='10m'):
       help=('Client side timeout on how long to wait for Datproc operations. '
             'See $ gcloud topic datetimes for information on duration '
             'formats.'),
+      hidden=True)
+
+
+def AddParametersFlag(parser):
+  parser.add_argument(
+      '--parameters',
+      metavar='PARAM=VALUE',
+      type=arg_parsers.ArgDict(),
+      help="""
+          A map from parameter names to values that should be used for those
+          parameters. A value must be provided for every configured parameter.
+          Parameters can be configured when creating or updating a workflow
+          template.
+          """,
+      dest='parameters',
       hidden=True)
 
 

@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command for creating instance templates running Docker images."""
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import containers_utils
 from googlecloudsdk.api_lib.compute import image_utils
@@ -25,6 +27,7 @@ from googlecloudsdk.command_lib.compute import completers
 from googlecloudsdk.command_lib.compute import flags
 from googlecloudsdk.command_lib.compute.instance_templates import flags as instance_templates_flags
 from googlecloudsdk.command_lib.compute.instances import flags as instances_flags
+from googlecloudsdk.command_lib.util.args import labels_util
 from googlecloudsdk.core import log
 
 
@@ -49,6 +52,7 @@ def _Args(parser, release_track):
   instances_flags.AddKonletArgs(parser)
   instances_flags.AddImageArgs(parser)
   instances_flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.ALPHA)
+  labels_util.AddCreateLabelsFlags(parser)
 
   flags.AddRegionFlag(
       parser,
@@ -74,6 +78,7 @@ class CreateWithContainer(base.CreateCommand):
   @staticmethod
   def Args(parser):
     _Args(parser, base.ReleaseTrack.BETA)
+    instances_flags.AddNetworkTierArgs(parser, instance=True)
 
   def _ValidateBetaArgs(self, args):
     instances_flags.ValidateKonletArgs(args)
@@ -112,9 +117,8 @@ class CreateWithContainer(base.CreateCommand):
         region=args.region,
         subnet=args.subnet,
         address=(instance_template_utils.EPHEMERAL_ADDRESS
-                 if not args.no_address and not args.address
-                 else args.address),
-    )
+                 if not args.no_address and not args.address else args.address),
+        network_tier=getattr(args, 'network_tier', None))
 
   def _GetScheduling(self, args, client):
     return instance_utils.CreateSchedulingMessage(
@@ -174,6 +178,7 @@ class CreateWithContainer(base.CreateCommand):
       an InstanceTemplate message object
     """
     self._ValidateBetaArgs(args)
+    instances_flags.ValidateNetworkTierArgs(args)
 
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
@@ -181,6 +186,11 @@ class CreateWithContainer(base.CreateCommand):
     image_uri = self._GetImageUri(args, client, holder, instance_template_ref)
     labels = containers_utils.GetLabelsMessageWithCosVersion(
         None, image_uri, holder.resources, client.messages.InstanceProperties)
+    argument_labels = labels_util.ParseCreateArgs(
+        args, client.messages.InstanceProperties.LabelsValue)
+    if argument_labels:
+      labels.additionalProperties.extend(argument_labels.additionalProperties)
+
     metadata = self._GetUserMetadata(args, client, instance_template_ref)
     network_interface = self._GetNetworkInterface(args, client, holder)
     scheduling = self._GetScheduling(args, client)
@@ -252,19 +262,6 @@ class CreateWithContainerAlpha(CreateWithContainer):
     _Args(parser, base.ReleaseTrack.ALPHA)
     instances_flags.AddNetworkTierArgs(parser, instance=True)
 
-  def _GetNetworkInterface(self, args, client, holder):
-    return instance_template_utils.CreateNetworkInterfaceMessage(
-        resources=holder.resources,
-        scope_lister=flags.GetDefaultScopeLister(client),
-        messages=client.messages,
-        network=args.network,
-        region=args.region,
-        subnet=args.subnet,
-        address=(instance_template_utils.EPHEMERAL_ADDRESS
-                 if not args.no_address and not args.address
-                 else args.address),
-        network_tier=getattr(args, 'network_tier', None))
-
   def Run(self, args):
     """Issues an InstanceTemplates.Insert request.
 
@@ -283,6 +280,10 @@ class CreateWithContainerAlpha(CreateWithContainer):
     image_uri = self._GetImageUri(args, client, holder, instance_template_ref)
     labels = containers_utils.GetLabelsMessageWithCosVersion(
         None, image_uri, holder.resources, client.messages.InstanceProperties)
+    argument_labels = labels_util.ParseCreateArgs(
+        args, client.messages.InstanceProperties.LabelsValue)
+    if argument_labels:
+      labels.additionalProperties.extend(argument_labels.additionalProperties)
     metadata = self._GetUserMetadata(args, client, instance_template_ref)
     network_interface = self._GetNetworkInterface(args, client, holder)
     scheduling = self._GetScheduling(args, client)

@@ -5,14 +5,14 @@ request:
 
 async:
   collection: videointelligence.operations
-  extract_resource_result: False
+  extract_resource_result: false
   result_attribute: response
   operation_get_method_params:
     name: operationsId
 
 args:
   - arg_name: input_path
-    is_positional: True
+    is_positional: true
     help_text: |
       The path to the video to be analyzed. Must be a local path or a Google
       Cloud Storage URI.
@@ -21,7 +21,7 @@ args:
     help_text: |
       The location to which the results should be written. Must be a Google
       Cloud Storage URI.
-    processor: googlecloudsdk.api_lib.ml.video.video_client:_ValidateOutputUri
+    processor: googlecloudsdk.command_lib.ml.video.util:ValidateOutputUri
 
   - api_field: videoContext.segments
     arg_name: segments
@@ -45,7 +45,7 @@ args:
 
       0:1m40s,3m50s:5m10.232265s
     type: str
-    processor: googlecloudsdk.api_lib.ml.video.video_client:ValidateAndParseSegments
+    processor: googlecloudsdk.command_lib.ml.video.util:ValidateAndParseSegments
 
   - api_field: locationId
     arg_name: region

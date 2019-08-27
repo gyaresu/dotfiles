@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Creates a database for a Cloud SQL instance."""
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import exceptions
 from googlecloudsdk.api_lib.sql import operations
@@ -94,6 +96,6 @@ class AddDatabase(base.Command):
         raise
       result = new_database
 
-    log.CreatedResource(args.database, kind='database', async=args.async)
+    log.CreatedResource(args.database, kind='database', is_async=args.async)
 
     return result

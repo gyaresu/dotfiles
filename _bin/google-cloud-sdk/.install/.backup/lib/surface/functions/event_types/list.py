@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """List types of events that can be a trigger for a Google Cloud Function."""
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.functions import triggers
 from googlecloudsdk.calliope import base
 
@@ -19,11 +21,14 @@ from googlecloudsdk.calliope import base
 class List(base.Command):
   """List types of events that can be a trigger for a Google Cloud Function.
 
-  * For an event type, EVENT_TYPE_DEFAULT marks whether the given event type is
-    the default for its provider (in which case the --event-type flag may be
-    omitted).
-  * For a resource, RESOURCE_OPTIONAL marks whether the resource has a
-    corresponding default value (in which case the --trigger-resource flag
+  `{command}` displays types of events that can be a trigger for a Google Cloud
+  Function.
+
+  * For an event type, `EVENT_TYPE_DEFAULT` marks whether the given event type
+    is the default for its provider (in which case the `--event-type` flag may
+    be omitted).
+  * For a resource, `RESOURCE_OPTIONAL` marks whether the resource has a
+    corresponding default value (in which case the `--trigger-resource` flag
     may be omitted).
   """
 

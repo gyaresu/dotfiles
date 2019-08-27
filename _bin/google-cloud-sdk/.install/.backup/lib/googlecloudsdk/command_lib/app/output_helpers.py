@@ -14,6 +14,7 @@
 
 """This module holds exceptions raised by commands."""
 
+from __future__ import absolute_import
 from googlecloudsdk.api_lib.app import deploy_command_util
 from googlecloudsdk.api_lib.app import yaml_parsing
 from googlecloudsdk.api_lib.services import enable_api
@@ -88,8 +89,7 @@ def DisplayProposedDeployment(app, project, services, configs, version,
       raise TypeError('If services are deployed, must provide `app` parameter.')
     log.status.Print('Services to deploy:\n')
     for service in services:
-      use_ssl = deploy_command_util.UseSsl(
-          service.service_info.parsed.handlers)
+      use_ssl = deploy_command_util.UseSsl(service.service_info)
       url = deploy_command_util.GetAppHostname(
           app=app, service=service.service_id,
           version=None if promote else version, use_ssl=use_ssl)

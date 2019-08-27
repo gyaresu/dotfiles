@@ -14,6 +14,8 @@
 
 """Upgrade cluster command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.container import api_adapter
@@ -23,6 +25,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.container import container_command_util
 from googlecloudsdk.command_lib.container import flags
 from googlecloudsdk.core import log
+from googlecloudsdk.core.console import console_attr
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.util.semver import SemVer
 
@@ -136,9 +139,27 @@ class Upgrade(base.Command):
     location_get = self.context['location_get']
     location = location_get(args)
     cluster_ref = adapter.ParseCluster(args.name, location)
+    concurrent_node_count = getattr(args, 'concurrent_node_count', None)
 
-    # Make sure it exists (will raise appropriate error if not)
-    cluster = adapter.GetCluster(cluster_ref)
+    try:
+      cluster = adapter.GetCluster(cluster_ref)
+    except apitools_exceptions.HttpError as error:
+      log.warning('Problem loading details of cluster to upgrade: {}'
+                  .format(console_attr.SafeText(error)))
+      cluster = None
+
+    upgrade_message = container_command_util.ClusterUpgradeMessage(
+        name=args.name,
+        cluster=cluster,
+        master=args.master,
+        node_pool_name=args.node_pool,
+        new_version=args.cluster_version,
+        concurrent_node_count=concurrent_node_count)
+
+    console_io.PromptContinue(
+        message=upgrade_message,
+        throw_if_unattended=True,
+        cancel_on_no=True)
 
     options = api_adapter.UpdateClusterOptions(
         version=args.cluster_version,
@@ -147,18 +168,8 @@ class Upgrade(base.Command):
         node_pool=args.node_pool,
         image_type=args.image_type,
         image=args.image,
-        image_project=args.image_project)
-
-    upgrade_message = container_command_util.ClusterUpgradeMessage(
-        cluster,
-        master=args.master,
-        node_pool=args.node_pool,
-        new_version=options.version)
-
-    console_io.PromptContinue(
-        message=upgrade_message,
-        throw_if_unattended=True,
-        cancel_on_no=True)
+        image_project=args.image_project,
+        concurrent_node_count=concurrent_node_count)
 
     try:
       op_ref = adapter.UpdateCluster(cluster_ref, options)
@@ -178,6 +189,10 @@ Upgrade.detailed_help = {
       This command upgrades the Kubernetes version of the *nodes* or *master* of
       a cluster. Note that the Kubernetes version of the cluster's *master* is
       also periodically upgraded automatically as new releases are available.
+
+      If desired cluster version is omitted, *node* upgrades default to the
+      current *master* version and *master* upgrades default to the latest
+      supported version.
 
       *By running this command, all of the cluster's nodes will be deleted and*
       *recreated one at a time.* While persistent Kubernetes resources, such as
@@ -223,3 +238,4 @@ class UpgradeAlpha(Upgrade):
   @staticmethod
   def Args(parser):
     _Args(parser)
+    flags.AddConcurrentNodeCountFlag(parser)

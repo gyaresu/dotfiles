@@ -13,6 +13,8 @@
 # limitations under the License.
 """Command for updating Google Compute Engine routers."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import routers_utils
 from googlecloudsdk.api_lib.compute.operations import poller
@@ -134,7 +136,7 @@ class Update(base.UpdateCommand):
       log.UpdatedResource(
           operation_ref,
           kind='router [{0}]'.format(router_ref.Name()),
-          async=True,
+          is_async=True,
           details='Run the [gcloud compute operations describe] command '
           'to check the status of this operation.')
       return result

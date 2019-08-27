@@ -14,6 +14,8 @@
 
 """Helpers for flags in commands working with Google Cloud Functions."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.functions import triggers
 from googlecloudsdk.api_lib.functions import util as api_util
 from googlecloudsdk.calliope import actions
@@ -122,11 +124,11 @@ def AddSourceFlag(parser):
       help="""\
       Location of source code to deploy.
 
-      Location of the source can be one of the following:
+      Location of the source can be one of the following three options:
 
-      * Source code in Google Cloud Storage,
-      * Reference to source repository or,
-      * Local filesystem path.
+        1. Source code in Google Cloud Storage (must be a `.zip` archive),
+        2. Reference to source repository or,
+        3. Local filesystem path (root directory of function source).
 
       The value of the flag will be interpreted as a Cloud Storage location, if
       it starts with `gs://`.
@@ -141,19 +143,17 @@ def AddSourceFlag(parser):
       will try to create it.
 
       The minimal source repository URL is:
-
-
       `https://source.developers.google.com/projects/${PROJECT}/repos/${REPO}`
 
       By using the URL above, sources from the root directory of the repository
       on the revision tagged `master` will be used.
 
       If you want to deploy from a revision different from `master`, append one
-      of the following to the URL:
+      of the following three sources to the URL:
 
-      * `/revisions/${REVISION}`,
-      * `/moveable-aliases/${MOVEABLE_ALIAS}`,
-      * `/fixed-aliases/${FIXED_ALIAS}`.
+        1. `/revisions/${REVISION}`,
+        2. `/moveable-aliases/${MOVEABLE_ALIAS}`,
+        3. `/fixed-aliases/${FIXED_ALIAS}`.
 
       If you'd like to deploy sources from a directory different from the root,
       you must specify a revision, a moveable alias, or a fixed alias, as above,
@@ -166,6 +166,13 @@ def AddSourceFlag(parser):
       (?<accountId>[^/]+)/repos/(?<repoName>[^/]+)
       (((/revisions/(?<commit>[^/]+))|(/moveable-aliases/(?<branch>[^/]+))|
       (/fixed-aliases/(?<tag>[^/]+)))(/paths/(?<path>.*))?)?$
+      ```
+
+      An example of a validly formatted source repository URL is:
+
+      ```
+      https://source.developers.google.com/projects/123456789/repos/testrepo/
+      moveable-aliases/alternate-branch/paths/path-to=source
       ```
 
       If the source location is not explicitly set, new functions will deploy
@@ -182,6 +189,24 @@ def AddStageBucketFlag(parser):
             'value is the name of the Google Cloud Storage bucket in which '
             'source code will be stored.'),
       type=api_util.ValidateAndStandarizeBucketUriOrRaise)
+
+
+def AddRuntimeFlag(parser):
+  parser.add_argument(
+      '--runtime',
+      help="""\
+          'The runtime in which to run the function. Defaults to Node.js 6.
+
+          Choices:
+
+          - `nodejs6`: Node.js 6
+          - `nodejs8`: Node.js 8
+          - `python37`: Python 3.7
+          - `go`: Golang
+          - `java`: Java
+          - `csharp`: C#
+          """,
+      hidden=True)
 
 
 def AddEntryPointFlag(parser):

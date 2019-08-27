@@ -14,6 +14,8 @@
 
 """Command for removing a backend from a backend service."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.compute import base_classes
@@ -40,8 +42,8 @@ class RemoveBackend(base.UpdateCommand):
 
   @classmethod
   def Args(cls, parser):
-    cls._BACKEND_SERVICE_ARG.AddArgument(parser)
-    cls._INSTANCE_GROUP_ARG.AddArgument(
+    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
+    flags.MULTISCOPE_INSTANCE_GROUP_ARG.AddArgument(
         parser, operation_type='remove from the backend service')
 
   def GetGetRequest(self, client, backend_service_ref):
@@ -74,14 +76,16 @@ class RemoveBackend(base.UpdateCommand):
                 backendServiceResource=replacement,
                 project=backend_service_ref.project))
 
-  def Modify(self, client, resources, backend_service_ref, args, existing):
-    replacement = encoding.CopyProtoMessage(existing)
-
-    group_ref = RemoveBackend._INSTANCE_GROUP_ARG.ResolveAsResource(
+  def _GetGroupRef(self, args, resources, client):
+    return flags.MULTISCOPE_INSTANCE_GROUP_ARG.ResolveAsResource(
         args,
         resources,
         scope_lister=compute_flags.GetDefaultScopeLister(client))
 
+  def Modify(self, client, resources, backend_service_ref, args, existing):
+    replacement = encoding.CopyProtoMessage(existing)
+
+    group_ref = self._GetGroupRef(args, resources, client)
     group_uri = group_ref.SelfLink()
 
     backend_idx = None
@@ -112,10 +116,11 @@ class RemoveBackend(base.UpdateCommand):
     holder = base_classes.ComputeApiHolder(self.ReleaseTrack())
     client = holder.client
 
-    backend_service_ref = self._BACKEND_SERVICE_ARG.ResolveAsResource(
-        args,
-        holder.resources,
-        scope_lister=compute_flags.GetDefaultScopeLister(client))
+    backend_service_ref = (
+        flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.ResolveAsResource(
+            args,
+            holder.resources,
+            scope_lister=compute_flags.GetDefaultScopeLister(client)))
     get_request = self.GetGetRequest(client, backend_service_ref)
 
     objects = client.MakeRequests([get_request])
@@ -142,8 +147,8 @@ class RemoveBackendBeta(RemoveBackend):
 
   @classmethod
   def Args(cls, parser):
-    cls._BACKEND_SERVICE_ARG.AddArgument(parser)
-    cls._INSTANCE_GROUP_ARG.AddArgument(
+    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
+    flags.MULTISCOPE_INSTANCE_GROUP_ARG.AddArgument(
         parser, operation_type='remove from the backend service')
 
 
@@ -160,8 +165,19 @@ class RemoveBackendAlpha(RemoveBackendBeta):
   backend-services edit'.
   """
 
+  def _GetGroupRef(self, args, resources, client):
+    if args.instance_group:
+      return flags.MULTISCOPE_INSTANCE_GROUP_ARG.ResolveAsResource(
+          args,
+          resources,
+          scope_lister=compute_flags.GetDefaultScopeLister(client))
+    if args.network_endpoint_group:
+      return flags.NETWORK_ENDPOINT_GROUP_ARG.ResolveAsResource(
+          args,
+          resources,
+          scope_lister=compute_flags.GetDefaultScopeLister(client))
+
   @classmethod
   def Args(cls, parser):
-    cls._BACKEND_SERVICE_ARG.AddArgument(parser)
-    cls._INSTANCE_GROUP_ARG.AddArgument(
-        parser, operation_type='remove from the backend service')
+    flags.GLOBAL_REGIONAL_BACKEND_SERVICE_ARG.AddArgument(parser)
+    flags.AddInstanceGroupAndNetworkEndpointGroupArgs(parser, 'remove from')

@@ -14,6 +14,8 @@
 
 """Command to show metadata for a specified project."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.billing import billing_client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.billing import flags
@@ -46,5 +48,5 @@ class Describe(base.DescribeCommand):
 
   def Run(self, args):
     client = billing_client.AccountsClient()
-    account_ref = utils.ParseAccount(args.id)
+    account_ref = utils.ParseAccount(args.account_id)
     return client.Get(account_ref)

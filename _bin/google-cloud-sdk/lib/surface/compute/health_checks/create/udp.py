@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Command for creating UDP health checks."""
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import health_checks_utils
 from googlecloudsdk.calliope import base
@@ -19,6 +21,7 @@ from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.command_lib.compute.health_checks import flags
 
 
+@base.Hidden
 @base.ReleaseTracks(base.ReleaseTrack.ALPHA)
 class Create(base.CreateCommand):
   """Create a UDP health check to monitor load balanced instances.

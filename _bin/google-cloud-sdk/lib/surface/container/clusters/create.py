@@ -13,6 +13,8 @@
 # limitations under the License.
 
 """Create cluster command."""
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.container import api_adapter
@@ -78,9 +80,7 @@ def _Args(parser):
       type=arg_parsers.BoundedInt(1),
       help='The number of nodes to be created in each of the cluster\'s zones.',
       default=3)
-  parser.add_argument(
-      '--machine-type', '-m',
-      help='The type of machine to use for nodes. Defaults to n1-standard-1.')
+  flags.AddMachineTypeFlag(parser)
   parser.add_argument(
       '--subnetwork',
       help="""\
@@ -147,8 +147,6 @@ See https://cloud.google.com/sdk/gcloud/reference/compute/firewall-rules/create
 for examples.
 """)
   flags.AddClusterVersionFlag(parser)
-  # TODO(b/36071127): unhide this flag after we have enough ssd.
-  flags.AddDiskTypeFlag(parser, suppressed=True)
   flags.AddEnableAutoUpgradeFlag(parser)
   parser.display_info.AddFormat(util.CLUSTERS_FORMAT)
   flags.AddNodeVersionFlag(parser)
@@ -186,6 +184,7 @@ def ParseCreateOptionsBase(args):
       properties.VALUES.container.new_scopes_behavior.GetBool()):
     raise util.Error('Flag --[no-]enable-cloud-endpoints is not allowed if '
                      'property container/ new_scopes_behavior is set to true.')
+  flags.WarnForUnspecifiedAutorepair(args)
   cluster_ipv4_cidr = args.cluster_ipv4_cidr
   enable_master_authorized_networks = args.enable_master_authorized_networks
   return api_adapter.CreateClusterOptions(
@@ -196,7 +195,6 @@ def ParseCreateOptionsBase(args):
       cluster_version=args.cluster_version,
       node_version=args.node_version,
       create_subnetwork=args.create_subnetwork,
-      disable_addons=args.disable_addons,
       disk_type=args.disk_type,
       enable_autorepair=args.enable_autorepair,
       enable_autoscaling=args.enable_autoscaling,
@@ -224,6 +222,7 @@ def ParseCreateOptionsBase(args):
       network=args.network,
       node_disk_size_gb=args.disk_size,
       node_labels=args.node_labels,
+      node_locations=args.node_locations,
       node_machine_type=args.machine_type,
       node_taints=args.node_taints,
       num_nodes=args.num_nodes,
@@ -247,8 +246,9 @@ class Create(base.CreateCommand):
     _Args(parser)
     _AddAdditionalZonesFlag(parser, deprecated=True)
     flags.AddNodeLocationsFlag(parser)
-    flags.AddAddonsFlags(parser, add_disable_addons_flag=True)
+    flags.AddAddonsFlags(parser)
     flags.AddClusterAutoscalingFlags(parser)
+    flags.AddDiskTypeFlag(parser, suppressed=True)
     flags.AddEnableAutoRepairFlag(parser)
     flags.AddEnableKubernetesAlphaFlag(parser)
     flags.AddEnableLegacyAuthorizationFlag(parser)
@@ -342,7 +342,7 @@ class Create(base.CreateCommand):
     try:
       util.ClusterConfig.Persist(cluster, cluster_ref.projectId)
     except kconfig.MissingEnvVarError as error:
-      log.warning(error.message)
+      log.warning(error)
 
     return [cluster]
 
@@ -361,7 +361,9 @@ class CreateBeta(Create):
     flags.AddAcceleratorArgs(parser)
     flags.AddAddonsFlags(parser)
     flags.AddClusterAutoscalingFlags(parser)
+    flags.AddDiskTypeFlag(parser)
     flags.AddEnableAutoRepairFlag(parser)
+    flags.AddEnableBinAuthzFlag(parser, hidden=True)
     flags.AddEnableKubernetesAlphaFlag(parser)
     flags.AddEnableLegacyAuthorizationFlag(parser)
     flags.AddIPAliasFlags(parser)
@@ -378,11 +380,11 @@ class CreateBeta(Create):
     flags.AddAllowRouteOverlapFlag(parser)
     flags.AddClusterNodeIdentityFlags(parser)
     flags.AddPrivateClusterFlags(parser, hidden=False)
+    flags.AddEnableStackdriverKubernetesFlag(parser)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
     ops.accelerators = args.accelerator
-    ops.node_locations = args.node_locations
     ops.min_cpu_platform = args.min_cpu_platform
     ops.workload_metadata_from_node = args.workload_metadata_from_node
     ops.enable_pod_security_policy = args.enable_pod_security_policy
@@ -390,6 +392,8 @@ class CreateBeta(Create):
     ops.new_scopes_behavior = True
     ops.private_cluster = args.private_cluster
     ops.master_ipv4_cidr = args.master_ipv4_cidr
+    ops.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
+    ops.enable_binauthz = args.enable_binauthz
     return ops
 
 
@@ -407,6 +411,8 @@ class CreateAlpha(Create):
     flags.AddAcceleratorArgs(parser)
     flags.AddAddonsFlags(parser)
     flags.AddClusterAutoscalingFlags(parser)
+    flags.AddDiskTypeFlag(parser)
+    flags.AddMaxPodsPerNodeFlag(parser)
     flags.AddEnableAutoRepairFlag(parser)
     flags.AddEnableBinAuthzFlag(parser, hidden=True)
     flags.AddEnableKubernetesAlphaFlag(parser)
@@ -429,11 +435,11 @@ class CreateAlpha(Create):
     flags.AddPrivateClusterFlags(parser, hidden=False)
     flags.AddClusterNodeIdentityFlags(parser)
     flags.AddTpuFlags(parser, hidden=False)
+    flags.AddEnableStackdriverKubernetesFlag(parser)
 
   def ParseCreateOptions(self, args):
     ops = ParseCreateOptionsBase(args)
     ops.accelerators = args.accelerator
-    ops.node_locations = args.node_locations
     ops.enable_autoprovisioning = args.enable_autoprovisioning
     ops.min_cpu = args.min_cpu
     ops.max_cpu = args.max_cpu
@@ -454,5 +460,7 @@ class CreateAlpha(Create):
     ops.enable_tpu = args.enable_tpu
     ops.tpu_ipv4_cidr = args.tpu_ipv4_cidr
     ops.istio_config = args.istio_config
+    ops.enable_stackdriver_kubernetes = args.enable_stackdriver_kubernetes
+    ops.default_max_pods_per_node = args.default_max_pods_per_node
     flags.ValidateIstioConfigCreateArgs(args.istio_config, args.addons)
     return ops

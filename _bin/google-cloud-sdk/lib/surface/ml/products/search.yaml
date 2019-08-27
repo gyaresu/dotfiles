@@ -26,20 +26,20 @@
     params:
       - api_field: requests.image
         arg_name: image_path
-        is_positional: True
+        is_positional: true
         help_text: >
           The path to the image to be searched for. This can be either a local
           path or a URL. If you provide a local file, the contents will be sent
           directly to Google Cloud Vision. If you provide a URL, it must be in
           Google Cloud Storage format (gs://bucket/object) or an HTTP URL
           (http://... or https://...)
-        processor: googlecloudsdk.api_lib.ml.products.product_util:GetImageFromPath
+        processor: googlecloudsdk.command_lib.ml.products.util:GetImageFromPath
 
       - api_field: requests.imageContext.productSearchParams.productCategory
         arg_name: category
         help_text: String specifying the product category to search in.
 
-      - api_field: requests.imageContext.productSearchParams.boundingPoly.vertices
+      - api_field: requests.imageContext.productSearchParams.normalizedBoundingPoly.vertices
         arg_name: bounds
         metavar: 'x:y'
         type: googlecloudsdk.command_lib.ml.products.flags:VertexType
@@ -53,7 +53,7 @@
       # images resources actually live in different API version.
       - api_field: requests.imageContext.productSearchParams.catalogName
         arg_name: catalog
-        required: True
+        required: true
         type: googlecloudsdk.command_lib.ml.products.flags:CatalogNameType
         help_text: The ID of the catalog to search in.
 

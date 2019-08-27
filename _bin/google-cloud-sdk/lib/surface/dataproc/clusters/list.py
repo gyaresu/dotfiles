@@ -13,6 +13,8 @@
 # limitations under the License.
 
 """List cluster command."""
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from apitools.base.py import list_pager
 
 from googlecloudsdk.api_lib.dataproc import constants
@@ -67,6 +69,7 @@ class List(base.ListCommand):
           table(
             clusterName:label=NAME,
             config.workerConfig.numInstances:label=WORKER_COUNT,
+            config.secondaryWorkerConfig.numInstances:label=PREEMPTIBLE_WORKER_COUNT,
             status.state:label=STATUS,
             config.gceClusterConfig.zoneUri.scope(zone):label=ZONE
           )

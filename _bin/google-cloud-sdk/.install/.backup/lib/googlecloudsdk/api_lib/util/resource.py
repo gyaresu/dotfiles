@@ -13,6 +13,8 @@
 # limitations under the License.
 """Utilities for cloud resources."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import re
 
 from googlecloudsdk.core import exceptions
@@ -38,7 +40,7 @@ class CollectionInfo(object):
   """
 
   def __init__(self, api_name, api_version, base_url, docs_url, name,
-               path, flat_paths, params):
+               path, flat_paths, params, enable_uri_parsing=True):
     self.api_name = api_name
     self.api_version = api_version
     self.base_url = base_url
@@ -47,6 +49,7 @@ class CollectionInfo(object):
     self.path = path
     self.flat_paths = flat_paths
     self.params = params
+    self.enable_uri_parsing = enable_uri_parsing
 
   @property
   def full_name(self):
@@ -99,9 +102,32 @@ class CollectionInfo(object):
       return self.path
     return self.flat_paths[subcollection]
 
-  def __cmp__(self, other):
-    return cmp((self.api_name, self.api_version, self.name),
-               (other.api_name, other.api_version, other.name))
+  def __eq__(self, other):
+    return (self.api_name == other.api_name and
+            self.api_version == other.api_version and
+            self.name == other.name)
+
+  def __ne__(self, other):
+    return not self == other
+
+  @classmethod
+  def _CmpHelper(cls, x, y):
+    """Just a helper equivalent to the cmp() function in Python 2."""
+    return (x > y) - (x < y)
+
+  def __lt__(self, other):
+    return self._CmpHelper((self.api_name, self.api_version, self.name),
+                           (other.api_name, other.api_version, other.name)) < 0
+
+  def __gt__(self, other):
+    return self._CmpHelper((self.api_name, self.api_version, self.name),
+                           (other.api_name, other.api_version, other.name)) > 0
+
+  def __le__(self, other):
+    return not self.__gt__(other)
+
+  def __ge__(self, other):
+    return not self.__lt__(other)
 
   def __str__(self):
     return self.full_name
@@ -118,11 +144,13 @@ class InvalidEndpointException(exceptions.Error):
 def SplitDefaultEndpointUrl(url):
   """Returns api_name, api_version, resource_path tuple for a default api url.
 
-  Supports four formats:
-  http(s)://www.googleapis.com/api/version/resource-path,
-  http(s)://www-googleapis-staging.sandbox.google.com/api/version/resource-path,
-  http(s)://api.googleapis.com/version/resource-path, and
-  http(s)://someotherdoman/api/version/resource-path.
+  Supports five formats:
+  http(s)://www.googleapis.com/api/version/resource-path
+  http(s)://www-googleapis-staging.sandbox.google.com/api/version/resource-path
+  http(s)://api.googleapis.com/version/resource-path
+  http(s)://someotherdoman/api/version/resource-path
+  http(s)://api.googleapis.com/apis/kube-api.name/version/resource-path
+
 
   If there is an api endpoint override defined that maches the url,
   that api name will be returned.
@@ -131,7 +159,9 @@ def SplitDefaultEndpointUrl(url):
     url: str, The resource url.
 
   Returns:
-    (str, str, str): The API name, version, resource_path
+    (str, str, str): The API name, version, resource_path.
+    For a malformed URL, the return value for API name is undefined, version is
+    None, and resource path is ''.
   """
   tokens = _StripUrl(url).split('/')
   domain = tokens[0]
@@ -150,8 +180,16 @@ def SplitDefaultEndpointUrl(url):
   else:
     api_name = tokens[0].split('.')[0]
     if len(tokens) > 1:
-      version = tokens[1]
-      resource_path = '/'.join(tokens[2:])
+      if tokens[1] == 'apis':
+        if len(tokens) > 3:
+          # kubernetes api name is tokens[2]
+          version = tokens[3]
+          resource_path = '/'.join(tokens[4:])
+        else:
+          version = None
+      else:
+        version = tokens[1]
+        resource_path = '/'.join(tokens[2:])
     else:
       version = None
   return api_name, version, resource_path

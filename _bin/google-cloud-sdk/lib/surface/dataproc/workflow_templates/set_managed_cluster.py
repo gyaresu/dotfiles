@@ -13,6 +13,8 @@
 # limitations under the License.
 """Set managed cluster for workflow template command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.dataproc import compute_helpers
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.api_lib.dataproc import util
@@ -33,7 +35,6 @@ class SetManagedCluster(base.UpdateCommand):
     parser.add_argument(
         '--cluster-name', help='The name of the managed dataproc cluster.')
     clusters.ArgsForClusterRef(parser, beta=True)
-    flags.AddZoneFlag(parser)
     flags.AddMinCpuPlatformArgs(parser, base.ReleaseTrack.BETA)
 
     # TODO(b/70164645): Consolidate these arguments with the other beta args

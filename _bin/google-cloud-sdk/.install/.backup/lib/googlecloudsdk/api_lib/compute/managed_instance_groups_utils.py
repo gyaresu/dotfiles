@@ -13,6 +13,8 @@
 # limitations under the License.
 """Common functions and classes for dealing with managed instances groups."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import random
 import re
 import string
@@ -23,9 +25,13 @@ from googlecloudsdk.api_lib.compute import lister
 from googlecloudsdk.api_lib.compute import path_simplifier
 from googlecloudsdk.api_lib.compute import utils
 from googlecloudsdk.calliope import arg_parsers
+from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core import properties
+from googlecloudsdk.core.console import console_io
+import six
+from six.moves import range  # pylint: disable=redefined-builtin
 
 
 _ALLOWED_UTILIZATION_TARGET_TYPES = [
@@ -76,7 +82,7 @@ def ArgsSupportQueueScaling(args):
 
 def AddAutoscalerArgs(
     parser, queue_scaling_enabled=False, autoscaling_file_enabled=False,
-    stackdriver_metrics_flags=False):
+    stackdriver_metrics_flags=False, mode_enabled=False):
   """Adds commandline arguments to parser."""
   parser.add_argument(
       '--cool-down-period',
@@ -89,10 +95,10 @@ def AddAutoscalerArgs(
             'for information on duration formats.'))
   parser.add_argument('--description', help='Notes about Autoscaler.')
   parser.add_argument('--min-num-replicas',
-                      type=arg_parsers.BoundedInt(0, sys.maxint),
+                      type=arg_parsers.BoundedInt(0, sys.maxsize),
                       help='Minimum number of replicas Autoscaler will set.')
   parser.add_argument('--max-num-replicas',
-                      type=arg_parsers.BoundedInt(0, sys.maxint),
+                      type=arg_parsers.BoundedInt(0, sys.maxsize),
                       required=not autoscaling_file_enabled,
                       help='Maximum number of replicas Autoscaler will set.')
   parser.add_argument('--scale-based-on-cpu',
@@ -230,6 +236,33 @@ Mutually exclusive with `--update-stackdriver-metric`.
               '`-stackdriver-metric-utilization-target-type`, '
               '`-stackdriver-metric-utilization-target-type`, and '
               '`--custom-metric-utilization`.'))
+
+  if mode_enabled:
+    GetModeFlag().AddToParser(parser)
+
+
+def GetModeFlag():
+  # Can't use a ChoiceEnumMapper because we don't have access to the "messages"
+  # module for the right API version.
+  return base.ChoiceArgument(
+      '--mode',
+      {
+          'on': ('to permit autoscaling to scale up and down (default for '
+                 'new autoscalers).'),
+          'only-up': 'to permit autoscaling to scale only up and not down.',
+          'only-down': 'to permit autoscaling to scale only down and not up.',
+          'off': ('to turn off autoscaling, while keeping the new '
+                  'configuration.')
+      },
+      help_str="""\
+          Set the mode of an autoscaler for a managed instance group.
+
+          You can turn off or restrict MIG activities without changing MIG
+          configuration and then having to restore it later. MIG configuration
+          persists while the activities are turned off or restricted, and the
+          activities pick it up when they are turned on again or when the
+          restrictions are lifted.
+      """)
 
 
 def _ValidateCloudPubSubResource(pubsub_spec_dict, expected_resource_type):
@@ -483,7 +516,7 @@ def AutoscalersForLocations(zones, regions, client,
   # Explicit list() is required to unwind the generator and make sure errors
   # are detected at this level.
   requests = []
-  for project, zones in GroupByProject(zones).iteritems():
+  for project, zones in six.iteritems(GroupByProject(zones)):
     requests += lister.FormatListRequests(
         service=client.apitools_client.autoscalers,
         project=project,
@@ -493,7 +526,7 @@ def AutoscalersForLocations(zones, regions, client,
 
   if regions:
     if hasattr(client.apitools_client, 'regionAutoscalers'):
-      for project, regions in GroupByProject(regions).iteritems():
+      for project, regions in six.iteritems(GroupByProject(regions)):
         requests += lister.FormatListRequests(
             service=client.apitools_client.regionAutoscalers,
             project=project,
@@ -808,13 +841,26 @@ def _BuildQueueBasedScaling(args, messages):
   return messages.AutoscalingPolicyQueueBasedScaling(**queue_policy_dict)
 
 
-def _BuildAutoscalerPolicy(args, messages, original):
+def ParseModeString(mode, messages):
+  return messages.AutoscalingPolicy.ModeValueValuesEnum(
+      mode.upper().replace('-', '_'))
+
+
+def _BuildMode(args, messages, original):
+  if not args.mode:
+    return original.autoscalingPolicy.mode if original else None
+  return ParseModeString(args.mode, messages)
+
+
+def _BuildAutoscalerPolicy(args, messages, original, mode_enabled=False):
   """Builds AutoscalingPolicy from args.
 
   Args:
     args: command line arguments.
     messages: module containing message classes.
     original: original autoscaler message.
+    mode_enabled: bool, whether to include the 'autoscalingPolicy.mode' field in
+      the message.
   Returns:
     AutoscalingPolicy message object.
   """
@@ -829,8 +875,10 @@ def _BuildAutoscalerPolicy(args, messages, original):
       'maxNumReplicas': args.max_num_replicas,
       'minNumReplicas': args.min_num_replicas,
   }
+  if mode_enabled:
+    policy_dict['mode'] = _BuildMode(args, messages, original)
   return messages.AutoscalingPolicy(
-      **dict((key, value) for key, value in policy_dict.iteritems()
+      **dict((key, value) for key, value in six.iteritems(policy_dict)
              if value is not None))  # Filter out None values.
 
 
@@ -851,7 +899,7 @@ def AdjustAutoscalerNameForCreation(autoscaler_resource, igm_ref):
   trimmed_name = autoscaler_resource.name[
       0:(_MAX_AUTOSCALER_NAME_LENGTH - _NUM_RANDOM_CHARACTERS_IN_AS_NAME - 1)]
   random_characters = [
-      random.choice(string.lowercase + string.digits)
+      random.choice(string.ascii_lowercase + string.digits)
       for _ in range(_NUM_RANDOM_CHARACTERS_IN_AS_NAME)
   ]
   random_suffix = ''.join(random_characters)
@@ -859,10 +907,12 @@ def AdjustAutoscalerNameForCreation(autoscaler_resource, igm_ref):
   autoscaler_resource.name = new_name
 
 
-def BuildAutoscaler(args, messages, igm_ref, name, original):
+def BuildAutoscaler(args, messages, igm_ref, name, original,
+                    mode_enabled=False):
   """Builds autoscaler message protocol buffer."""
   autoscaler = messages.Autoscaler(
-      autoscalingPolicy=_BuildAutoscalerPolicy(args, messages, original),
+      autoscalingPolicy=_BuildAutoscalerPolicy(args, messages, original,
+                                               mode_enabled=mode_enabled),
       description=args.description,
       name=name,
       target=igm_ref.SelfLink(),
@@ -880,6 +930,23 @@ def CreateAutohealingPolicies(messages, health_check, initial_delay):
   if initial_delay:
     policy.initialDelaySec = initial_delay
   return [policy]
+
+
+def ValidateAutohealingPolicies(auto_healing_policies):
+  """Validates autohealing policies.
+
+  Args:
+    auto_healing_policies: list of AutoHealingPolicies to validate
+  """
+  if not auto_healing_policies:
+    return
+  # Only a single auto_healing_policy is allowed. Displaying warnings for any
+  # additional entries is unnecessary as an error will be returned.
+  policy = auto_healing_policies[0]
+  if not policy.healthCheck and policy.initialDelaySec:
+    message = ('WARNING: Health check should be provided when specifying '
+               'initial delay.')
+    console_io.PromptContinue(message=message, cancel_on_no=True)
 
 
 def _GetInstanceTemplatesSet(*versions_lists):
@@ -986,7 +1053,7 @@ def _ComputeInstanceGroupSize(items, client, resources):
   ]
 
   zonal_instance_groups = []
-  for project, zone_refs in GroupByProject(zone_refs).iteritems():
+  for project, zone_refs in six.iteritems(GroupByProject(zone_refs)):
     zonal_instance_groups.extend(
         lister.GetZonalResources(
             service=client.apitools_client.instanceGroups,
@@ -999,7 +1066,7 @@ def _ComputeInstanceGroupSize(items, client, resources):
 
   regional_instance_groups = []
   if getattr(client.apitools_client, 'regionInstanceGroups', None):
-    for project, region_refs in GroupByProject(region_refs).iteritems():
+    for project, region_refs in six.iteritems(GroupByProject(region_refs)):
       regional_instance_groups.extend(
           lister.GetRegionalResources(
               service=client.apitools_client.regionInstanceGroups,
@@ -1087,3 +1154,7 @@ def GetDeviceNamesFromStatefulPolicy(stateful_policy):
   if not stateful_policy or not stateful_policy.preservedResources:
     return []
   return [disk.deviceName for disk in stateful_policy.preservedResources.disks]
+
+
+def IsAutoscalerNew(autoscaler):
+  return getattr(autoscaler, 'name', None) is None

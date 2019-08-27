@@ -13,6 +13,8 @@
 # limitations under the License.
 """Create node pool command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from apitools.base.py import exceptions as apitools_exceptions
 
 from googlecloudsdk.api_lib.container import api_adapter
@@ -68,10 +70,7 @@ def _Args(parser):
       help='The number of nodes in the node pool in each of the '
       'cluster\'s zones.',
       default=3)
-  parser.add_argument(
-      '--machine-type',
-      '-m',
-      help='The type of machine to use for nodes. Defaults to n1-standard-1')
+  flags.AddMachineTypeFlag(parser)
   parser.add_argument(
       '--disk-size',
       type=int,
@@ -92,8 +91,6 @@ on the Compute Engine API instance object and can be used in firewall rules.
 See https://cloud.google.com/sdk/gcloud/reference/compute/firewall-rules/create
 for examples.
 """)
-  # TODO(b/36071127): unhide this flag after we have enough ssd.
-  flags.AddDiskTypeFlag(parser, suppressed=True)
   flags.AddEnableAutoUpgradeFlag(parser, for_node_pool=True)
   parser.display_info.AddFormat(util.NODEPOOLS_FORMAT)
   flags.AddNodeVersionFlag(parser)
@@ -104,6 +101,7 @@ def ParseCreateNodePoolOptionsBase(args):
       properties.VALUES.container.new_scopes_behavior.GetBool()):
     raise util.Error('Flag --[no-]enable-cloud-endpoints is not allowed if '
                      'property container/ new_scopes_behavior is set to true.')
+  flags.WarnForUnspecifiedAutorepair(args)
   return api_adapter.CreateNodePoolOptions(
       machine_type=args.machine_type,
       disk_size_gb=args.disk_size,
@@ -137,6 +135,7 @@ class Create(base.CreateCommand):
   def Args(parser):
     _Args(parser)
     flags.AddClusterAutoscalingFlags(parser)
+    flags.AddDiskTypeFlag(parser, suppressed=True)
     flags.AddLocalSSDFlag(parser)
     flags.AddPreemptibleFlag(parser, for_node_pool=True)
     flags.AddEnableAutoRepairFlag(parser, for_node_pool=True)
@@ -204,6 +203,7 @@ class CreateBeta(Create):
     _Args(parser)
     flags.AddAcceleratorArgs(parser)
     flags.AddClusterAutoscalingFlags(parser)
+    flags.AddDiskTypeFlag(parser)
     flags.AddLocalSSDFlag(parser)
     flags.AddPreemptibleFlag(parser, for_node_pool=True)
     flags.AddEnableAutoRepairFlag(parser, for_node_pool=True)
@@ -233,12 +233,14 @@ class CreateAlpha(Create):
     ops.enable_autoprovisioning = args.enable_autoprovisioning
     ops.new_scopes_behavior = True
     ops.local_ssd_volume_configs = args.local_ssd_volumes
+    ops.max_pods_per_node = args.max_pods_per_node
     return ops
 
   @staticmethod
   def Args(parser):
     _Args(parser)
     flags.AddClusterAutoscalingFlags(parser)
+    flags.AddDiskTypeFlag(parser)
     flags.AddNodePoolAutoprovisioningFlag(parser, hidden=True)
     flags.AddLocalSSDAndLocalSSDVolumeConfigsFlag(parser, for_node_pool=True)
     flags.AddPreemptibleFlag(parser, for_node_pool=True)
@@ -248,6 +250,7 @@ class CreateAlpha(Create):
     flags.AddWorkloadMetadataFromNodeFlag(parser)
     flags.AddNodeTaintsFlag(parser, for_node_pool=True)
     flags.AddNodePoolNodeIdentityFlags(parser)
+    flags.AddMaxPodsPerNodeFlag(parser, for_node_pool=True)
 
 
 Create.detailed_help = DETAILED_HELP

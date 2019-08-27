@@ -13,12 +13,14 @@
 # limitations under the License.
 """Command to get IAM policy for a folder."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.resource_manager import folders
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.resource_manager import flags
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class GetIamPolicy(base.ListCommand):
   """Get IAM policy for a folder.
 

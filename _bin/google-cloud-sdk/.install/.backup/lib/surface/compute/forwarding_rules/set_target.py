@@ -13,6 +13,8 @@
 # limitations under the License.
 """Command for modifying the target of forwarding rules."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import forwarding_rules_utils as utils
 from googlecloudsdk.calliope import base
@@ -74,7 +76,9 @@ class Set(base.UpdateCommand):
         resources,
         args,
         forwarding_rule_ref=forwarding_rule_ref,
-        include_alpha=(self.ReleaseTrack() == base.ReleaseTrack.ALPHA))
+        allow_global_target=(self.ReleaseTrack() in [
+            base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA
+        ]))
 
     request = client.messages.ComputeForwardingRulesSetTargetRequest(
         forwardingRule=forwarding_rule_ref.Name(),

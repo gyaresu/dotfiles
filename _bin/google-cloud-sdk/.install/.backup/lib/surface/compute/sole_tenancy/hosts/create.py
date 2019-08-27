@@ -13,6 +13,8 @@
 # limitations under the License.
 """Command for creating sole-tenancy hosts."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags
@@ -20,6 +22,9 @@ from googlecloudsdk.command_lib.compute import scope
 from googlecloudsdk.command_lib.compute.sole_tenancy.hosts import flags as hosts_flags
 
 
+@base.Deprecate(
+    error=('New host creation is disabled. Please use '
+           '`gcloud alpha compute sole-tenancy node-groups` instead.'))
 class Create(base.CreateCommand):
   """Create Google Compute Engine sole-tenancy hosts."""
 

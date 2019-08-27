@@ -13,6 +13,8 @@
 # limitations under the License.
 """Submit build command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import os.path
 import uuid
 
@@ -94,7 +96,10 @@ class Submit(base.CreateCommand):
              'Storage or disk to use for this build. If source is a local '
              'directory this command skips files specified in the '
              '`.gcloudignore` file (see `$ gcloud topic gcloudignore` for more '
-             'information).'
+             'information). If a .gitignore file is present in the local '
+             'source directory, gcloud will use a Git-compatible '
+             '.gcloudignore file that respects your .gitignore-ed files. The '
+             'global .gitignore is not respected.'
     )
     source.add_argument(
         '--no-source',
@@ -159,10 +164,18 @@ https://cloud.google.com/container-builder/docs/api/build-requests#substitutions
     build_config = parser.add_mutually_exclusive_group(required=True)
     build_config.add_argument(
         '--tag', '-t',
-        help='The tag to use with a "docker build" image creation. The '
-             'Container Builder service will run a remote "docker build -t '
-             '$TAG .", where $TAG is the tag provided by this flag. The tag '
-             'must be in the gcr.io/* or *.gcr.io/* namespaces.',
+        help='The tag to use with a `docker build` image creation. '
+             'Container Builder will run a remote `docker build -t '
+             '$TAG .`, where $TAG is the tag provided by this flag. The tag '
+             'must be in the `gcr.io/*` or `*.gcr.io/*` namespaces.\n'
+             '\n'
+             'Specify a tag  if you want Container Builder to build using a '
+             'Dockerfile instead of a build config file. If you specify a tag '
+             'in this command, your source must include a Dockerfile.\n'
+             '\n'
+             'For instructions on building using a Dockerfile, see '
+             'https://cloud.google.com/container-builder/docs/'
+             'quickstart-docker.',
     )
     build_config.add_argument(
         '--config',
@@ -387,7 +400,7 @@ https://cloud.google.com/container-builder/docs/api/build-requests#substitutions
       disk_size = compute_utils.BytesToGb(args.disk_size)
       if not build_config.options:
         build_config.options = messages.BuildOptions()
-      build_config.options.diskSizeGb = disk_size
+      build_config.options.diskSizeGb = int(disk_size)
 
     log.debug('submitting build: '+repr(build_config))
 

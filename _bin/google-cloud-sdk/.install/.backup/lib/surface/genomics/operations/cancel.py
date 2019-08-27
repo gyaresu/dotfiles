@@ -14,7 +14,9 @@
 """Implementation of gcloud genomics operations cancel.
 """
 
-from StringIO import StringIO
+from __future__ import absolute_import
+from __future__ import unicode_literals
+import io
 
 from googlecloudsdk.api_lib.genomics import genomics_util
 from googlecloudsdk.api_lib.genomics.exceptions import GenomicsError
@@ -23,8 +25,6 @@ from googlecloudsdk.calliope import display
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_io
 from googlecloudsdk.core.resource import resource_printer
-
-_OPERATIONS_PREFIX = 'operations/'
 
 
 class Cancel(base.Command):
@@ -36,9 +36,7 @@ class Cancel(base.Command):
     """Register flags for this command."""
     parser.add_argument('name',
                         type=str,
-                        help='The name of the operation to be canceled. The '
-                        '"{0}" prefix for the name is optional.'
-                        .format(_OPERATIONS_PREFIX))
+                        help='The name of the operation to be canceled.')
 
   def Run(self, args):
     """This is what gets called when the user runs this command.
@@ -53,17 +51,21 @@ class Cancel(base.Command):
     Returns:
       None
     """
-    apitools_client = genomics_util.GetGenomicsClient()
-    genomics_messages = genomics_util.GetGenomicsMessages()
+    op = None
+    apitools_client = genomics_util.GetGenomicsClient('v2alpha1')
+    genomics_messages = genomics_util.GetGenomicsMessages('v2alpha1')
 
-    name = args.name
-    if not name.startswith(_OPERATIONS_PREFIX):
-      name = _OPERATIONS_PREFIX + name
+    name, v2 = genomics_util.CanonicalizeOperationName(args.name)
+    if v2:
+      op = apitools_client.projects_operations.Get(
+          genomics_messages.GenomicsProjectsOperationsGetRequest(name=name))
+    else:
+      apitools_client = genomics_util.GetGenomicsClient()
+      genomics_messages = genomics_util.GetGenomicsMessages()
+      op = apitools_client.operations.Get(
+          genomics_messages.GenomicsOperationsGetRequest(name=name))
 
-    # Look up the operation so we can display it in the confirmation prompt
-    op = apitools_client.operations.Get(
-        genomics_messages.GenomicsOperationsGetRequest(name=name))
-    operation_string = StringIO()
+    operation_string = io.StringIO()
     print_format = display.Displayer(self, args).GetFormat()
     resource_printer.Print(op, print_format, out=operation_string)
 
@@ -71,6 +73,10 @@ class Cancel(base.Command):
         operation_string.getvalue(), 'This operation will be canceled')):
       raise GenomicsError('Cancel aborted by user.')
 
-    apitools_client.operations.Cancel(
-        genomics_messages.GenomicsOperationsCancelRequest(name=name))
+    if v2:
+      apitools_client.projects_operations.Cancel(
+          genomics_messages.GenomicsProjectsOperationsCancelRequest(name=name))
+    else:
+      apitools_client.operations.Cancel(
+          genomics_messages.GenomicsOperationsCancelRequest(name=name))
     log.status.write('Canceled [{0}].\n'.format(name))

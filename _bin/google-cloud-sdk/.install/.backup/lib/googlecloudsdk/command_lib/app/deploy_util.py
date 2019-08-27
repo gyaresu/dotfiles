@@ -17,6 +17,7 @@
 Mostly created to selectively enable Cloud Endpoints in the beta/preview release
 tracks.
 """
+from __future__ import absolute_import
 import re
 from apitools.base.py import exceptions as apitools_exceptions
 import enum
@@ -25,6 +26,7 @@ from googlecloudsdk.api_lib.app import appengine_client
 from googlecloudsdk.api_lib.app import build as app_cloud_build
 from googlecloudsdk.api_lib.app import deploy_app_command_util
 from googlecloudsdk.api_lib.app import deploy_command_util
+from googlecloudsdk.api_lib.app import env
 from googlecloudsdk.api_lib.app import metric_names
 from googlecloudsdk.api_lib.app import runtime_builders
 from googlecloudsdk.api_lib.app import util
@@ -58,6 +60,10 @@ https://console.cloud.google.com/appengine/taskqueues/cron?project={}
 # use of pinned runtime builders when this feature is disabled.
 ORIGINAL_RUNTIME_RE_STRING = r'[a-z][a-z0-9\-]{0,29}'
 ORIGINAL_RUNTIME_RE = re.compile(ORIGINAL_RUNTIME_RE_STRING + r'\Z')
+
+
+# Max App Engine file size; see https://cloud.google.com/appengine/docs/quotas
+_MAX_FILE_SIZE_STANDARD = 32 * 1024 * 1024
 
 
 class Error(core_exceptions.Error):
@@ -250,7 +256,8 @@ class ServiceDeployer(object):
         an in-progress build, or the name of the container image for a serial
         build. Possibly None if the service does not require an image.
     """
-    if flex_image_build_option == FlexImageBuildOptions.ON_SERVER:
+    if (service.RequiresImage() and
+        flex_image_build_option == FlexImageBuildOptions.ON_SERVER):
       cloud_build_options = {
           'appYamlPath': service.GetAppYamlBasename(),
       }
@@ -327,8 +334,11 @@ class ServiceDeployer(object):
     # unless an image was already built.
     if flex_image_build_option == FlexImageBuildOptions.ON_SERVER or (
         not image and not service_info.is_hermetic):
+      limit = None
+      if service_info.env == env.STANDARD:
+        limit = _MAX_FILE_SIZE_STANDARD
       manifest = deploy_app_command_util.CopyFilesToCodeBucket(
-          service_info, source_dir, code_bucket_ref)
+          service_info, source_dir, code_bucket_ref, max_file_size=limit)
     return manifest
 
   def Deploy(self,
@@ -369,7 +379,7 @@ class ServiceDeployer(object):
     """
     log.status.Print('Beginning deployment of service [{service}]...'
                      .format(service=new_version.service))
-    if (service.service_info.env == util.Environment.MANAGED_VMS
+    if (service.service_info.env == env.MANAGED_VMS
         and flex_image_build_option == FlexImageBuildOptions.ON_SERVER):
       # Server-side builds are not supported for Managed VMs.
       flex_image_build_option = FlexImageBuildOptions.ON_CLIENT

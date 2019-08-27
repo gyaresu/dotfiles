@@ -14,6 +14,7 @@
 
 """Utility methods used by the deploy command."""
 
+from __future__ import absolute_import
 import json
 import os
 import re
@@ -48,6 +49,8 @@ from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import platforms
 from googlecloudsdk.third_party.appengine.api import appinfo
 from googlecloudsdk.third_party.appengine.tools import context_util
+from six.moves import filter  # pylint: disable=redefined-builtin
+from six.moves import zip  # pylint: disable=redefined-builtin
 
 DEFAULT_DOMAIN = 'appspot.com'
 DEFAULT_SERVICE = 'default'
@@ -548,7 +551,7 @@ def PossiblyEnableFlex(project):
                            '\nDetailed error information:\n{?}}'))
 
 
-def UseSsl(handlers):
+def UseSsl(service_info):
   """Returns whether the root URL for an application is served over HTTPS.
 
   More specifically, returns the 'secure' setting of the handler that will serve
@@ -559,12 +562,14 @@ def UseSsl(handlers):
   HTTPS-only service will result in a redirect).
 
   Args:
-    handlers: List of googlecloudsdk.third_party.appengine.api.appinfo.URLMap,
-    the configured URL handlers for the application
+    service_info: ServiceYamlInfo, the service configuration.
+
   Returns:
     str, the 'secure' setting of the handler for the root URL.
   """
-  for handler in handlers:
+  if service_info.is_ti_runtime and not service_info.parsed.handlers:
+    return appinfo.SECURE_HTTP_OR_HTTPS
+  for handler in service_info.parsed.handlers:
     try:
       if re.match(handler.url + '$', '/'):
         return handler.secure
@@ -621,7 +626,7 @@ def GetAppHostname(app=None, app_id=None, service=None, version=None,
   # certificate.
   #
   # We've tried to do the best possible thing in every case here.
-  subdomain_parts = filter(bool, [version, service_name, app_id])
+  subdomain_parts = list(filter(bool, [version, service_name, app_id]))
   scheme = 'http'
   if use_ssl == appinfo.SECURE_HTTP:
     subdomain = '.'.join(subdomain_parts)

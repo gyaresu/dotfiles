@@ -13,12 +13,14 @@
 # limitations under the License.
 """Command for creating interconnects."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.interconnects import client
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.interconnects import flags
 from googlecloudsdk.command_lib.compute.interconnects.locations import flags as location_flags
-
+from googlecloudsdk.core import log
 
 DETAILED_HELP = {
     'DESCRIPTION':
@@ -42,6 +44,8 @@ _LOCATION_FLAG_MSG = (
     'The location for the interconnect. The locations can be listed by using '
     'the `{parent_command} locations list` command to find '
     'the appropriate location to use when creating an interconnect.')
+
+_DOCUMENTATION_LINK = 'https://cloud.google.com/interconnect/docs/how-to/dedicated/retrieving-loas'
 
 
 @base.ReleaseTracks(base.ReleaseTrack.GA)
@@ -90,8 +94,14 @@ class Create(base.CreateCommand):
         location=location_ref.SelfLink(),
         customer_name=args.customer_name)
 
+  def Epilog(self, resources_were_displayed):
+    message = ('Please check the provided contact email for further '
+               'instructions on how to activate your Interconnect. See also '
+               '{} for more detailed help.'.format(_DOCUMENTATION_LINK))
+    log.status.Print(message)
 
-@base.ReleaseTracks(base.ReleaseTrack.BETA)
+
+@base.ReleaseTracks(base.ReleaseTrack.BETA, base.ReleaseTrack.ALPHA)
 class CreateBeta(Create):
   """Create a Google Compute Engine interconnect.
 
@@ -111,28 +121,6 @@ class CreateBeta(Create):
     cls.INTERCONNECT_ARG = flags.InterconnectArgument()
     cls.INTERCONNECT_ARG.AddArgument(parser, operation_type='create')
     flags.AddCreateBetaArgs(parser)
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(CreateBeta):
-  """Create a Google Compute Engine interconnect.
-
-  *{command}* is used to create interconnects. An interconnect represents a
-  single specific connection between Google and the customer.
-  """
-
-  INTERCONNECT_ARG = None
-  LOCATION_ARG = None
-
-  @classmethod
-  def Args(cls, parser):
-    cls.LOCATION_ARG = (
-        location_flags.InterconnectLocationArgumentForOtherResource(
-            _LOCATION_FLAG_MSG))
-    cls.LOCATION_ARG.AddArgument(parser)
-    cls.INTERCONNECT_ARG = flags.InterconnectArgument()
-    cls.INTERCONNECT_ARG.AddArgument(parser, operation_type='create')
-    flags.AddCreateAlphaArgs(parser)
 
 
 Create.detailed_help = DETAILED_HELP

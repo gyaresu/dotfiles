@@ -14,6 +14,8 @@
 
 """Wait for a job to complete."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.dataproc import dataproc as dp
 from googlecloudsdk.api_lib.dataproc import util
 from googlecloudsdk.calliope import base
@@ -22,11 +24,21 @@ from googlecloudsdk.core import log
 
 
 class Wait(base.Command):
-  """View the output of a job as it runs or after it completes.
+  r"""View the output of a job as it runs or after it completes.
 
   View the output of a job as it runs or after it completes.
 
   ## EXAMPLES
+
+  To see a list of all jobs, run:
+
+    $ gcloud dataproc jobs list
+
+  To display these jobs with their respective IDs and underlying REST calls,
+  run:
+
+    $ gcloud dataproc jobs list --format "table(reference.jobId)" \
+      --limit 1 --log-http
 
   To view the output of a job as it runs, run:
 

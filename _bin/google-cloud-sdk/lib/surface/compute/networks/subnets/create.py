@@ -11,15 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Command for creating subnetworks."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import arg_parsers
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.networks import flags as network_flags
 from googlecloudsdk.command_lib.compute.networks.subnets import flags
+import six
 
 
 def _AddArgs(cls, parser):
@@ -31,8 +33,7 @@ def _AddArgs(cls, parser):
   cls.NETWORK_ARG.AddArgument(parser)
 
   parser.add_argument(
-      '--description',
-      help='An optional description of this subnetwork.')
+      '--description', help='An optional description of this subnetwork.')
 
   parser.add_argument(
       '--range',
@@ -61,8 +62,15 @@ def _AddArgs(cls, parser):
       * `RANGE` - `IP range in CIDR format.`
       """)
 
+  parser.add_argument(
+      '--enable-flow-logs',
+      action='store_true',
+      default=None,
+      help='Enable/disable flow logs for this subnet.')
 
-@base.ReleaseTracks(base.ReleaseTrack.GA, base.ReleaseTrack.BETA)
+
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA,
+                    base.ReleaseTrack.GA)
 class Create(base.CreateCommand):
   """Define a subnet for a network in custom subnet mode.
 
@@ -86,7 +94,7 @@ class Create(base.CreateCommand):
         network=network_ref.SelfLink(),
         ipCidrRange=args.range,
         privateIpGoogleAccess=args.enable_private_ip_google_access,
-    )
+        enableFlowLogs=args.enable_flow_logs)
 
   def Run(self, args):
     """Issues a list of requests necessary for adding a subnetwork."""
@@ -108,43 +116,11 @@ class Create(base.CreateCommand):
     secondary_ranges = []
     if args.secondary_range:
       for secondary_range in args.secondary_range:
-        for range_name, ip_cidr_range in sorted(secondary_range.iteritems()):
+        for range_name, ip_cidr_range in sorted(six.iteritems(secondary_range)):
           secondary_ranges.append(
               client.messages.SubnetworkSecondaryRange(
-                  rangeName=range_name,
-                  ipCidrRange=ip_cidr_range))
+                  rangeName=range_name, ipCidrRange=ip_cidr_range))
 
     request.subnetwork.secondaryIpRanges = secondary_ranges
-    return client.MakeRequests([(client.apitools_client.subnetworks,
-                                 'Insert', request)])
-
-
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
-class CreateAlpha(Create):
-  """Define a subnet for a network in custom subnet mode.
-
-  Define a subnet for a network in custom subnet mode. Subnets must be uniquely
-  named per region.
-  """
-
-  @classmethod
-  def Args(cls, parser):
-    parser.display_info.AddFormat(flags.DEFAULT_LIST_FORMAT)
-    _AddArgs(cls, parser)
-
-    parser.add_argument(
-        '--enable-flow-logs',
-        action='store_true',
-        default=None,
-        help='Enable/disable flow logs for this subnet.')
-
-    parser.display_info.AddCacheUpdater(network_flags.NetworksCompleter)
-
-  def _CreateSubnetwork(self, messages, subnet_ref, network_ref, args):
-    return messages.Subnetwork(
-        name=subnet_ref.Name(),
-        description=args.description,
-        network=network_ref.SelfLink(),
-        ipCidrRange=args.range,
-        privateIpGoogleAccess=args.enable_private_ip_google_access,
-        enableFlowLogs=args.enable_flow_logs)
+    return client.MakeRequests([(client.apitools_client.subnetworks, 'Insert',
+                                 request)])

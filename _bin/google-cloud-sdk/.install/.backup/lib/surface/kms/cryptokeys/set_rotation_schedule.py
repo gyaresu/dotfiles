@@ -13,6 +13,8 @@
 # limitations under the License.
 """Update a rotation schedule."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base
 from googlecloudsdk.calliope import exceptions
@@ -48,7 +50,7 @@ class SetRotationSchedule(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddCryptoKeyArgument(parser, 'to update the schedule of')
+    flags.AddKeyResourceArgument(parser, 'to update the schedule of')
     flags.AddRotationPeriodFlag(parser)
     flags.AddNextRotationTimeFlag(parser)
 

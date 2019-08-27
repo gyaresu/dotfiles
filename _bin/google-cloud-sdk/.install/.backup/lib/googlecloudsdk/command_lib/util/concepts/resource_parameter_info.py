@@ -13,6 +13,9 @@
 # limitations under the License.
 """Parameter info lib for resource completers."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 from googlecloudsdk.calliope.concepts import deps
 from googlecloudsdk.calliope.concepts import handlers
 from googlecloudsdk.calliope.concepts import util
@@ -45,8 +48,8 @@ class ResourceParameterInfo(parameter_info_lib.ParameterInfoByConvention):
     """
     del check_properties  # Unused.
     deps_obj = deps.Deps(
-        self.resource_info.BuildFullFallthroughsMap(
-            parsed_args=self.parsed_args))
+        self.resource_info.BuildFullFallthroughsMap(),
+        parsed_args=self.parsed_args)
     attribute_name = (
         self.resource_info.resource_spec.AttributeName(parameter_name))
     current = properties.VALUES.core.disable_prompts.GetBool()

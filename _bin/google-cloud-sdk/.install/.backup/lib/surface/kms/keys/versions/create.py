@@ -13,6 +13,8 @@
 # limitations under the License.
 """Create a new version."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import os.path
 
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
@@ -38,6 +40,7 @@ class Create(base.CreateCommand):
 
   @staticmethod
   def Args(parser):
+    flags.AddKeyResourceFlags(parser)
     parser.add_argument(
         '--primary',
         action='store_true',

@@ -22,10 +22,14 @@ during runtime before the Deps object is used) when Get() is called for a given
 attribute, depending on the fallthroughs.
 """
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import abc
 
+from googlecloudsdk.calliope.concepts import util
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import properties
+import six
 
 
 class Error(exceptions.Error):
@@ -40,7 +44,7 @@ class AttributeNotFoundError(Error, AttributeError):
   """Raised when an attribute value cannot be found by a Deps object."""
 
 
-class _FallthroughBase(object):
+class _FallthroughBase(six.with_metaclass(abc.ABCMeta, object)):
   """Represents a way to get information about a concept's attribute.
 
   Specific implementations of Fallthrough objects must implement the method:
@@ -52,7 +56,6 @@ class _FallthroughBase(object):
   attribute. The hint property is used to provide an informative error when an
   attribute can't be found.
   """
-  __metaclass__ = abc.ABCMeta
 
   def __init__(self, hint):
     """Initializes a fallthrough to an arbitrary function.
@@ -63,8 +66,11 @@ class _FallthroughBase(object):
     """
     self._hint = hint
 
-  def GetValue(self):
+  def GetValue(self, parsed_args):
     """Gets a value from information given to the fallthrough.
+
+    Args:
+      parsed_args: the argparse namespace.
 
     Raises:
       FallthroughNotFoundError: If the attribute is not found.
@@ -72,13 +78,13 @@ class _FallthroughBase(object):
     Returns:
       The value of the attribute.
     """
-    value = self._Call()
+    value = self._Call(parsed_args)
     if value:
       return value
     raise FallthroughNotFoundError()
 
   @abc.abstractmethod
-  def _Call(self):
+  def _Call(self, parsed_args):
     pass
 
   @property
@@ -108,7 +114,8 @@ class Fallthrough(_FallthroughBase):
     super(Fallthrough, self).__init__(hint)
     self._function = function
 
-  def _Call(self):
+  def _Call(self, parsed_args):
+    del parsed_args
     return self._function()
 
 
@@ -130,7 +137,8 @@ class PropertyFallthrough(_FallthroughBase):
     super(PropertyFallthrough, self).__init__(hint)
     self.property = prop
 
-  def _Call(self):
+  def _Call(self, parsed_args):
+    del parsed_args  # Not used.
     try:
       return self.property.GetOrFail()
     except (properties.InvalidValueError, properties.RequiredPropertyError):
@@ -145,27 +153,34 @@ class PropertyFallthrough(_FallthroughBase):
 class ArgFallthrough(_FallthroughBase):
   """Gets an attribute from the argparse parsed values for that arg."""
 
-  def __init__(self, arg_name, arg_value):
+  def __init__(self, arg_name, plural=False):
     """Initializes a fallthrough for the argument associated with the attribute.
 
     Args:
       arg_name: str, the name of the flag or positional.
-      arg_value: a parsed value (usually string, for resource argument flags)
-        provided by argparse.
+      plural: bool, True if the value should be a list. Should be False for
+        everything except the "anchor" arguments in a case where a resource
+        argument is plural (i.e. parses to a list).
     """
     super(ArgFallthrough, self).__init__(
         'Provide the flag [{}] on the command line'.format(arg_name))
     self.arg_name = arg_name
-    self.arg_value = arg_value
+    self.plural = plural
 
-  def _Call(self):
-    return self.arg_value
+  def _Call(self, parsed_args):
+    arg_value = getattr(parsed_args, util.NamespaceFormat(self.arg_name),
+                        None if self.plural else [])
+    # Positional arguments will always be stored in argparse as lists, even if
+    # nargs=1. If not supposed to be plural, transform into a single value.
+    if not self.plural and isinstance(arg_value, list):
+      return arg_value[0] if arg_value else None
+    else:
+      return arg_value
 
   def __eq__(self, other):
     if not isinstance(other, self.__class__):
       return False
-    return (other.arg_name == self.arg_name
-            and other.arg_value == self.arg_value)
+    return other.arg_name == self.arg_name and self.plural == other.plural
 
 
 class Deps(object):
@@ -179,7 +194,7 @@ class Deps(object):
       fallthroughs.
   """
 
-  def __init__(self, attribute_to_fallthroughs_map):
+  def __init__(self, attribute_to_fallthroughs_map, parsed_args=None):
     """Initializes dependencies.
 
     The deps object stores a list from attributes to their fallthroughs,
@@ -188,8 +203,10 @@ class Deps(object):
     Args:
       attribute_to_fallthroughs_map: a map from attribute names to lists of
       fallthroughs.
+      parsed_args: a parsed argparse namespace.
     """
     self.attribute_to_fallthroughs_map = attribute_to_fallthroughs_map
+    self.parsed_args = parsed_args
 
   def Get(self, attribute):
     """Gets the value of an attribute based on fallthrough information.
@@ -211,7 +228,7 @@ class Deps(object):
     fallthroughs = self.attribute_to_fallthroughs_map.get(attribute, [])
     for fallthrough in fallthroughs:
       try:
-        return fallthrough.GetValue()
+        return fallthrough.GetValue(self.parsed_args)
       except FallthroughNotFoundError:
         continue
     fallthroughs_summary = '\n'.join(

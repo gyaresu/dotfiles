@@ -14,6 +14,8 @@
 
 """Utilities for building the dataproc clusters CLI."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from apitools.base.py import encoding
 
 from googlecloudsdk.api_lib.compute import constants as compute_constants
@@ -40,6 +42,8 @@ def ArgsForClusterRef(parser, beta=False):
   instances_flags.AddTagsArgs(parser)
   # 30m is backend timeout + 5m for safety buffer.
   flags.AddTimeoutFlag(parser, default='35m')
+  flags.AddZoneFlag(parser)
+
   parser.add_argument(
       '--metadata',
       type=arg_parsers.ArgDict(min_length=1),
@@ -180,15 +184,24 @@ mappings:
 
 [format="csv",options="header"]
 |========
-Prefix,Target Configuration File
-core,core-site.xml
-hdfs,hdfs-site.xml
-mapred,mapred-site.xml
-yarn,yarn-site.xml
-hive,hive-site.xml
-pig,pig.properties
-spark,spark-defaults.conf
+Prefix,File,Purpose of file
+capacity-scheduler,capacity-scheduler.xml,Hadoop YARN Capacity Scheduler configuration
+core,core-site.xml,Hadoop general configuration
+distcp,distcp-default.xml,Hadoop Distributed Copy configuration
+hadoop-env,hadoop-env.sh,Hadoop specific environment variables
+hdfs,hdfs-site.xml,Hadoop HDFS configuration
+hive,hive-site.xml,Hive configuration
+mapred,mapred-site.xml,Hadoop MapReduce configuration
+mapred-env,mapred-env.sh,Hadoop MapReduce specific environment variables
+pig,pig.properties,Pig configuration
+spark,spark-defaults.conf,Spark configuration
+spark-env,spark-env.sh,Spark specific environment variables
+yarn,yarn-site.xml,Hadoop YARN configuration
+yarn-env,yarn-env.sh,Hadoop YARN specific environment variables
 |========
+
+See https://cloud.google.com/dataproc/docs/concepts/configuring-clusters/cluster-properties
+for more information.
 
 """)
   parser.add_argument(

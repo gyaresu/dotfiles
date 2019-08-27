@@ -229,7 +229,7 @@
           "type": "string"
         },
         "locationId": {
-          "description": "Location from which this application runs. Application instances run out of the data centers in the specified location, which is also where all of the application's end user content is stored.Defaults to us-central1.View the list of supported locations (https:\/\/cloud.google.com\/appengine\/docs\/locations).",
+          "description": "Location from which this application runs. Application instances run out of the data centers in the specified location, which is also where all of the application's end user content is stored.Defaults to us-central.View the list of supported locations (https:\/\/cloud.google.com\/appengine\/docs\/locations).",
           "type": "string"
         },
         "codeBucket": {
@@ -1309,6 +1309,10 @@
         "zip": {
           "description": "The zip file for this deployment, if this is a zip deployment.",
           "$ref": "ZipInfo"
+        },
+        "cloudBuildOptions": {
+          "description": "Options for any Google Cloud Container Builder builds created as a part of this deployment.Note that this is orthogonal to the build parameter, where the deployment depends on an already existing cloud build. These options will only be used if a new build is created, such as when deploying to the App Engine flexible environment using files or zip.",
+          "$ref": "CloudBuildOptions"
         }
       }
     },
@@ -1358,9 +1362,25 @@
         }
       }
     },
+    "CloudBuildOptions": {
+      "id": "CloudBuildOptions",
+      "description": "Options for the build operations performed as a part of the version deployment. Only applicable for App Engine flexible environment when creating a version using source code directly.",
+      "type": "object",
+      "properties": {
+        "appYamlPath": {
+          "description": "Path to the yaml file used in deployment, used to determine runtime configuration details.Required for flexible environment builds.See https:\/\/cloud.google.com\/appengine\/docs\/standard\/python\/config\/appref for more details.",
+          "type": "string"
+        },
+        "cloudBuildTimeout": {
+          "description": "The Cloud Build timeout used as part of any dependent builds performed by version creation. Defaults to 10 minutes.",
+          "type": "string",
+          "format": "google-duration"
+        }
+      }
+    },
     "EndpointsApiService": {
       "id": "EndpointsApiService",
-      "description": "Cloud Endpoints (https:\/\/cloud.google.com\/endpoints) configuration. The Endpoints API Service provides tooling for serving Open API and gRPC endpoints via an NGINX proxy.The fields here refer to the name and configuration id of a \"service\" resource in the Service Management API (https:\/\/cloud.google.com\/service-management\/overview).",
+      "description": "Cloud Endpoints (https:\/\/cloud.google.com\/endpoints) configuration. The Endpoints API Service provides tooling for serving Open API and gRPC endpoints via an NGINX proxy. Only valid for App Engine Flexible environment deployments.The fields here refer to the name and configuration ID of a \"service\" resource in the Service Management API (https:\/\/cloud.google.com\/service-management\/overview).",
       "type": "object",
       "properties": {
         "name": {
@@ -1368,7 +1388,7 @@
           "type": "string"
         },
         "configId": {
-          "description": "Endpoints service configuration id as specified by the Service Management API. For example \"2016-09-19r1\"",
+          "description": "Endpoints service configuration ID as specified by the Service Management API. For example \"2016-09-19r1\".By default, the rollout strategy for Endpoints is RolloutStrategy.FIXED. This means that Endpoints starts up with a particular configuration ID. When a new configuration is rolled out, Endpoints must be given the new configuration ID. The config_id field is used to give the configuration ID and is required in this case.Endpoints also has a rollout strategy called RolloutStrategy.MANAGED. When using this, Endpoints fetches the latest configuration and does not need the configuration ID. In this case, config_id must be omitted.",
           "type": "string"
         }
       }
@@ -1806,6 +1826,10 @@
           "description": "The canonical id for this location. For example: \"us-east1\".",
           "type": "string"
         },
+        "displayName": {
+          "description": "The friendly name for this location, typically a nearby city name. For example, \"Tokyo\".",
+          "type": "string"
+        },
         "labels": {
           "description": "Cross-service attributes for the location. For example\n{\"cloud.googleapis.com\/region\": \"us-east1\"}\n",
           "type": "object",
@@ -2030,6 +2054,20 @@
           "items": {
             "type": "string"
           }
+        },
+        "createVersionMetadata": {
+          "$ref": "CreateVersionMetadataV1"
+        }
+      }
+    },
+    "CreateVersionMetadataV1": {
+      "id": "CreateVersionMetadataV1",
+      "description": "Metadata for the given google.longrunning.Operation during a google.appengine.v1.CreateVersionRequest.",
+      "type": "object",
+      "properties": {
+        "cloudBuildId": {
+          "description": "The Cloud Build ID if one was created as part of the version create. @OutputOnly",
+          "type": "string"
         }
       }
     },
@@ -2517,7 +2555,7 @@
                   "scopes": [
                     "https://www.googleapis.com/auth/cloud-platform"
                   ],
-                  "description": "Updates the specified Version resource. You can specify the following fields depending on the App Engine environment and type of scaling that the version resource uses:\nserving_status (https:\/\/cloud.google.com\/appengine\/docs\/admin-api\/reference\/rest\/v1\/apps.services.versions#Version.FIELDS.serving_status):  For Version resources that use basic scaling, manual scaling, or run in  the App Engine flexible environment.\ninstance_class (https:\/\/cloud.google.com\/appengine\/docs\/admin-api\/reference\/rest\/v1\/apps.services.versions#Version.FIELDS.instance_class):  For Version resources that run in the App Engine standard environment.\nautomatic_scaling.min_idle_instances (https:\/\/cloud.google.com\/appengine\/docs\/admin-api\/reference\/rest\/v1\/apps.services.versions#Version.FIELDS.automatic_scaling):  For Version resources that use automatic scaling and run in the App  Engine standard environment.\nautomatic_scaling.max_idle_instances (https:\/\/cloud.google.com\/appengine\/docs\/admin-api\/reference\/rest\/v1\/apps.services.versions#Version.FIELDS.automatic_scaling):  For Version resources that use automatic scaling and run in the App  Engine standard environment.\nautomatic_scaling.min_total_instances (https:\/\/cloud.google.com\/appengine\/docs\/admin-api\/reference\/rest\/v1\/apps.services.versions#Version.FIELDS.automatic_scaling):  For Version resources that use automatic scaling and run in the App  Engine flexible environment.\nautomatic_scaling.max_total_instances (https:\/\/cloud.google.com\/appengine\/docs\/admin-api\/reference\/rest\/v1\/apps.services.versions#Version.FIELDS.automatic_scaling):  For Version resources that use automatic scaling and run in the App  Engine flexible environment.\nautomatic_scaling.cool_down_period_sec (https:\/\/cloud.google.com\/appengine\/docs\/admin-api\/reference\/rest\/v1\/apps.services.versions#Version.FIELDS.automatic_scaling):  For Version resources that use automatic scaling and run in the App  Engine flexible environment.\nautomatic_scaling.cpu_utilization.target_utilization (https:\/\/cloud.google.com\/appengine\/docs\/admin-api\/reference\/rest\/v1\/apps.services.versions#Version.FIELDS.automatic_scaling):  For Version resources that use automatic scaling and run in the App  Engine flexible environment."
+                  "description": "Updates the specified Version resource. You can specify the following fields depending on the App Engine environment and type of scaling that the version resource uses:Standard environment\ninstance_class (https:\/\/cloud.google.com\/appengine\/docs\/admin-api\/reference\/rest\/v1\/apps.services.versions#Version.FIELDS.instance_class)automatic scaling in the standard environment:\nautomatic_scaling.min_idle_instances (https:\/\/cloud.google.com\/appengine\/docs\/admin-api\/reference\/rest\/v1\/apps.services.versions#Version.FIELDS.automatic_scaling)\nautomatic_scaling.max_idle_instances (https:\/\/cloud.google.com\/appengine\/docs\/admin-api\/reference\/rest\/v1\/apps.services.versions#Version.FIELDS.automatic_scaling)\nautomaticScaling.standard_scheduler_settings.max_instances (https:\/\/cloud.google.com\/appengine\/docs\/admin-api\/reference\/rest\/v1\/apps.services.versions#StandardSchedulerSettings)\nautomaticScaling.standard_scheduler_settings.min_instances (https:\/\/cloud.google.com\/appengine\/docs\/admin-api\/reference\/rest\/v1\/apps.services.versions#StandardSchedulerSettings)\nautomaticScaling.standard_scheduler_settings.target_cpu_utilization (https:\/\/cloud.google.com\/appengine\/docs\/admin-api\/reference\/rest\/v1\/apps.services.versions#StandardSchedulerSettings)\nautomaticScaling.standard_scheduler_settings.target_throughput_utilization (https:\/\/cloud.google.com\/appengine\/docs\/admin-api\/reference\/rest\/v1\/apps.services.versions#StandardSchedulerSettings)basic scaling or manual scaling in the standard environment:\nserving_status (https:\/\/cloud.google.com\/appengine\/docs\/admin-api\/reference\/rest\/v1\/apps.services.versions#Version.FIELDS.serving_status)Flexible environment\nserving_status (https:\/\/cloud.google.com\/appengine\/docs\/admin-api\/reference\/rest\/v1\/apps.services.versions#Version.FIELDS.serving_status)automatic scaling in the flexible environment:\nautomatic_scaling.min_total_instances (https:\/\/cloud.google.com\/appengine\/docs\/admin-api\/reference\/rest\/v1\/apps.services.versions#Version.FIELDS.automatic_scaling)\nautomatic_scaling.max_total_instances (https:\/\/cloud.google.com\/appengine\/docs\/admin-api\/reference\/rest\/v1\/apps.services.versions#Version.FIELDS.automatic_scaling)\nautomatic_scaling.cool_down_period_sec (https:\/\/cloud.google.com\/appengine\/docs\/admin-api\/reference\/rest\/v1\/apps.services.versions#Version.FIELDS.automatic_scaling)\nautomatic_scaling.cpu_utilization.target_utilization (https:\/\/cloud.google.com\/appengine\/docs\/admin-api\/reference\/rest\/v1\/apps.services.versions#Version.FIELDS.automatic_scaling)"
                 },
                 "delete": {
                   "id": "appengine.apps.services.versions.delete",
@@ -3318,7 +3356,7 @@
                 "https://www.googleapis.com/auth/cloud-platform",
                 "https://www.googleapis.com/auth/cloud-platform.read-only"
               ],
-              "description": "Get information about a location."
+              "description": "Gets information about a location."
             }
           }
         }

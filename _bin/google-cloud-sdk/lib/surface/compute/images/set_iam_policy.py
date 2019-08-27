@@ -13,6 +13,8 @@
 # limitations under the License.
 """Command to set IAM policy for a resource."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
@@ -52,6 +54,14 @@ class SetIamPolicy(base.Command):
         holder.resources,
         scope_lister=compute_flags.GetDefaultScopeLister(client))
     policy = iam_util.ParsePolicyFile(args.policy_file, client.messages.Policy)
+
+    # TODO(b/78371568): Construct the GlobalSetPolicyRequest directly
+    # out of the parsed policy instead of setting 'bindings' and 'etags'.
+    # This current form is required so gcloud won't break while Compute
+    # roll outs the breaking change to SetIamPolicy (b/75971480)
     request = client.messages.ComputeImagesSetIamPolicyRequest(
-        policy=policy, resource=image_ref.image, project=image_ref.project)
+        globalSetPolicyRequest=client.messages.GlobalSetPolicyRequest(
+            bindings=policy.bindings,
+            etag=policy.etag),
+        resource=image_ref.image, project=image_ref.project)
     return client.apitools_client.images.SetIamPolicy(request)

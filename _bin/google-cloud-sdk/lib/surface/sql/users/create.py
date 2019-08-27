@@ -16,6 +16,8 @@
 Creates a user in a given instance with specified username, host, and password.
 """
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.sql import api_util
 from googlecloudsdk.api_lib.sql import operations
 from googlecloudsdk.calliope import base
@@ -80,6 +82,6 @@ class Create(base.CreateCommand):
                                                     'Creating Cloud SQL user')
       result = new_user
 
-    log.CreatedResource(args.username, kind='user', async=args.async)
+    log.CreatedResource(args.username, kind='user', is_async=args.async)
 
     return result

@@ -14,10 +14,12 @@
 
 """Commands for creating or manipulating dedicated interconnect attachments."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 
 
-@base.ReleaseTracks(base.ReleaseTrack.ALPHA)
+@base.ReleaseTracks(base.ReleaseTrack.ALPHA, base.ReleaseTrack.BETA)
 class InterconnectAttachments(base.Group):
   """Create or manipulate dedicated interconnect attachments."""
   pass

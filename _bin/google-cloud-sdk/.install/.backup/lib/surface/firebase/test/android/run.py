@@ -13,6 +13,8 @@
 # limitations under the License.
 """The 'gcloud firebase test android run' command."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.firebase.test import arg_util
 from googlecloudsdk.api_lib.firebase.test import ctrl_c_handler
 from googlecloudsdk.api_lib.firebase.test import exit_code
@@ -162,6 +164,8 @@ class _BaseRun(object):
             'Final test results will be available at [{0}].', [])
           )
       """
+    log.status.Print('\nHave questions, feedback, or issues? Get support by '
+                     'visiting:\n  https://firebase.google.com/support/\n')
 
     arg_manager.AndroidArgsManager().Prepare(args)
 
@@ -178,8 +182,13 @@ class _BaseRun(object):
       bucket_ops.UploadFileToGcs(args.test)
     for obb_file in (args.obb_files or []):
       bucket_ops.UploadFileToGcs(obb_file)
-    if hasattr(args, u'robo_script') and args.robo_script:
+    if getattr(args, 'robo_script', None):
       bucket_ops.UploadFileToGcs(args.robo_script)
+    additional_apks = getattr(args, 'additional_apks', None) or []
+    for additional_apk in additional_apks:
+      bucket_ops.UploadFileToGcs(additional_apk)
+    for other_files in getattr(args, 'other-files', None) or {}:
+      bucket_ops.UploadFileToGcs(other_files)
     bucket_ops.LogGcsResultsUrl()
 
     tr_history_picker = history_picker.ToolResultsHistoryPicker(
@@ -230,6 +239,7 @@ class RunGA(_BaseRun, base.ListCommand):
     arg_util.AddMatrixArgs(parser)
     arg_util.AddAndroidTestArgs(parser)
     arg_util.AddGaArgs(parser)
+    base.URI_FLAG.RemoveFromParser(parser)
     parser.display_info.AddFormat(util.OUTCOMES_FORMAT)
 
 
@@ -243,6 +253,7 @@ class RunBeta(_BaseRun, base.ListCommand):
     arg_util.AddMatrixArgs(parser)
     arg_util.AddAndroidTestArgs(parser)
     arg_util.AddBetaArgs(parser)
+    base.URI_FLAG.RemoveFromParser(parser)
     parser.display_info.AddFormat(util.OUTCOMES_FORMAT)
 
 

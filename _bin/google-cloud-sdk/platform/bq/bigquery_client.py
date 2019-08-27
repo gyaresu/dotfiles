@@ -22,7 +22,6 @@ import textwrap
 import time
 import traceback
 
-
 import googleapiclient
 from googleapiclient import discovery
 from googleapiclient import http as http_request
@@ -119,14 +118,6 @@ def _FormatLabels(labels):
     label_str = '%s:%s' % (key, value)
     result_lines.extend([label_str])
   return '\n'.join(result_lines)
-
-
-def _RemoveEmptyLocation(d):
-  """Remove the 'location' key from a dict if it is present without a value."""
-  if 'location' in d and not d['location']:
-    # Do not send an empty location. This avoids errors against a server that
-    # does not have job location support yet.
-    del d['location']
 
 
 def _FormatProjectIdentifierForTransfers(project_reference, location):
@@ -766,12 +757,7 @@ class BigqueryClient(object):
   @staticmethod
   def FormatAcl(acl):
     """Format a server-returned ACL for printing."""
-    acl_entries = {
-        'OWNER': [],
-        'WRITER': [],
-        'READER': [],
-        'VIEW': [],
-        }
+    acl_entries = collections.defaultdict(list)
     for entry in acl:
       entry = entry.copy()
       view = entry.pop('view', None)
@@ -782,24 +768,25 @@ class BigqueryClient(object):
       else:
         role = entry.pop('role', None)
         if not role or len(entry.values()) != 1:
-          raise BigqueryServiceError(
-              'Invalid ACL returned by server: %s' % (acl,))
-        for _, value in entry.iteritems():
-          acl_entries[role].append(value)
+          raise BigqueryInterfaceError(
+              'Invalid ACL returned by server: %s' % acl, {}, [])
+        acl_entries[role].extend(entry.itervalues())
+    # Show a couple things first.
+    original_roles = [
+        ('OWNER', 'Owners'),
+        ('WRITER', 'Writers'),
+        ('READER', 'Readers'),
+        ('VIEW', 'Authorized Views')]
     result_lines = []
-    if acl_entries['OWNER']:
-      result_lines.extend([
-          'Owners:', ',\n'.join('  %s' % (o,) for o in acl_entries['OWNER'])])
-    if acl_entries['WRITER']:
-      result_lines.extend([
-          'Writers:', ',\n'.join('  %s' % (o,) for o in acl_entries['WRITER'])])
-    if acl_entries['READER']:
-      result_lines.extend([
-          'Readers:', ',\n'.join('  %s' % (o,) for o in acl_entries['READER'])])
-    if acl_entries['VIEW']:
-      result_lines.extend([
-          'Authorized Views:', ',\n'.join('  %s' % (o,) for o in
-                                          acl_entries['VIEW'])])
+    for role, name in original_roles:
+      members = acl_entries.pop(role, None)
+      if members:
+        result_lines.append('%s:' % name)
+        result_lines.append(',\n'.join('  %s' % m for m in sorted(members)))
+    # Show everything else.
+    for role, members in sorted(acl_entries.iteritems()):
+      result_lines.append('%s:' % role)
+      result_lines.append(',\n'.join('  %s' % m for m in sorted(members)))
     return '\n'.join(result_lines)
 
   @staticmethod
@@ -1008,9 +995,7 @@ class BigqueryClient(object):
           'Unknown %r' % (reference,), {'reason': 'notFound'}, [])
 
     if isinstance(reference, ApiClientHelper.JobReference):
-      job_reference_dict = dict(reference)
-      _RemoveEmptyLocation(job_reference_dict)
-      return self.apiclient.jobs().get(**job_reference_dict).execute()
+      return self.apiclient.jobs().get(**dict(reference)).execute()
     elif isinstance(reference, ApiClientHelper.DatasetReference):
       return self.apiclient.datasets().get(**dict(reference)).execute()
     elif isinstance(reference, ApiClientHelper.TableReference):
@@ -2144,6 +2129,7 @@ class BigqueryClient(object):
       use_legacy_sql=None,
       labels=None,
       time_partitioning=None,
+      clustering=None,
       destination_kms_key=None):
     """Create a table corresponding to TableReference.
 
@@ -2166,6 +2152,7 @@ class BigqueryClient(object):
       labels: an optional dict of labels to set on the table.
       time_partitioning: if set, enables time based partitioning on the table
         and configures the partitioning.
+      clustering: if set, enables and configures clustering on the table.
       destination_kms_key: User specified KMS key for encryption.
 
     Raises:
@@ -2198,6 +2185,8 @@ class BigqueryClient(object):
         body['labels'] = labels
       if time_partitioning is not None:
         body['timePartitioning'] = time_partitioning
+      if clustering is not None:
+        body['clustering'] = clustering
       if destination_kms_key is not None:
         body['encryptionConfiguration'] = {'kmsKeyName': destination_kms_key}
       self.apiclient.tables().insert(
@@ -2468,11 +2457,7 @@ class BigqueryClient(object):
     """
     _Typecheck(reference, ApiClientHelper.TableReference, method='UpdateTable')
 
-    # Get the existing table and associated ETag.
-    get_request = self.apiclient.tables().get(**dict(reference))
-    if etag:
-      get_request.headers['If-Match'] = etag
-    table = get_request.execute()
+    table = BigqueryClient.ConstructObjectInfo(reference)
 
     if schema is not None:
       table['schema'] = {'fields': schema}
@@ -2494,9 +2479,9 @@ class BigqueryClient(object):
       view_args = {'query': view_query}
       if view_udf_resources is not None:
         view_args['userDefinedFunctionResources'] = view_udf_resources
-      table['view'] = view_args
       if use_legacy_sql is not None:
         view_args['useLegacySql'] = use_legacy_sql
+      table['view'] = view_args
     if external_data_config is not None:
       table['externalDataConfiguration'] = external_data_config
     if 'labels' not in table:
@@ -2506,19 +2491,17 @@ class BigqueryClient(object):
         table['labels'][label_key] = label_value
     if label_keys_to_remove:
       for label_key in label_keys_to_remove:
-        table['labels'].pop(label_key, None)
+        table['labels'][label_key] = None
     if time_partitioning is not None:
       table['timePartitioning'] = time_partitioning
 
-    request = self.apiclient.tables().update(body=table, **dict(reference))
+    request = self.apiclient.tables().patch(body=table, **dict(reference))
 
     # Perform a conditional update to protect against concurrent
-    # modifications to this table.  By placing the ETag returned in
-    # the get operation into the If-Match header, the API server will
-    # make sure the table hasn't changed.  If there is a conflicting
+    # modifications to this table. If there is a conflicting
     # change, this update will fail with a "Precondition failed"
     # error.
-    if etag or table['etag']:
+    if etag:
       request.headers['If-Match'] = etag if etag else table['etag']
     request.execute()
 
@@ -2690,7 +2673,7 @@ class BigqueryClient(object):
         # Log response headers, which contain debug info for GFEs.
         for key, value in e.resp.items():
           logging.info('  %s: %s', key, value)
-        if e.resp.status in [500, 502, 503, 504]:
+        if e.resp.status in [502, 503, 504]:
           sleep_sec = 2 ** retriable_errors
           retriable_errors += 1
           if retriable_errors > 3:
@@ -2850,8 +2833,12 @@ class BigqueryClient(object):
     return self.apiclient.jobs().query(
         body=request, projectId=project_id, **kwds).execute()
 
-  def GetQueryResults(self, job_id=None, project_id=None,
-                      max_results=None, timeout_ms=None):
+  def GetQueryResults(self,
+                      job_id=None,
+                      project_id=None,
+                      max_results=None,
+                      timeout_ms=None,
+                      location=None):
     """Waits for a query to complete, once.
 
     Args:
@@ -2859,6 +2846,7 @@ class BigqueryClient(object):
       project_id: The project id of the query job.
       max_results: The maximum number of results.
       timeout_ms: The number of milliseconds to wait for the query to complete.
+      location: Optional. The geographic location of the job.
 
     Returns:
       The getQueryResults() result.
@@ -2876,7 +2864,8 @@ class BigqueryClient(object):
                      job_id=job_id,
                      project_id=project_id,
                      timeout_ms=timeout_ms,
-                     max_results=max_results)
+                     max_results=max_results,
+                     location=location)
     return self.apiclient.jobs().getQueryResults(**kwds).execute()
 
   def RunJobSynchronously(self,
@@ -2973,9 +2962,7 @@ class BigqueryClient(object):
         projectId=project_id,
         jobId=job_id,
         location=location)
-    job_reference_dict = dict(job_reference)
-    _RemoveEmptyLocation(job_reference_dict)
-    result = self.apiclient.jobs().cancel(**job_reference_dict).execute()['job']
+    result = self.apiclient.jobs().cancel(**dict(job_reference)).execute()['job']
     if result['status']['state'] != 'DONE' and self.sync:
       job_reference = BigqueryClient.ConstructObjectReference(result)
       result = self.WaitJob(job_reference=job_reference)
@@ -3129,9 +3116,7 @@ class BigqueryClient(object):
     """
     _Typecheck(job_reference, ApiClientHelper.JobReference, method='PollJob')
     wait = BigqueryClient.NormalizeWait(wait)
-    job_reference_dict = dict(job_reference)
-    _RemoveEmptyLocation(job_reference_dict)
-    job = self.apiclient.jobs().get(**job_reference_dict).execute()
+    job = self.apiclient.jobs().get(**dict(job_reference)).execute()
     current = job['status']['state']
     return (current == status, job)
 
@@ -3266,7 +3251,8 @@ class BigqueryClient(object):
           result = self.GetQueryResults(
               job_reference.jobId,
               max_results=0,
-              timeout_ms=current_wait_ms)
+              timeout_ms=current_wait_ms,
+              location=location)
         if result['jobComplete']:
           (schema, rows) = self.ReadSchemaAndJobRows(dict(job_reference),
                                                      start_row=0,
@@ -3310,6 +3296,7 @@ class BigqueryClient(object):
       query_parameters=None,
       time_partitioning=None,
       destination_encryption_configuration=None,
+      clustering=None,
       **kwds):
     # pylint: disable=g-doc-args
     """Execute the given query, returning the created job.
@@ -3354,6 +3341,8 @@ class BigqueryClient(object):
       query_parameters: parameter values for use_legacy_sql=False queries.
       time_partitioning: Optional. Provides time based partitioning
           specification for the destination table.
+      clustering: Optional. Provides clustering specification for the
+          destination table.
       destination_encryption_configuration: Optional. Allows user to encrypt the
           table created from a query job with a Cloud KMS key.
       **kwds: Passed on to self.ExecuteJob.
@@ -3399,6 +3388,7 @@ class BigqueryClient(object):
         schema_update_options=schema_update_options,
         query_parameters=query_parameters,
         time_partitioning=time_partitioning,
+        clustering=clustering,
         min_completion_ratio=min_completion_ratio)
     request = {'query': query_config}
     _ApplyParameters(request, dry_run=dry_run,
@@ -3426,6 +3416,7 @@ class BigqueryClient(object):
       schema_update_options=None,
       null_marker=None,
       time_partitioning=None,
+      clustering=None,
       destination_encryption_configuration=None,
       **kwds):
     """Load the given data into BigQuery.
@@ -3468,6 +3459,8 @@ class BigqueryClient(object):
       null_marker: Optional. String that will be interpreted as a NULL value.
       time_partitioning: Optional. Provides time based partitioning
           specification for the destination table.
+      clustering: Optional. Provides clustering specification for the
+          destination table.
       destination_encryption_configuration: Optional. Allows user to encrypt the
           table created from a load job with Cloud KMS key.
       **kwds: Passed on to self.ExecuteJob.
@@ -3505,6 +3498,7 @@ class BigqueryClient(object):
         schema_update_options=schema_update_options,
         null_marker=null_marker,
         time_partitioning=time_partitioning,
+        clustering=clustering,
         autodetect=autodetect)
     return self.ExecuteJob(configuration={'load': load_config},
                            upload_file=upload_file, **kwds)
@@ -3606,7 +3600,7 @@ class _TableReader(object):
         rows_to_read = min(self.max_rows_per_request, rows_to_read)
       (more_rows, page_token, current_schema) = self._ReadOnePage(
           None if page_token else start_row,
-          max_rows=None if page_token else rows_to_read,
+          max_rows=rows_to_read,
           page_token=page_token, selected_fields=selected_fields)
       if not schema and current_schema:
         schema = current_schema.get('fields', [])
@@ -3734,7 +3728,6 @@ class _JobTableReader(_TableReader):
       kwds['pageToken'] = page_token
     else:
       kwds['startIndex'] = start_row
-    _RemoveEmptyLocation(kwds)
     data = self._apiclient.jobs().getQueryResults(**kwds).execute()
     if not data['jobComplete']:
       raise BigqueryError('Job %s is not done' % (self,))

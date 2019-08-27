@@ -14,6 +14,8 @@
 
 """Resource formats supplementary help."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import textwrap
 
 from googlecloudsdk.calliope import base
@@ -41,6 +43,7 @@ class Formats(base.TopicCommand):
           _NAME_:: _name_
           _ATTRIBUTES_:: *[* [no-]_attribute-name_[=_value_] [, ... ] *]*
           _PROJECTION_:: *(* _resource-key_ [, ...] *)*
+
 
           _NAME_ is required, _ATTRIBUTES_ are optional, and _PROJECTIONS_
           may be required for some formats. Unknown attribute names are
@@ -84,6 +87,11 @@ class Formats(base.TopicCommand):
           List the URIs for all compute instances:
 
             $ gcloud compute instances list --format='value(uri())'
+
+          List all compute instances with their creation timestamps displayed
+          according to the local timezone:
+
+            $ gcloud compute instances list --format="table(name,creationTimestamp.date(tz=LOCAL))"
 
           List the project authenticated user email address:
 

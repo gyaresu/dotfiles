@@ -14,20 +14,18 @@
 
 """Utility functions for gcloud app."""
 
+from __future__ import absolute_import
 import datetime
 import os
 import posixpath
 import sys
 import time
-import urllib2
-
-import enum
-
 from googlecloudsdk.core import config
 from googlecloudsdk.core import exceptions
 from googlecloudsdk.core import log
 from googlecloudsdk.core.util import platforms
 from googlecloudsdk.third_party.appengine.api import client_deployinfo
+from six.moves import urllib
 
 
 class Error(exceptions.Error):
@@ -292,31 +290,6 @@ def GetUserAgent():
   return ' '.join(product_tokens)
 
 
-class Environment(enum.Enum):
-  """Enum for different application environments.
-
-  STANDARD corresponds to App Engine Standard applications.
-  FLEX corresponds to any App Engine `env: flex` applications.
-  MANAGED_VMS corresponds to `vm: true` applications.
-  """
-
-  STANDARD = 1
-  MANAGED_VMS = 2
-  FLEX = 3
-
-  @classmethod
-  def IsFlexible(cls, env):
-    return env in [cls.FLEX, cls.MANAGED_VMS]
-
-
-def IsFlex(env):
-  return env in ['2', 'flex', 'flexible']
-
-
-def IsStandard(env):
-  return env in [None, '1', 'standard']
-
-
 class ClientDeployLoggingContext(object):
   """Context for sending and recording server rpc requests.
 
@@ -402,7 +375,7 @@ class ClientDeployLoggingContext(object):
           success=success,
           sdk_version=config.CLOUD_SDK_VERSION)
       self.Send('/api/logclientdeploy', info.ToYAML())
-    except BaseException, e:
+    except BaseException as e:  # pylint: disable=broad-except
       log.debug('Exception logging deploy info continuing - {0}'.format(e))
 
 
@@ -425,7 +398,7 @@ class RPCServer(object):
       response = self._server.Send(*args, **kwargs)
       log.debug('Got response: %s', response)
       return response
-    except urllib2.HTTPError as e:
+    except urllib.error.HTTPError as e:
       # This is the message body, if included in e
       if hasattr(e, 'read'):
         body = e.read()

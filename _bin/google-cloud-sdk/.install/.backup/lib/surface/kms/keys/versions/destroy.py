@@ -13,6 +13,8 @@
 # limitations under the License.
 """Destroy a version."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.cloudkms import base as cloudkms_base
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.kms import flags
@@ -40,7 +42,7 @@ class Destroy(base.UpdateCommand):
 
   @staticmethod
   def Args(parser):
-    flags.AddCryptoKeyVersionArgument(parser, 'to destroy')
+    flags.AddKeyVersionResourceArgument(parser, 'to destroy')
 
   def Run(self, args):
     # pylint: disable=line-too-long

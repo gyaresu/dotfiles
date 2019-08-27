@@ -13,6 +13,8 @@
 # limitations under the License.
 """Command for setting autohealing policy of managed instance group."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute import managed_instance_groups_utils
 from googlecloudsdk.calliope import base
@@ -68,6 +70,9 @@ class SetAutohealing(base.Command):
     auto_healing_policies = (
         managed_instance_groups_utils.CreateAutohealingPolicies(
             client.messages, health_check, args.initial_delay))
+
+    managed_instance_groups_utils.ValidateAutohealingPolicies(
+        auto_healing_policies)
 
     if igm_ref.Collection() == 'compute.instanceGroupManagers':
       service = client.apitools_client.instanceGroupManagers

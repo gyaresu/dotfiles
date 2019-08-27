@@ -13,6 +13,8 @@
 # limitations under the License.
 """Command to add an IAM policy binding to an image resource."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute.images import flags as images_flags
@@ -49,6 +51,12 @@ class AddIamPolicyBinding(base.Command):
     policy = client.apitools_client.images.GetIamPolicy(get_request)
     iam_util.AddBindingToIamPolicy(client.messages.Binding, policy, args.member,
                                    args.role)
+    # TODO(b/78371568): Construct the GlobalSetPolicyRequest directly
+    # out of the parsed policy.
     set_request = client.messages.ComputeImagesSetIamPolicyRequest(
-        policy=policy, resource=image_ref.image, project=image_ref.project)
+        globalSetPolicyRequest=client.messages.GlobalSetPolicyRequest(
+            bindings=policy.bindings,
+            etag=policy.etag),
+        resource=image_ref.image,
+        project=image_ref.project)
     return client.apitools_client.images.SetIamPolicy(set_request)

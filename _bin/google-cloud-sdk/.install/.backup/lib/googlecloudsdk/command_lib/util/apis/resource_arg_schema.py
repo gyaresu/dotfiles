@@ -14,6 +14,8 @@
 
 """Helpers for loading resource argument definitions from a yaml declaration."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.calliope.concepts import concepts
 from googlecloudsdk.calliope.concepts import deps
 from googlecloudsdk.command_lib.util.apis import registry
@@ -61,12 +63,15 @@ class YAMLResourceArgument(object):
         is_parent_resource=data.get('is_parent_resource', False),
         removed_flags=data.get('removed_flags'),
         disable_auto_completers=data['spec'].get(
-            'disable_auto_completers', True)
+            'disable_auto_completers', True),
+        arg_name=data.get('arg_name')
     )
 
   def __init__(self, data, group_help, is_positional=True, removed_flags=None,
-               is_parent_resource=False, disable_auto_completers=True):
-    self.name = data['name']
+               is_parent_resource=False, disable_auto_completers=True,
+               arg_name=None):
+    self.name = data['name'] if arg_name is None else arg_name
+    self.name_override = arg_name
     self.request_id_field = data.get('request_id_field')
 
     self.group_help = group_help

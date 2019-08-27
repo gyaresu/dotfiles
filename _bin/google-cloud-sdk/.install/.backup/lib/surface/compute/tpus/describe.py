@@ -12,12 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """cloud tpu describe command."""
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.calliope import base
 from googlecloudsdk.command_lib.compute import flags as compute_flags
 from googlecloudsdk.command_lib.compute.tpus import flags
 from googlecloudsdk.command_lib.compute.tpus import util as cli_util
 
 
+@base.ReleaseTracks(base.ReleaseTrack.BETA)
 class Describe(base.DescribeCommand):
   """Describe a Cloud TPU."""
 

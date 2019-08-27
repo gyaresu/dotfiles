@@ -13,6 +13,8 @@
 # limitations under the License.
 """Command for updating dedicated interconnect attachments."""
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from googlecloudsdk.api_lib.compute import base_classes
 from googlecloudsdk.api_lib.compute.interconnects.attachments import client
 from googlecloudsdk.calliope import base
@@ -21,7 +23,6 @@ from googlecloudsdk.command_lib.compute.interconnects.attachments import flags a
 from googlecloudsdk.command_lib.util.args import labels_util
 
 
-@base.Hidden
 class Update(base.UpdateCommand):
   """Update a Google Compute Engine dedicated interconnect attachment.
 

@@ -46,15 +46,21 @@ Example usage:
 
 """
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import argparse
 import copy
 import re
-import sys
 
 from googlecloudsdk.calliope import parser_errors
 from googlecloudsdk.core import log
 from googlecloudsdk.core.console import console_attr
+from googlecloudsdk.core.console import console_io
+from googlecloudsdk.core.util import files
 from googlecloudsdk.core.util import times
+
+import six
+from six.moves import zip  # pylint: disable=redefined-builtin
 
 
 __all__ = ['Duration', 'BinarySize']
@@ -102,10 +108,10 @@ def _GenerateErrorMessage(error, user_input=None, error_idx=None):
 
 
 _VALUE_PATTERN = r"""
-    ^                       # Beginning of input marker.
-    (?P<amount>\d+)         # Amount.
-    ((?P<unit>[a-zA-Z]+))?  # Optional unit.
-    $                       # End of input marker.
+    ^                           # Beginning of input marker.
+    (?P<amount>\d+)             # Amount.
+    ((?P<suffix>[-/a-zA-Z]+))?  # Optional scale and type abbr.
+    $                           # End of input marker.
 """
 
 _RANGE_PATTERN = r'^(?P<start>[0-9]+)(-(?P<end>[0-9]+))?$'
@@ -125,17 +131,17 @@ _DURATION_SCALES = {
 }
 
 _BINARY_SIZE_SCALES = {
-    'B': 1,
-    'KB': 1 << 10,
-    'MB': 1 << 20,
-    'GB': 1 << 30,
-    'TB': 1 << 40,
-    'PB': 1 << 50,
-    'KiB': 1 << 10,
-    'MiB': 1 << 20,
-    'GiB': 1 << 30,
-    'TiB': 1 << 40,
-    'PiB': 1 << 50,
+    '': 1,
+    'K': 1 << 10,
+    'M': 1 << 20,
+    'G': 1 << 30,
+    'T': 1 << 40,
+    'P': 1 << 50,
+    'Ki': 1 << 10,
+    'Mi': 1 << 20,
+    'Gi': 1 << 30,
+    'Ti': 1 << 40,
+    'Pi': 1 << 50,
 }
 
 
@@ -159,8 +165,42 @@ def GetMultiCompleter(individual_completer):
   return MultiCompleter
 
 
+def _DeleteTypeAbbr(suffix, type_abbr='B'):
+  """Returns suffix with trailing type abbreviation deleted."""
+  if not suffix:
+    return suffix
+  s = suffix.upper()
+  i = len(s)
+  for c in reversed(type_abbr.upper()):
+    if not i:
+      break
+    if s[i - 1] == c:
+      i -= 1
+  return suffix[:i]
+
+
+def GetBinarySizePerUnit(suffix, type_abbr='B'):
+  """Returns the binary size per unit for binary suffix string.
+
+  Args:
+    suffix: str, A case insensitive unit suffix string with optional type
+      abbreviation.
+    type_abbr: str, The optional case insensitive type abbreviation following
+      the suffix.
+
+  Raises:
+    ValueError for unknown units.
+
+  Returns:
+    The binary size per unit for a unit+type_abbr suffix.
+  """
+  unit = _DeleteTypeAbbr(suffix.upper(), type_abbr)
+  return _BINARY_SIZE_SCALES.get(unit)
+
+
 def _ValueParser(scales, default_unit, lower_bound=None, upper_bound=None,
-                 strict_case=True, suggested_binary_size_scales=None):
+                 strict_case=True, type_abbr='B',
+                 suggested_binary_size_scales=None):
   """A helper that returns a function that can parse values with units.
 
   Casing for all units matters.
@@ -173,6 +213,8 @@ def _ValueParser(scales, default_unit, lower_bound=None, upper_bound=None,
     lower_bound: str, An inclusive lower bound.
     upper_bound: str, An inclusive upper bound.
     strict_case: bool, whether to be strict on case-checking
+    type_abbr: str, the type suffix abbreviation, e.g., B for bytes, b/s for
+      bits/sec.
     suggested_binary_size_scales: list, A list of strings with units that will
                                     be recommended to user.
 
@@ -182,15 +224,15 @@ def _ValueParser(scales, default_unit, lower_bound=None, upper_bound=None,
 
   def UnitsByMagnitude(suggested_binary_size_scales=None):
     """Returns a list of the units in scales sorted by magnitude."""
-    scale_items = sorted(scales.iteritems(),
+    scale_items = sorted(six.iteritems(scales),
                          key=lambda value: (value[1], value[0]))
     if suggested_binary_size_scales is None:
-      return [key for key, _ in scale_items]
-    return [key for key, _ in scale_items
-            if key in suggested_binary_size_scales]
+      return [key + type_abbr for key, _ in scale_items]
+    return [key + type_abbr for key, _ in scale_items
+            if key + type_abbr in suggested_binary_size_scales]
 
   def Parse(value):
-    """Parses value that can contain a unit."""
+    """Parses value that can contain a unit and type avvreviation."""
     match = re.match(_VALUE_PATTERN, value, re.VERBOSE)
     if not match:
       raise ArgumentTypeError(_GenerateErrorMessage(
@@ -200,17 +242,18 @@ def _ValueParser(scales, default_unit, lower_bound=None, upper_bound=None,
           user_input=value))
 
     amount = int(match.group('amount'))
-    unit = match.group('unit')
+    suffix = match.group('suffix') or ''
+    unit = _DeleteTypeAbbr(suffix, type_abbr)
     if strict_case:
       unit_case = unit
-      default_unit_case = default_unit
+      default_unit_case = _DeleteTypeAbbr(default_unit, type_abbr)
       scales_case = scales
     else:
-      unit_case = unit and unit.upper()
-      default_unit_case = default_unit.upper()
+      unit_case = unit.upper()
+      default_unit_case = _DeleteTypeAbbr(default_unit.upper(), type_abbr)
       scales_case = dict([(k.upper(), v) for k, v in scales.items()])
 
-    if unit_case is None:
+    if not unit and unit == suffix:
       return amount * scales_case[default_unit_case]
     elif unit_case in scales_case:
       return amount * scales_case[unit_case]
@@ -310,7 +353,7 @@ def CustomFunctionValidator(fn, description, parser=None):
       if fn(parsed_value):
         return parsed_value
     encoded_value = console_attr.SafeText(value)
-    formatted_err = u'Bad value [{0}]: {1}'.format(encoded_value, description)
+    formatted_err = 'Bad value [{0}]: {1}'.format(encoded_value, description)
     raise ArgumentTypeError(formatted_err)
 
   return Parse
@@ -349,12 +392,13 @@ def Duration(lower_bound=None, upper_bound=None):
     A function that accepts a single time duration as input to be
       parsed.
   """
-  return _ValueParser(_DURATION_SCALES, default_unit='s',
+  return _ValueParser(_DURATION_SCALES, type_abbr='', default_unit='s',
                       lower_bound=lower_bound, upper_bound=upper_bound)
 
 
 def BinarySize(lower_bound=None, upper_bound=None,
-               suggested_binary_size_scales=None, default_unit='GB'):
+               suggested_binary_size_scales=None, default_unit='G',
+               type_abbr='B'):
   """Returns a function that can parse binary sizes.
 
   Binary sizes are defined as base-2 values representing number of
@@ -366,7 +410,7 @@ def BinarySize(lower_bound=None, upper_bound=None,
 
   The integer must be non-negative. Valid units are "B", "KB", "MB",
   "GB", "TB", "KiB", "MiB", "GiB", "TiB", "PiB".  If the unit is
-  omitted, GB is assumed.
+  omitted then default_unit is assumed.
 
   The result is parsed in bytes. For example:
 
@@ -379,6 +423,8 @@ def BinarySize(lower_bound=None, upper_bound=None,
     suggested_binary_size_scales: list, A list of strings with units that will
                                     be recommended to user.
     default_unit: str, unit used when user did not specify unit.
+    type_abbr: str, the type suffix abbreviation, e.g., B for bytes, b/s for
+      bits/sec.
 
   Raises:
     ArgumentTypeError: If either the lower_bound or upper_bound
@@ -392,9 +438,8 @@ def BinarySize(lower_bound=None, upper_bound=None,
       parsed.
   """
   return _ValueParser(
-      _BINARY_SIZE_SCALES, default_unit=default_unit,
-      lower_bound=lower_bound, upper_bound=upper_bound,
-      strict_case=False,
+      _BINARY_SIZE_SCALES, default_unit=default_unit, lower_bound=lower_bound,
+      upper_bound=upper_bound, strict_case=False, type_abbr=type_abbr,
       suggested_binary_size_scales=suggested_binary_size_scales)
 
 
@@ -516,8 +561,9 @@ class Day(object):
       return times.ParseDateTime(s, '%Y-%m-%d').date()
     except times.Error as e:
       raise ArgumentTypeError(
-          _GenerateErrorMessage(u'Failed to parse date: {0}'.format(unicode(e)),
-                                user_input=s))
+          _GenerateErrorMessage(
+              'Failed to parse date: {0}'.format(six.text_type(e)),
+              user_input=s))
 
 
 class Datetime(object):
@@ -533,7 +579,7 @@ class Datetime(object):
     except times.Error as e:
       raise ArgumentTypeError(
           _GenerateErrorMessage(
-              u'Failed to parse date/time: {0}'.format(unicode(e)),
+              'Failed to parse date/time: {0}'.format(six.text_type(e)),
               user_input=s))
 
 
@@ -752,12 +798,64 @@ class ArgList(ArgType):
 
     return arg_list
 
+  _MAX_METAVAR_LENGTH = 30  # arbitrary, but this is pretty long
+
   def GetUsageMsg(self, is_custom_metavar, metavar):
-    is_custom_metavar = is_custom_metavar
-    msg = '[{metavar},...]'.format(metavar=metavar)
-    if self.min_length:
-      msg = ','.join([metavar]*self.min_length+[msg])
-    return msg
+    """Get a specially-formatted metavar for the ArgList to use in help.
+
+    An example is worth 1,000 words:
+
+    >>> ArgList().GetUsageMetavar('FOO')
+    '[FOO,...]'
+    >>> ArgList(min_length=1).GetUsageMetavar('FOO')
+    'FOO,[FOO,...]'
+    >>> ArgList(max_length=2).GetUsageMetavar('FOO')
+    'FOO,[FOO]'
+    >>> ArgList(max_length=3).GetUsageMetavar('FOO')  # One, two, many...
+    'FOO,[FOO,...]'
+    >>> ArgList(min_length=2, max_length=2).GetUsageMetavar('FOO')
+    'FOO,FOO'
+    >>> ArgList().GetUsageMetavar('REALLY_VERY_QUITE_LONG_METAVAR')
+    'REALLY_VERY_QUITE_LONG_METAVAR,[...]'
+
+    Args:
+      is_custom_metavar: unused in GetUsageMsg
+      metavar: string, the base metavar to turn into an ArgList metavar
+
+    Returns:
+      string, the ArgList usage metavar
+    """
+    del is_custom_metavar  # Unused in GetUsageMsg
+
+    required = ','.join([metavar] * self.min_length)
+
+    if self.max_length:
+      num_optional = self.max_length - self.min_length
+    else:
+      num_optional = None
+
+    # Use the "1, 2, many" approach to counting
+    if num_optional == 0:
+      optional = ''
+    elif num_optional == 1:
+      optional = '[{}]'.format(metavar)
+    elif num_optional == 2:
+      optional = '[{0},[{0}]]'.format(metavar)
+    else:
+      optional = '[{0},...]'.format(metavar)
+
+    msg = ','.join(filter(None, [required, optional]))
+
+    if len(msg) < self._MAX_METAVAR_LENGTH:
+      return msg
+
+    # With long metavars, only put it in once.
+    if self.min_length == 0:
+      return '[{},...]'.format(metavar)
+    if self.min_length == 1:
+      return '{},[...]'.format(metavar)
+    else:
+      return '{},...,[...]'.format(metavar)
 
 
 class ArgDict(ArgList):
@@ -809,7 +907,7 @@ class ArgDict(ArgList):
       if len(op) != 1:
         raise ArgumentTypeError(
             'Operator [{}] must be one character.'.format(op))
-    ops = ''.join(operators.keys())
+    ops = ''.join(six.iterkeys(operators))
     key_op_value_pattern = '([^{ops}]+)([{ops}]?)(.*)'.format(
         ops=re.escape(ops))
     self.key_op_value = re.compile(key_op_value_pattern, re.DOTALL)
@@ -874,7 +972,7 @@ class ArgDict(ArgList):
       return super(ArgDict, self).GetUsageMsg(is_custom_metavar, metavar)
 
     msg_list = []
-    spec_list = sorted(self.spec.iteritems())
+    spec_list = sorted(six.iteritems(self.spec))
 
     # First put the spec keys with no value followed by those that expect a
     # value
@@ -987,7 +1085,7 @@ class UpdateAction(argparse.Action):
       # Get the existing arg value (if any)
       items = copy.copy(argparse._ensure_value(namespace, self.dest, {}))
       # Merge the new key/value pair(s) in
-      for k, v in values.iteritems():
+      for k, v in six.iteritems(values):
         if k in items:
           v = self.onduplicatekey_handler(self, k, items[k], v)
         items[k] = v
@@ -1135,8 +1233,8 @@ class RemainderAction(argparse._StoreAction):  # pylint: disable=protected-acces
     remaining_args = remaining_args[:split_index]
 
     if pass_through_args:
-      msg = (u'unrecognized args: {args}\n' + self.explanation).format(
-          args=u' '.join(pass_through_args))
+      msg = ('unrecognized args: {args}\n' + self.explanation).format(
+          args=' '.join(pass_through_args))
       raise parser_errors.UnrecognizedArgumentsError(msg)
     self(None, namespace, pass_through_args)
     return namespace, remaining_args
@@ -1243,36 +1341,15 @@ class BufferedFileInput(object):
         maximum.
     chunk_size: int, When max_bytes is not None, the buffer size to use when
         reading chunks from the input file.
+    binary: bool, If True, the contents of the file will be returned as bytes.
 
   Returns:
     A function that accepts a filename, or "-" representing that stdin should be
     used as input.
   """
 
-  def __init__(self, max_bytes=None, chunk_size=16*1024):
-    self.max_bytes = max_bytes
-    self.chunk_size = chunk_size
-
-  def _ReadFile(self, f):
-    # Unbounded
-    if self.max_bytes is None:
-      return f.read()
-    else:
-      contents = ''
-      while True:
-        chunk = f.read(self.chunk_size)
-
-        # Check for EOF
-        if not chunk:
-          return contents
-        # Fail if the file is too large.
-        if len(contents) + len(chunk) > self.max_bytes:
-          if hasattr(f, 'name'):
-            raise ArgumentTypeError("File '{0}' is too large.".format(f.name))
-          else:
-            raise ArgumentTypeError('File is too large.')
-
-        contents += chunk
+  def __init__(self, binary=False):
+    self.binary = binary
 
   def __call__(self, name):
     """Return the contents of the file with the specified name.
@@ -1290,16 +1367,10 @@ class BufferedFileInput(object):
     Raises:
       ArgumentTypeError: If the file cannot be read or is too large.
     """
-    # Handle stdin
-    if name == '-':
-      return self._ReadFile(sys.stdin)
-
     try:
-      with open(name, 'r') as f:
-        return self._ReadFile(f)
-    except (IOError, OSError) as e:
-      raise ArgumentTypeError(
-          "Can't open '{0}': {1}".format(name, e))
+      return console_io.ReadFromFileOrStdin(name, binary=self.binary)
+    except files.Error as e:
+      raise ArgumentTypeError(e)
 
 
 class StoreTrueFalseAction(argparse._StoreTrueAction):  # pylint: disable=protected-access

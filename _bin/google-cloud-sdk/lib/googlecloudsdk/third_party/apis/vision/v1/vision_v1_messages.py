@@ -14,9 +14,23 @@ from apitools.base.py import extra_types
 package = 'vision'
 
 
+class AnnotateFileResponse(_messages.Message):
+  r"""Response to a single file annotation request. A file may contain one or
+  more images, which individually have their own responses.
+
+  Fields:
+    inputConfig: Information about the file for which this response is
+      generated.
+    responses: Individual responses to images found within the file.
+  """
+
+  inputConfig = _messages.MessageField('InputConfig', 1)
+  responses = _messages.MessageField('AnnotateImageResponse', 2, repeated=True)
+
+
 class AnnotateImageRequest(_messages.Message):
-  """Request for performing Google Cloud Vision API tasks over a user-provided
-  image, with user-requested features.
+  r"""Request for performing Google Cloud Vision API tasks over a user-
+  provided image, with user-requested features.
 
   Fields:
     features: Requested features.
@@ -30,9 +44,11 @@ class AnnotateImageRequest(_messages.Message):
 
 
 class AnnotateImageResponse(_messages.Message):
-  """Response to an image annotation request.
+  r"""Response to an image annotation request.
 
   Fields:
+    context: If present, contextual information is needed to understand where
+      this image comes from.
     cropHintsAnnotation: If present, crop hints have completed successfully.
     error: If set, represents the error message for the operation. Note that
       filled-in image annotations are guaranteed to be correct, even when
@@ -54,21 +70,73 @@ class AnnotateImageResponse(_messages.Message):
     webDetection: If present, web detection has completed successfully.
   """
 
-  cropHintsAnnotation = _messages.MessageField('CropHintsAnnotation', 1)
-  error = _messages.MessageField('Status', 2)
-  faceAnnotations = _messages.MessageField('FaceAnnotation', 3, repeated=True)
-  fullTextAnnotation = _messages.MessageField('TextAnnotation', 4)
-  imagePropertiesAnnotation = _messages.MessageField('ImageProperties', 5)
-  labelAnnotations = _messages.MessageField('EntityAnnotation', 6, repeated=True)
-  landmarkAnnotations = _messages.MessageField('EntityAnnotation', 7, repeated=True)
-  logoAnnotations = _messages.MessageField('EntityAnnotation', 8, repeated=True)
-  safeSearchAnnotation = _messages.MessageField('SafeSearchAnnotation', 9)
-  textAnnotations = _messages.MessageField('EntityAnnotation', 10, repeated=True)
-  webDetection = _messages.MessageField('WebDetection', 11)
+  context = _messages.MessageField('ImageAnnotationContext', 1)
+  cropHintsAnnotation = _messages.MessageField('CropHintsAnnotation', 2)
+  error = _messages.MessageField('Status', 3)
+  faceAnnotations = _messages.MessageField('FaceAnnotation', 4, repeated=True)
+  fullTextAnnotation = _messages.MessageField('TextAnnotation', 5)
+  imagePropertiesAnnotation = _messages.MessageField('ImageProperties', 6)
+  labelAnnotations = _messages.MessageField('EntityAnnotation', 7, repeated=True)
+  landmarkAnnotations = _messages.MessageField('EntityAnnotation', 8, repeated=True)
+  logoAnnotations = _messages.MessageField('EntityAnnotation', 9, repeated=True)
+  safeSearchAnnotation = _messages.MessageField('SafeSearchAnnotation', 10)
+  textAnnotations = _messages.MessageField('EntityAnnotation', 11, repeated=True)
+  webDetection = _messages.MessageField('WebDetection', 12)
+
+
+class AsyncAnnotateFileRequest(_messages.Message):
+  r"""An offline file annotation request.
+
+  Fields:
+    features: Required. Requested features.
+    imageContext: Additional context that may accompany the image(s) in the
+      file.
+    inputConfig: Required. Information about the input file.
+    outputConfig: Required. The desired output location and metadata (e.g.
+      format).
+  """
+
+  features = _messages.MessageField('Feature', 1, repeated=True)
+  imageContext = _messages.MessageField('ImageContext', 2)
+  inputConfig = _messages.MessageField('InputConfig', 3)
+  outputConfig = _messages.MessageField('OutputConfig', 4)
+
+
+class AsyncAnnotateFileResponse(_messages.Message):
+  r"""The response for a single offline file annotation request.
+
+  Fields:
+    outputConfig: The output location and metadata from
+      AsyncAnnotateFileRequest.
+  """
+
+  outputConfig = _messages.MessageField('OutputConfig', 1)
+
+
+class AsyncBatchAnnotateFilesRequest(_messages.Message):
+  r"""Multiple async file annotation requests are batched into a single
+  service call.
+
+  Fields:
+    requests: Individual async file annotation requests for this batch.
+  """
+
+  requests = _messages.MessageField('AsyncAnnotateFileRequest', 1, repeated=True)
+
+
+class AsyncBatchAnnotateFilesResponse(_messages.Message):
+  r"""Response to an async batch file annotation request.
+
+  Fields:
+    responses: The list of file annotation responses, one for each request in
+      AsyncBatchAnnotateFilesRequest.
+  """
+
+  responses = _messages.MessageField('AsyncAnnotateFileResponse', 1, repeated=True)
 
 
 class BatchAnnotateImagesRequest(_messages.Message):
-  """Multiple image annotation requests are batched into a single service
+  r"""Multiple image annotation requests are batched into a single service
   call.
 
   Fields:
@@ -79,7 +147,7 @@ class BatchAnnotateImagesRequest(_messages.Message):
 
 
 class BatchAnnotateImagesResponse(_messages.Message):
-  """Response to a batch image annotation request.
+  r"""Response to a batch image annotation request.
 
   Fields:
     responses: Individual responses to image annotation requests within the
@@ -90,7 +158,7 @@ class BatchAnnotateImagesResponse(_messages.Message):
 
 
 class Block(_messages.Message):
-  """Logical element on the page.
+  r"""Logical element on the page.
 
   Enums:
     BlockTypeValueValuesEnum: Detected block type (text, image etc) for this
@@ -102,17 +170,19 @@ class Block(_messages.Message):
       of top-left, top-right, bottom-right, bottom-left. When a rotation of
       the bounding box is detected the rotation is represented as around the
       top-left corner as defined when the text is read in the 'natural'
-      orientation. For example:   * when the text is horizontal it might look
-      like:      0----1      |    |      3----2   * when it's rotated 180
-      degrees around the top-left corner it becomes:      2----3      |    |
-      1----0   and the vertice order will still be (0, 1, 2, 3).
+      orientation. For example:  * when the text is horizontal it might look
+      like:          0----1         |    |         3----2  * when it's rotated
+      180 degrees around the top-left corner it becomes:          2----3
+      |    |         1----0    and the vertice order will still be (0, 1, 2,
+      3).
+    confidence: Confidence of the OCR results on the block. Range [0, 1].
     paragraphs: List of paragraphs in this block (if this blocks is of type
       text).
     property: Additional information detected for the block.
   """
 
   class BlockTypeValueValuesEnum(_messages.Enum):
-    """Detected block type (text, image etc) for this block.
+    r"""Detected block type (text, image etc) for this block.
 
     Values:
       UNKNOWN: Unknown block type.
@@ -131,22 +201,29 @@ class Block(_messages.Message):
 
   blockType = _messages.EnumField('BlockTypeValueValuesEnum', 1)
   boundingBox = _messages.MessageField('BoundingPoly', 2)
-  paragraphs = _messages.MessageField('Paragraph', 3, repeated=True)
-  property = _messages.MessageField('TextProperty', 4)
+  confidence = _messages.FloatField(3, variant=_messages.Variant.FLOAT)
+  paragraphs = _messages.MessageField('Paragraph', 4, repeated=True)
+  property = _messages.MessageField('TextProperty', 5)
 
 
 class BoundingPoly(_messages.Message):
-  """A bounding polygon for the detected image annotation.
+  r"""A bounding polygon for the detected image annotation.
 
   Fields:
+    normalizedVertices: The bounding polygon normalized vertices.
     vertices: The bounding polygon vertices.
   """
 
-  vertices = _messages.MessageField('Vertex', 1, repeated=True)
+  normalizedVertices = _messages.MessageField('NormalizedVertex', 1, repeated=True)
+  vertices = _messages.MessageField('Vertex', 2, repeated=True)
+
+
+class CancelOperationRequest(_messages.Message):
+  r"""The request message for Operations.CancelOperation."""
 
 
 class Color(_messages.Message):
-  """Represents a color in the RGBA color space. This representation is
+  r"""Represents a color in the RGBA color space. This representation is
   designed for simplicity of conversion to/from color representations in
   various languages over compactness; for example, the fields of this
   representation can be trivially provided to the constructor of
@@ -219,7 +296,7 @@ class Color(_messages.Message):
 
 
 class ColorInfo(_messages.Message):
-  """Color information consists of RGB channels, score, and the fraction of
+  r"""Color information consists of RGB channels, score, and the fraction of
   the image that the color occupies in the image.
 
   Fields:
@@ -235,7 +312,7 @@ class ColorInfo(_messages.Message):
 
 
 class CropHint(_messages.Message):
-  """Single crop hint that is used to generate a new crop when serving an
+  r"""Single crop hint that is used to generate a new crop when serving an
   image.
 
   Fields:
@@ -253,7 +330,7 @@ class CropHint(_messages.Message):
 
 
 class CropHintsAnnotation(_messages.Message):
-  """Set of crop hints that are used to generate new crops when serving
+  r"""Set of crop hints that are used to generate new crops when serving
   images.
 
   Fields:
@@ -264,7 +341,7 @@ class CropHintsAnnotation(_messages.Message):
 
 
 class CropHintsParams(_messages.Message):
-  """Parameters for crop hints annotation request.
+  r"""Parameters for crop hints annotation request.
 
   Fields:
     aspectRatios: Aspect ratios in floats, representing the ratio of the width
@@ -279,7 +356,7 @@ class CropHintsParams(_messages.Message):
 
 
 class DetectedBreak(_messages.Message):
-  """Detected start or end of a structural component.
+  r"""Detected start or end of a structural component.
 
   Enums:
     TypeValueValuesEnum: Detected break type.
@@ -290,7 +367,7 @@ class DetectedBreak(_messages.Message):
   """
 
   class TypeValueValuesEnum(_messages.Enum):
-    """Detected break type.
+    r"""Detected break type.
 
     Values:
       UNKNOWN: Unknown break label type.
@@ -313,7 +390,7 @@ class DetectedBreak(_messages.Message):
 
 
 class DetectedLanguage(_messages.Message):
-  """Detected language for a structural component.
+  r"""Detected language for a structural component.
 
   Fields:
     confidence: Confidence of detected language. Range [0, 1].
@@ -327,7 +404,7 @@ class DetectedLanguage(_messages.Message):
 
 
 class DominantColorsAnnotation(_messages.Message):
-  """Set of dominant colors and their corresponding scores.
+  r"""Set of dominant colors and their corresponding scores.
 
   Fields:
     colors: RGB color values with their score and pixel fraction.
@@ -336,16 +413,26 @@ class DominantColorsAnnotation(_messages.Message):
   colors = _messages.MessageField('ColorInfo', 1, repeated=True)
 
 
+class Empty(_messages.Message):
+  r"""A generic empty message that you can re-use to avoid defining duplicated
+  empty messages in your APIs. A typical example is to use it as the request
+  or the response type of an API method. For instance:      service Foo {
+  rpc Bar(google.protobuf.Empty) returns (google.protobuf.Empty);     }  The
+  JSON representation for `Empty` is empty JSON object `{}`.
+  """
+
+
+
 class EntityAnnotation(_messages.Message):
-  """Set of detected entity features.
+  r"""Set of detected entity features.
 
   Fields:
     boundingPoly: Image region to which this entity belongs. Not produced for
       `LABEL_DETECTION` features.
-    confidence: The accuracy of the entity detection in an image. For example,
-      for an image in which the "Eiffel Tower" entity is detected, this field
-      represents the confidence that there is a tower in the query image.
-      Range [0, 1].
+    confidence: **Deprecated. Use `score` instead.** The accuracy of the
+      entity detection in an image. For example, for an image in which the
+      "Eiffel Tower" entity is detected, this field represents the confidence
+      that there is a tower in the query image. Range [0, 1].
     description: Entity textual description, expressed in its `locale`
       language.
     locale: The language code for the locale in which the entity textual
@@ -379,7 +466,7 @@ class EntityAnnotation(_messages.Message):
 
 
 class FaceAnnotation(_messages.Message):
-  """A face annotation object contains the results of face detection.
+  r"""A face annotation object contains the results of face detection.
 
   Enums:
     AngerLikelihoodValueValuesEnum: Anger likelihood.
@@ -426,7 +513,7 @@ class FaceAnnotation(_messages.Message):
   """
 
   class AngerLikelihoodValueValuesEnum(_messages.Enum):
-    """Anger likelihood.
+    r"""Anger likelihood.
 
     Values:
       UNKNOWN: Unknown likelihood.
@@ -448,7 +535,7 @@ class FaceAnnotation(_messages.Message):
     VERY_LIKELY = 5
 
   class BlurredLikelihoodValueValuesEnum(_messages.Enum):
-    """Blurred likelihood.
+    r"""Blurred likelihood.
 
     Values:
       UNKNOWN: Unknown likelihood.
@@ -470,7 +557,7 @@ class FaceAnnotation(_messages.Message):
     VERY_LIKELY = 5
 
   class HeadwearLikelihoodValueValuesEnum(_messages.Enum):
-    """Headwear likelihood.
+    r"""Headwear likelihood.
 
     Values:
       UNKNOWN: Unknown likelihood.
@@ -492,7 +579,7 @@ class FaceAnnotation(_messages.Message):
     VERY_LIKELY = 5
 
   class JoyLikelihoodValueValuesEnum(_messages.Enum):
-    """Joy likelihood.
+    r"""Joy likelihood.
 
     Values:
       UNKNOWN: Unknown likelihood.
@@ -514,7 +601,7 @@ class FaceAnnotation(_messages.Message):
     VERY_LIKELY = 5
 
   class SorrowLikelihoodValueValuesEnum(_messages.Enum):
-    """Sorrow likelihood.
+    r"""Sorrow likelihood.
 
     Values:
       UNKNOWN: Unknown likelihood.
@@ -536,7 +623,7 @@ class FaceAnnotation(_messages.Message):
     VERY_LIKELY = 5
 
   class SurpriseLikelihoodValueValuesEnum(_messages.Enum):
-    """Surprise likelihood.
+    r"""Surprise likelihood.
 
     Values:
       UNKNOWN: Unknown likelihood.
@@ -558,7 +645,7 @@ class FaceAnnotation(_messages.Message):
     VERY_LIKELY = 5
 
   class UnderExposedLikelihoodValueValuesEnum(_messages.Enum):
-    """Under-exposed likelihood.
+    r"""Under-exposed likelihood.
 
     Values:
       UNKNOWN: Unknown likelihood.
@@ -597,21 +684,23 @@ class FaceAnnotation(_messages.Message):
 
 
 class Feature(_messages.Message):
-  """Users describe the type of Google Cloud Vision API tasks to perform over
-  images by using *Feature*s. Each Feature indicates a type of image detection
-  task to perform. Features encode the Cloud Vision API vertical to operate on
-  and the number of top-scoring results to return.
+  r"""The type of Google Cloud Vision API detection to perform, and the
+  maximum number of results to return for that type. Multiple `Feature`
+  objects can be specified in the `features` list.
 
   Enums:
     TypeValueValuesEnum: The feature type.
 
   Fields:
-    maxResults: Maximum number of results of this type.
+    maxResults: Maximum number of results of this type. Does not apply to
+      `TEXT_DETECTION`, `DOCUMENT_TEXT_DETECTION`, or `CROP_HINTS`.
+    model: Model to use for the feature. Supported values: "builtin/stable"
+      (the default if unset) and "builtin/latest".
     type: The feature type.
   """
 
   class TypeValueValuesEnum(_messages.Enum):
-    """The feature type.
+    r"""The feature type.
 
     Values:
       TYPE_UNSPECIFIED: Unspecified feature type.
@@ -619,11 +708,14 @@ class Feature(_messages.Message):
       LANDMARK_DETECTION: Run landmark detection.
       LOGO_DETECTION: Run logo detection.
       LABEL_DETECTION: Run label detection.
-      TEXT_DETECTION: Run OCR.
+      TEXT_DETECTION: Run text detection / optical character recognition
+        (OCR). Text detection is optimized for areas of text within a larger
+        image; if the image is a document, use `DOCUMENT_TEXT_DETECTION`
+        instead.
       DOCUMENT_TEXT_DETECTION: Run dense text document OCR. Takes precedence
-        when both DOCUMENT_TEXT_DETECTION and TEXT_DETECTION are present.
-      SAFE_SEARCH_DETECTION: Run computer vision models to compute image safe-
-        search properties.
+        when both `DOCUMENT_TEXT_DETECTION` and `TEXT_DETECTION` are present.
+      SAFE_SEARCH_DETECTION: Run Safe Search to detect potentially unsafe or
+        undesirable content.
       IMAGE_PROPERTIES: Compute a set of image properties, such as the image's
         dominant colors.
       CROP_HINTS: Run crop hints.
@@ -642,27 +734,1333 @@ class Feature(_messages.Message):
     WEB_DETECTION = 10
 
   maxResults = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  model = _messages.StringField(2)
+  type = _messages.EnumField('TypeValueValuesEnum', 3)
+
+
+class GcsDestination(_messages.Message):
+  r"""The Google Cloud Storage location where the output will be written to.
+
+  Fields:
+    uri: Google Cloud Storage URI where the results will be stored. Results
+      will be in JSON format and preceded by its corresponding input URI. This
+      field can either represent a single file, or a prefix for multiple
+      outputs. Prefixes must end in a `/`.  Examples:  *    File: gs://bucket-
+      name/filename.json *    Prefix: gs://bucket-name/prefix/here/ *    File:
+      gs://bucket-name/prefix/here  If multiple outputs, each response is
+      still AnnotateFileResponse, each of which contains some subset of the
+      full list of AnnotateImageResponse. Multiple outputs can happen if, for
+      example, the output JSON is too large and overflows into multiple
+      sharded files.
+  """
+
+  uri = _messages.StringField(1)
+
+
+class GcsSource(_messages.Message):
+  r"""The Google Cloud Storage location where the input will be read from.
+
+  Fields:
+    uri: Google Cloud Storage URI for the input file. This must only be a
+      Google Cloud Storage object. Wildcards are not currently supported.
+  """
+
+  uri = _messages.StringField(1)
+
+
+class GoogleCloudVisionV1p2beta1AnnotateFileResponse(_messages.Message):
+  r"""Response to a single file annotation request. A file may contain one or
+  more images, which individually have their own responses.
+
+  Fields:
+    inputConfig: Information about the file for which this response is
+      generated.
+    responses: Individual responses to images found within the file.
+  """
+
+  inputConfig = _messages.MessageField('GoogleCloudVisionV1p2beta1InputConfig', 1)
+  responses = _messages.MessageField('GoogleCloudVisionV1p2beta1AnnotateImageResponse', 2, repeated=True)
+
+
+class GoogleCloudVisionV1p2beta1AnnotateImageResponse(_messages.Message):
+  r"""Response to an image annotation request.
+
+  Fields:
+    context: If present, contextual information is needed to understand where
+      this image comes from.
+    cropHintsAnnotation: If present, crop hints have completed successfully.
+    error: If set, represents the error message for the operation. Note that
+      filled-in image annotations are guaranteed to be correct, even when
+      `error` is set.
+    faceAnnotations: If present, face detection has completed successfully.
+    fullTextAnnotation: If present, text (OCR) detection or document (OCR)
+      text detection has completed successfully. This annotation provides the
+      structural hierarchy for the OCR detected text.
+    imagePropertiesAnnotation: If present, image properties were extracted
+      successfully.
+    labelAnnotations: If present, label detection has completed successfully.
+    landmarkAnnotations: If present, landmark detection has completed
+      successfully.
+    logoAnnotations: If present, logo detection has completed successfully.
+    safeSearchAnnotation: If present, safe-search annotation has completed
+      successfully.
+    textAnnotations: If present, text (OCR) detection has completed
+      successfully.
+    webDetection: If present, web detection has completed successfully.
+  """
+
+  context = _messages.MessageField('GoogleCloudVisionV1p2beta1ImageAnnotationContext', 1)
+  cropHintsAnnotation = _messages.MessageField('GoogleCloudVisionV1p2beta1CropHintsAnnotation', 2)
+  error = _messages.MessageField('Status', 3)
+  faceAnnotations = _messages.MessageField('GoogleCloudVisionV1p2beta1FaceAnnotation', 4, repeated=True)
+  fullTextAnnotation = _messages.MessageField('GoogleCloudVisionV1p2beta1TextAnnotation', 5)
+  imagePropertiesAnnotation = _messages.MessageField('GoogleCloudVisionV1p2beta1ImageProperties', 6)
+  labelAnnotations = _messages.MessageField('GoogleCloudVisionV1p2beta1EntityAnnotation', 7, repeated=True)
+  landmarkAnnotations = _messages.MessageField('GoogleCloudVisionV1p2beta1EntityAnnotation', 8, repeated=True)
+  logoAnnotations = _messages.MessageField('GoogleCloudVisionV1p2beta1EntityAnnotation', 9, repeated=True)
+  safeSearchAnnotation = _messages.MessageField('GoogleCloudVisionV1p2beta1SafeSearchAnnotation', 10)
+  textAnnotations = _messages.MessageField('GoogleCloudVisionV1p2beta1EntityAnnotation', 11, repeated=True)
+  webDetection = _messages.MessageField('GoogleCloudVisionV1p2beta1WebDetection', 12)
+
+
+class GoogleCloudVisionV1p2beta1AsyncAnnotateFileResponse(_messages.Message):
+  r"""The response for a single offline file annotation request.
+
+  Fields:
+    outputConfig: The output location and metadata from
+      AsyncAnnotateFileRequest.
+  """
+
+  outputConfig = _messages.MessageField('GoogleCloudVisionV1p2beta1OutputConfig', 1)
+
+
+class GoogleCloudVisionV1p2beta1AsyncBatchAnnotateFilesResponse(_messages.Message):
+  r"""Response to an async batch file annotation request.
+
+  Fields:
+    responses: The list of file annotation responses, one for each request in
+      AsyncBatchAnnotateFilesRequest.
+  """
+
+  responses = _messages.MessageField('GoogleCloudVisionV1p2beta1AsyncAnnotateFileResponse', 1, repeated=True)
+
+
+class GoogleCloudVisionV1p2beta1Block(_messages.Message):
+  r"""Logical element on the page.
+
+  Enums:
+    BlockTypeValueValuesEnum: Detected block type (text, image etc) for this
+      block.
+
+  Fields:
+    blockType: Detected block type (text, image etc) for this block.
+    boundingBox: The bounding box for the block. The vertices are in the order
+      of top-left, top-right, bottom-right, bottom-left. When a rotation of
+      the bounding box is detected the rotation is represented as around the
+      top-left corner as defined when the text is read in the 'natural'
+      orientation. For example:  * when the text is horizontal it might look
+      like:          0----1         |    |         3----2  * when it's rotated
+      180 degrees around the top-left corner it becomes:          2----3
+      |    |         1----0    and the vertice order will still be (0, 1, 2,
+      3).
+    confidence: Confidence of the OCR results on the block. Range [0, 1].
+    paragraphs: List of paragraphs in this block (if this blocks is of type
+      text).
+    property: Additional information detected for the block.
+  """
+
+  class BlockTypeValueValuesEnum(_messages.Enum):
+    r"""Detected block type (text, image etc) for this block.
+
+    Values:
+      UNKNOWN: Unknown block type.
+      TEXT: Regular text block.
+      TABLE: Table block.
+      PICTURE: Image block.
+      RULER: Horizontal/vertical line box.
+      BARCODE: Barcode block.
+    """
+    UNKNOWN = 0
+    TEXT = 1
+    TABLE = 2
+    PICTURE = 3
+    RULER = 4
+    BARCODE = 5
+
+  blockType = _messages.EnumField('BlockTypeValueValuesEnum', 1)
+  boundingBox = _messages.MessageField('GoogleCloudVisionV1p2beta1BoundingPoly', 2)
+  confidence = _messages.FloatField(3, variant=_messages.Variant.FLOAT)
+  paragraphs = _messages.MessageField('GoogleCloudVisionV1p2beta1Paragraph', 4, repeated=True)
+  property = _messages.MessageField('GoogleCloudVisionV1p2beta1TextAnnotationTextProperty', 5)
+
+
+class GoogleCloudVisionV1p2beta1BoundingPoly(_messages.Message):
+  r"""A bounding polygon for the detected image annotation.
+
+  Fields:
+    normalizedVertices: The bounding polygon normalized vertices.
+    vertices: The bounding polygon vertices.
+  """
+
+  normalizedVertices = _messages.MessageField('GoogleCloudVisionV1p2beta1NormalizedVertex', 1, repeated=True)
+  vertices = _messages.MessageField('GoogleCloudVisionV1p2beta1Vertex', 2, repeated=True)
+
+
+class GoogleCloudVisionV1p2beta1ColorInfo(_messages.Message):
+  r"""Color information consists of RGB channels, score, and the fraction of
+  the image that the color occupies in the image.
+
+  Fields:
+    color: RGB components of the color.
+    pixelFraction: The fraction of pixels the color occupies in the image.
+      Value in range [0, 1].
+    score: Image-specific score for this color. Value in range [0, 1].
+  """
+
+  color = _messages.MessageField('Color', 1)
+  pixelFraction = _messages.FloatField(2, variant=_messages.Variant.FLOAT)
+  score = _messages.FloatField(3, variant=_messages.Variant.FLOAT)
+
+
+class GoogleCloudVisionV1p2beta1CropHint(_messages.Message):
+  r"""Single crop hint that is used to generate a new crop when serving an
+  image.
+
+  Fields:
+    boundingPoly: The bounding polygon for the crop region. The coordinates of
+      the bounding box are in the original image's scale, as returned in
+      `ImageParams`.
+    confidence: Confidence of this being a salient region.  Range [0, 1].
+    importanceFraction: Fraction of importance of this salient region with
+      respect to the original image.
+  """
+
+  boundingPoly = _messages.MessageField('GoogleCloudVisionV1p2beta1BoundingPoly', 1)
+  confidence = _messages.FloatField(2, variant=_messages.Variant.FLOAT)
+  importanceFraction = _messages.FloatField(3, variant=_messages.Variant.FLOAT)
+
+
+class GoogleCloudVisionV1p2beta1CropHintsAnnotation(_messages.Message):
+  r"""Set of crop hints that are used to generate new crops when serving
+  images.
+
+  Fields:
+    cropHints: Crop hint results.
+  """
+
+  cropHints = _messages.MessageField('GoogleCloudVisionV1p2beta1CropHint', 1, repeated=True)
+
+
+class GoogleCloudVisionV1p2beta1DominantColorsAnnotation(_messages.Message):
+  r"""Set of dominant colors and their corresponding scores.
+
+  Fields:
+    colors: RGB color values with their score and pixel fraction.
+  """
+
+  colors = _messages.MessageField('GoogleCloudVisionV1p2beta1ColorInfo', 1, repeated=True)
+
+
+class GoogleCloudVisionV1p2beta1EntityAnnotation(_messages.Message):
+  r"""Set of detected entity features.
+
+  Fields:
+    boundingPoly: Image region to which this entity belongs. Not produced for
+      `LABEL_DETECTION` features.
+    confidence: **Deprecated. Use `score` instead.** The accuracy of the
+      entity detection in an image. For example, for an image in which the
+      "Eiffel Tower" entity is detected, this field represents the confidence
+      that there is a tower in the query image. Range [0, 1].
+    description: Entity textual description, expressed in its `locale`
+      language.
+    locale: The language code for the locale in which the entity textual
+      `description` is expressed.
+    locations: The location information for the detected entity. Multiple
+      `LocationInfo` elements can be present because one location may indicate
+      the location of the scene in the image, and another location may
+      indicate the location of the place where the image was taken. Location
+      information is usually present for landmarks.
+    mid: Opaque entity ID. Some IDs may be available in [Google Knowledge
+      Graph Search API](https://developers.google.com/knowledge-graph/).
+    properties: Some entities may have optional user-supplied `Property`
+      (name/value) fields, such a score or string that qualifies the entity.
+    score: Overall score of the result. Range [0, 1].
+    topicality: The relevancy of the ICA (Image Content Annotation) label to
+      the image. For example, the relevancy of "tower" is likely higher to an
+      image containing the detected "Eiffel Tower" than to an image containing
+      a detected distant towering building, even though the confidence that
+      there is a tower in each image may be the same. Range [0, 1].
+  """
+
+  boundingPoly = _messages.MessageField('GoogleCloudVisionV1p2beta1BoundingPoly', 1)
+  confidence = _messages.FloatField(2, variant=_messages.Variant.FLOAT)
+  description = _messages.StringField(3)
+  locale = _messages.StringField(4)
+  locations = _messages.MessageField('GoogleCloudVisionV1p2beta1LocationInfo', 5, repeated=True)
+  mid = _messages.StringField(6)
+  properties = _messages.MessageField('GoogleCloudVisionV1p2beta1Property', 7, repeated=True)
+  score = _messages.FloatField(8, variant=_messages.Variant.FLOAT)
+  topicality = _messages.FloatField(9, variant=_messages.Variant.FLOAT)
+
+
+class GoogleCloudVisionV1p2beta1FaceAnnotation(_messages.Message):
+  r"""A face annotation object contains the results of face detection.
+
+  Enums:
+    AngerLikelihoodValueValuesEnum: Anger likelihood.
+    BlurredLikelihoodValueValuesEnum: Blurred likelihood.
+    HeadwearLikelihoodValueValuesEnum: Headwear likelihood.
+    JoyLikelihoodValueValuesEnum: Joy likelihood.
+    SorrowLikelihoodValueValuesEnum: Sorrow likelihood.
+    SurpriseLikelihoodValueValuesEnum: Surprise likelihood.
+    UnderExposedLikelihoodValueValuesEnum: Under-exposed likelihood.
+
+  Fields:
+    angerLikelihood: Anger likelihood.
+    blurredLikelihood: Blurred likelihood.
+    boundingPoly: The bounding polygon around the face. The coordinates of the
+      bounding box are in the original image's scale, as returned in
+      `ImageParams`. The bounding box is computed to "frame" the face in
+      accordance with human expectations. It is based on the landmarker
+      results. Note that one or more x and/or y coordinates may not be
+      generated in the `BoundingPoly` (the polygon will be unbounded) if only
+      a partial face appears in the image to be annotated.
+    detectionConfidence: Detection confidence. Range [0, 1].
+    fdBoundingPoly: The `fd_bounding_poly` bounding polygon is tighter than
+      the `boundingPoly`, and encloses only the skin part of the face.
+      Typically, it is used to eliminate the face from any image analysis that
+      detects the "amount of skin" visible in an image. It is not based on the
+      landmarker results, only on the initial face detection, hence the
+      <code>fd</code> (face detection) prefix.
+    headwearLikelihood: Headwear likelihood.
+    joyLikelihood: Joy likelihood.
+    landmarkingConfidence: Face landmarking confidence. Range [0, 1].
+    landmarks: Detected face landmarks.
+    panAngle: Yaw angle, which indicates the leftward/rightward angle that the
+      face is pointing relative to the vertical plane perpendicular to the
+      image. Range [-180,180].
+    rollAngle: Roll angle, which indicates the amount of clockwise/anti-
+      clockwise rotation of the face relative to the image vertical about the
+      axis perpendicular to the face. Range [-180,180].
+    sorrowLikelihood: Sorrow likelihood.
+    surpriseLikelihood: Surprise likelihood.
+    tiltAngle: Pitch angle, which indicates the upwards/downwards angle that
+      the face is pointing relative to the image's horizontal plane. Range
+      [-180,180].
+    underExposedLikelihood: Under-exposed likelihood.
+  """
+
+  class AngerLikelihoodValueValuesEnum(_messages.Enum):
+    r"""Anger likelihood.
+
+    Values:
+      UNKNOWN: Unknown likelihood.
+      VERY_UNLIKELY: It is very unlikely that the image belongs to the
+        specified vertical.
+      UNLIKELY: It is unlikely that the image belongs to the specified
+        vertical.
+      POSSIBLE: It is possible that the image belongs to the specified
+        vertical.
+      LIKELY: It is likely that the image belongs to the specified vertical.
+      VERY_LIKELY: It is very likely that the image belongs to the specified
+        vertical.
+    """
+    UNKNOWN = 0
+    VERY_UNLIKELY = 1
+    UNLIKELY = 2
+    POSSIBLE = 3
+    LIKELY = 4
+    VERY_LIKELY = 5
+
+  class BlurredLikelihoodValueValuesEnum(_messages.Enum):
+    r"""Blurred likelihood.
+
+    Values:
+      UNKNOWN: Unknown likelihood.
+      VERY_UNLIKELY: It is very unlikely that the image belongs to the
+        specified vertical.
+      UNLIKELY: It is unlikely that the image belongs to the specified
+        vertical.
+      POSSIBLE: It is possible that the image belongs to the specified
+        vertical.
+      LIKELY: It is likely that the image belongs to the specified vertical.
+      VERY_LIKELY: It is very likely that the image belongs to the specified
+        vertical.
+    """
+    UNKNOWN = 0
+    VERY_UNLIKELY = 1
+    UNLIKELY = 2
+    POSSIBLE = 3
+    LIKELY = 4
+    VERY_LIKELY = 5
+
+  class HeadwearLikelihoodValueValuesEnum(_messages.Enum):
+    r"""Headwear likelihood.
+
+    Values:
+      UNKNOWN: Unknown likelihood.
+      VERY_UNLIKELY: It is very unlikely that the image belongs to the
+        specified vertical.
+      UNLIKELY: It is unlikely that the image belongs to the specified
+        vertical.
+      POSSIBLE: It is possible that the image belongs to the specified
+        vertical.
+      LIKELY: It is likely that the image belongs to the specified vertical.
+      VERY_LIKELY: It is very likely that the image belongs to the specified
+        vertical.
+    """
+    UNKNOWN = 0
+    VERY_UNLIKELY = 1
+    UNLIKELY = 2
+    POSSIBLE = 3
+    LIKELY = 4
+    VERY_LIKELY = 5
+
+  class JoyLikelihoodValueValuesEnum(_messages.Enum):
+    r"""Joy likelihood.
+
+    Values:
+      UNKNOWN: Unknown likelihood.
+      VERY_UNLIKELY: It is very unlikely that the image belongs to the
+        specified vertical.
+      UNLIKELY: It is unlikely that the image belongs to the specified
+        vertical.
+      POSSIBLE: It is possible that the image belongs to the specified
+        vertical.
+      LIKELY: It is likely that the image belongs to the specified vertical.
+      VERY_LIKELY: It is very likely that the image belongs to the specified
+        vertical.
+    """
+    UNKNOWN = 0
+    VERY_UNLIKELY = 1
+    UNLIKELY = 2
+    POSSIBLE = 3
+    LIKELY = 4
+    VERY_LIKELY = 5
+
+  class SorrowLikelihoodValueValuesEnum(_messages.Enum):
+    r"""Sorrow likelihood.
+
+    Values:
+      UNKNOWN: Unknown likelihood.
+      VERY_UNLIKELY: It is very unlikely that the image belongs to the
+        specified vertical.
+      UNLIKELY: It is unlikely that the image belongs to the specified
+        vertical.
+      POSSIBLE: It is possible that the image belongs to the specified
+        vertical.
+      LIKELY: It is likely that the image belongs to the specified vertical.
+      VERY_LIKELY: It is very likely that the image belongs to the specified
+        vertical.
+    """
+    UNKNOWN = 0
+    VERY_UNLIKELY = 1
+    UNLIKELY = 2
+    POSSIBLE = 3
+    LIKELY = 4
+    VERY_LIKELY = 5
+
+  class SurpriseLikelihoodValueValuesEnum(_messages.Enum):
+    r"""Surprise likelihood.
+
+    Values:
+      UNKNOWN: Unknown likelihood.
+      VERY_UNLIKELY: It is very unlikely that the image belongs to the
+        specified vertical.
+      UNLIKELY: It is unlikely that the image belongs to the specified
+        vertical.
+      POSSIBLE: It is possible that the image belongs to the specified
+        vertical.
+      LIKELY: It is likely that the image belongs to the specified vertical.
+      VERY_LIKELY: It is very likely that the image belongs to the specified
+        vertical.
+    """
+    UNKNOWN = 0
+    VERY_UNLIKELY = 1
+    UNLIKELY = 2
+    POSSIBLE = 3
+    LIKELY = 4
+    VERY_LIKELY = 5
+
+  class UnderExposedLikelihoodValueValuesEnum(_messages.Enum):
+    r"""Under-exposed likelihood.
+
+    Values:
+      UNKNOWN: Unknown likelihood.
+      VERY_UNLIKELY: It is very unlikely that the image belongs to the
+        specified vertical.
+      UNLIKELY: It is unlikely that the image belongs to the specified
+        vertical.
+      POSSIBLE: It is possible that the image belongs to the specified
+        vertical.
+      LIKELY: It is likely that the image belongs to the specified vertical.
+      VERY_LIKELY: It is very likely that the image belongs to the specified
+        vertical.
+    """
+    UNKNOWN = 0
+    VERY_UNLIKELY = 1
+    UNLIKELY = 2
+    POSSIBLE = 3
+    LIKELY = 4
+    VERY_LIKELY = 5
+
+  angerLikelihood = _messages.EnumField('AngerLikelihoodValueValuesEnum', 1)
+  blurredLikelihood = _messages.EnumField('BlurredLikelihoodValueValuesEnum', 2)
+  boundingPoly = _messages.MessageField('GoogleCloudVisionV1p2beta1BoundingPoly', 3)
+  detectionConfidence = _messages.FloatField(4, variant=_messages.Variant.FLOAT)
+  fdBoundingPoly = _messages.MessageField('GoogleCloudVisionV1p2beta1BoundingPoly', 5)
+  headwearLikelihood = _messages.EnumField('HeadwearLikelihoodValueValuesEnum', 6)
+  joyLikelihood = _messages.EnumField('JoyLikelihoodValueValuesEnum', 7)
+  landmarkingConfidence = _messages.FloatField(8, variant=_messages.Variant.FLOAT)
+  landmarks = _messages.MessageField('GoogleCloudVisionV1p2beta1FaceAnnotationLandmark', 9, repeated=True)
+  panAngle = _messages.FloatField(10, variant=_messages.Variant.FLOAT)
+  rollAngle = _messages.FloatField(11, variant=_messages.Variant.FLOAT)
+  sorrowLikelihood = _messages.EnumField('SorrowLikelihoodValueValuesEnum', 12)
+  surpriseLikelihood = _messages.EnumField('SurpriseLikelihoodValueValuesEnum', 13)
+  tiltAngle = _messages.FloatField(14, variant=_messages.Variant.FLOAT)
+  underExposedLikelihood = _messages.EnumField('UnderExposedLikelihoodValueValuesEnum', 15)
+
+
+class GoogleCloudVisionV1p2beta1FaceAnnotationLandmark(_messages.Message):
+  r"""A face-specific landmark (for example, a face feature).
+
+  Enums:
+    TypeValueValuesEnum: Face landmark type.
+
+  Fields:
+    position: Face landmark position.
+    type: Face landmark type.
+  """
+
+  class TypeValueValuesEnum(_messages.Enum):
+    r"""Face landmark type.
+
+    Values:
+      UNKNOWN_LANDMARK: Unknown face landmark detected. Should not be filled.
+      LEFT_EYE: Left eye.
+      RIGHT_EYE: Right eye.
+      LEFT_OF_LEFT_EYEBROW: Left of left eyebrow.
+      RIGHT_OF_LEFT_EYEBROW: Right of left eyebrow.
+      LEFT_OF_RIGHT_EYEBROW: Left of right eyebrow.
+      RIGHT_OF_RIGHT_EYEBROW: Right of right eyebrow.
+      MIDPOINT_BETWEEN_EYES: Midpoint between eyes.
+      NOSE_TIP: Nose tip.
+      UPPER_LIP: Upper lip.
+      LOWER_LIP: Lower lip.
+      MOUTH_LEFT: Mouth left.
+      MOUTH_RIGHT: Mouth right.
+      MOUTH_CENTER: Mouth center.
+      NOSE_BOTTOM_RIGHT: Nose, bottom right.
+      NOSE_BOTTOM_LEFT: Nose, bottom left.
+      NOSE_BOTTOM_CENTER: Nose, bottom center.
+      LEFT_EYE_TOP_BOUNDARY: Left eye, top boundary.
+      LEFT_EYE_RIGHT_CORNER: Left eye, right corner.
+      LEFT_EYE_BOTTOM_BOUNDARY: Left eye, bottom boundary.
+      LEFT_EYE_LEFT_CORNER: Left eye, left corner.
+      RIGHT_EYE_TOP_BOUNDARY: Right eye, top boundary.
+      RIGHT_EYE_RIGHT_CORNER: Right eye, right corner.
+      RIGHT_EYE_BOTTOM_BOUNDARY: Right eye, bottom boundary.
+      RIGHT_EYE_LEFT_CORNER: Right eye, left corner.
+      LEFT_EYEBROW_UPPER_MIDPOINT: Left eyebrow, upper midpoint.
+      RIGHT_EYEBROW_UPPER_MIDPOINT: Right eyebrow, upper midpoint.
+      LEFT_EAR_TRAGION: Left ear tragion.
+      RIGHT_EAR_TRAGION: Right ear tragion.
+      LEFT_EYE_PUPIL: Left eye pupil.
+      RIGHT_EYE_PUPIL: Right eye pupil.
+      FOREHEAD_GLABELLA: Forehead glabella.
+      CHIN_GNATHION: Chin gnathion.
+      CHIN_LEFT_GONION: Chin left gonion.
+      CHIN_RIGHT_GONION: Chin right gonion.
+    """
+    UNKNOWN_LANDMARK = 0
+    LEFT_EYE = 1
+    RIGHT_EYE = 2
+    LEFT_OF_LEFT_EYEBROW = 3
+    RIGHT_OF_LEFT_EYEBROW = 4
+    LEFT_OF_RIGHT_EYEBROW = 5
+    RIGHT_OF_RIGHT_EYEBROW = 6
+    MIDPOINT_BETWEEN_EYES = 7
+    NOSE_TIP = 8
+    UPPER_LIP = 9
+    LOWER_LIP = 10
+    MOUTH_LEFT = 11
+    MOUTH_RIGHT = 12
+    MOUTH_CENTER = 13
+    NOSE_BOTTOM_RIGHT = 14
+    NOSE_BOTTOM_LEFT = 15
+    NOSE_BOTTOM_CENTER = 16
+    LEFT_EYE_TOP_BOUNDARY = 17
+    LEFT_EYE_RIGHT_CORNER = 18
+    LEFT_EYE_BOTTOM_BOUNDARY = 19
+    LEFT_EYE_LEFT_CORNER = 20
+    RIGHT_EYE_TOP_BOUNDARY = 21
+    RIGHT_EYE_RIGHT_CORNER = 22
+    RIGHT_EYE_BOTTOM_BOUNDARY = 23
+    RIGHT_EYE_LEFT_CORNER = 24
+    LEFT_EYEBROW_UPPER_MIDPOINT = 25
+    RIGHT_EYEBROW_UPPER_MIDPOINT = 26
+    LEFT_EAR_TRAGION = 27
+    RIGHT_EAR_TRAGION = 28
+    LEFT_EYE_PUPIL = 29
+    RIGHT_EYE_PUPIL = 30
+    FOREHEAD_GLABELLA = 31
+    CHIN_GNATHION = 32
+    CHIN_LEFT_GONION = 33
+    CHIN_RIGHT_GONION = 34
+
+  position = _messages.MessageField('GoogleCloudVisionV1p2beta1Position', 1)
   type = _messages.EnumField('TypeValueValuesEnum', 2)
 
 
-class Image(_messages.Message):
-  """Client image to perform Google Cloud Vision API tasks over.
+class GoogleCloudVisionV1p2beta1GcsDestination(_messages.Message):
+  r"""The Google Cloud Storage location where the output will be written to.
 
   Fields:
-    content: Image content, represented as a stream of bytes. Note: as with
+    uri: Google Cloud Storage URI where the results will be stored. Results
+      will be in JSON format and preceded by its corresponding input URI. This
+      field can either represent a single file, or a prefix for multiple
+      outputs. Prefixes must end in a `/`.  Examples:  *    File: gs://bucket-
+      name/filename.json *    Prefix: gs://bucket-name/prefix/here/ *    File:
+      gs://bucket-name/prefix/here  If multiple outputs, each response is
+      still AnnotateFileResponse, each of which contains some subset of the
+      full list of AnnotateImageResponse. Multiple outputs can happen if, for
+      example, the output JSON is too large and overflows into multiple
+      sharded files.
+  """
+
+  uri = _messages.StringField(1)
+
+
+class GoogleCloudVisionV1p2beta1GcsSource(_messages.Message):
+  r"""The Google Cloud Storage location where the input will be read from.
+
+  Fields:
+    uri: Google Cloud Storage URI for the input file. This must only be a
+      Google Cloud Storage object. Wildcards are not currently supported.
+  """
+
+  uri = _messages.StringField(1)
+
+
+class GoogleCloudVisionV1p2beta1ImageAnnotationContext(_messages.Message):
+  r"""If an image was produced from a file (e.g. a PDF), this message gives
+  information about the source of that image.
+
+  Fields:
+    pageNumber: If the file was a PDF or TIFF, this field gives the page
+      number within the file used to produce the image.
+    uri: The URI of the file used to produce the image.
+  """
+
+  pageNumber = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  uri = _messages.StringField(2)
+
+
+class GoogleCloudVisionV1p2beta1ImageProperties(_messages.Message):
+  r"""Stores image properties, such as dominant colors.
+
+  Fields:
+    dominantColors: If present, dominant colors completed successfully.
+  """
+
+  dominantColors = _messages.MessageField('GoogleCloudVisionV1p2beta1DominantColorsAnnotation', 1)
+
+
+class GoogleCloudVisionV1p2beta1InputConfig(_messages.Message):
+  r"""The desired input location and metadata.
+
+  Fields:
+    gcsSource: The Google Cloud Storage location to read the input from.
+    mimeType: The type of the file. Currently only "application/pdf" and
+      "image/tiff" are supported. Wildcards are not supported.
+  """
+
+  gcsSource = _messages.MessageField('GoogleCloudVisionV1p2beta1GcsSource', 1)
+  mimeType = _messages.StringField(2)
+
+
+class GoogleCloudVisionV1p2beta1LocationInfo(_messages.Message):
+  r"""Detected entity location information.
+
+  Fields:
+    latLng: lat/long location coordinates.
+  """
+
+  latLng = _messages.MessageField('LatLng', 1)
+
+
+class GoogleCloudVisionV1p2beta1NormalizedVertex(_messages.Message):
+  r"""A vertex represents a 2D point in the image. NOTE: the normalized vertex
+  coordinates are relative to the original image and range from 0 to 1.
+
+  Fields:
+    x: X coordinate.
+    y: Y coordinate.
+  """
+
+  x = _messages.FloatField(1, variant=_messages.Variant.FLOAT)
+  y = _messages.FloatField(2, variant=_messages.Variant.FLOAT)
+
+
+class GoogleCloudVisionV1p2beta1OperationMetadata(_messages.Message):
+  r"""Contains metadata for the BatchAnnotateImages operation.
+
+  Enums:
+    StateValueValuesEnum: Current state of the batch operation.
+
+  Fields:
+    createTime: The time when the batch request was received.
+    state: Current state of the batch operation.
+    updateTime: The time when the operation result was last updated.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Current state of the batch operation.
+
+    Values:
+      STATE_UNSPECIFIED: Invalid.
+      CREATED: Request is received.
+      RUNNING: Request is actively being processed.
+      DONE: The batch processing is done.
+      CANCELLED: The batch processing was cancelled.
+    """
+    STATE_UNSPECIFIED = 0
+    CREATED = 1
+    RUNNING = 2
+    DONE = 3
+    CANCELLED = 4
+
+  createTime = _messages.StringField(1)
+  state = _messages.EnumField('StateValueValuesEnum', 2)
+  updateTime = _messages.StringField(3)
+
+
+class GoogleCloudVisionV1p2beta1OutputConfig(_messages.Message):
+  r"""The desired output location and metadata.
+
+  Fields:
+    batchSize: The max number of response protos to put into each output JSON
+      file on Google Cloud Storage. The valid range is [1, 100]. If not
+      specified, the default value is 20.  For example, for one pdf file with
+      100 pages, 100 response protos will be generated. If `batch_size` = 20,
+      then 5 json files each containing 20 response protos will be written
+      under the prefix `gcs_destination`.`uri`.  Currently, batch_size only
+      applies to GcsDestination, with potential future support for other
+      output configurations.
+    gcsDestination: The Google Cloud Storage location to write the output(s)
+      to.
+  """
+
+  batchSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  gcsDestination = _messages.MessageField('GoogleCloudVisionV1p2beta1GcsDestination', 2)
+
+
+class GoogleCloudVisionV1p2beta1Page(_messages.Message):
+  r"""Detected page from OCR.
+
+  Fields:
+    blocks: List of blocks of text, images etc on this page.
+    confidence: Confidence of the OCR results on the page. Range [0, 1].
+    height: Page height. For PDFs the unit is points. For images (including
+      TIFFs) the unit is pixels.
+    property: Additional information detected on the page.
+    width: Page width. For PDFs the unit is points. For images (including
+      TIFFs) the unit is pixels.
+  """
+
+  blocks = _messages.MessageField('GoogleCloudVisionV1p2beta1Block', 1, repeated=True)
+  confidence = _messages.FloatField(2, variant=_messages.Variant.FLOAT)
+  height = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  property = _messages.MessageField('GoogleCloudVisionV1p2beta1TextAnnotationTextProperty', 4)
+  width = _messages.IntegerField(5, variant=_messages.Variant.INT32)
+
+
+class GoogleCloudVisionV1p2beta1Paragraph(_messages.Message):
+  r"""Structural unit of text representing a number of words in certain order.
+
+  Fields:
+    boundingBox: The bounding box for the paragraph. The vertices are in the
+      order of top-left, top-right, bottom-right, bottom-left. When a rotation
+      of the bounding box is detected the rotation is represented as around
+      the top-left corner as defined when the text is read in the 'natural'
+      orientation. For example:   * when the text is horizontal it might look
+      like:      0----1      |    |      3----2   * when it's rotated 180
+      degrees around the top-left corner it becomes:      2----3      |    |
+      1----0   and the vertice order will still be (0, 1, 2, 3).
+    confidence: Confidence of the OCR results for the paragraph. Range [0, 1].
+    property: Additional information detected for the paragraph.
+    words: List of words in this paragraph.
+  """
+
+  boundingBox = _messages.MessageField('GoogleCloudVisionV1p2beta1BoundingPoly', 1)
+  confidence = _messages.FloatField(2, variant=_messages.Variant.FLOAT)
+  property = _messages.MessageField('GoogleCloudVisionV1p2beta1TextAnnotationTextProperty', 3)
+  words = _messages.MessageField('GoogleCloudVisionV1p2beta1Word', 4, repeated=True)
+
+
+class GoogleCloudVisionV1p2beta1Position(_messages.Message):
+  r"""A 3D position in the image, used primarily for Face detection landmarks.
+  A valid Position must have both x and y coordinates. The position
+  coordinates are in the same scale as the original image.
+
+  Fields:
+    x: X coordinate.
+    y: Y coordinate.
+    z: Z coordinate (or depth).
+  """
+
+  x = _messages.FloatField(1, variant=_messages.Variant.FLOAT)
+  y = _messages.FloatField(2, variant=_messages.Variant.FLOAT)
+  z = _messages.FloatField(3, variant=_messages.Variant.FLOAT)
+
+
+class GoogleCloudVisionV1p2beta1Property(_messages.Message):
+  r"""A `Property` consists of a user-supplied name/value pair.
+
+  Fields:
+    name: Name of the property.
+    uint64Value: Value of numeric properties.
+    value: Value of the property.
+  """
+
+  name = _messages.StringField(1)
+  uint64Value = _messages.IntegerField(2, variant=_messages.Variant.UINT64)
+  value = _messages.StringField(3)
+
+
+class GoogleCloudVisionV1p2beta1SafeSearchAnnotation(_messages.Message):
+  r"""Set of features pertaining to the image, computed by computer vision
+  methods over safe-search verticals (for example, adult, spoof, medical,
+  violence).
+
+  Enums:
+    AdultValueValuesEnum: Represents the adult content likelihood for the
+      image. Adult content may contain elements such as nudity, pornographic
+      images or cartoons, or sexual activities.
+    MedicalValueValuesEnum: Likelihood that this is a medical image.
+    RacyValueValuesEnum: Likelihood that the request image contains racy
+      content. Racy content may include (but is not limited to) skimpy or
+      sheer clothing, strategically covered nudity, lewd or provocative poses,
+      or close-ups of sensitive body areas.
+    SpoofValueValuesEnum: Spoof likelihood. The likelihood that an
+      modification was made to the image's canonical version to make it appear
+      funny or offensive.
+    ViolenceValueValuesEnum: Likelihood that this image contains violent
+      content.
+
+  Fields:
+    adult: Represents the adult content likelihood for the image. Adult
+      content may contain elements such as nudity, pornographic images or
+      cartoons, or sexual activities.
+    medical: Likelihood that this is a medical image.
+    racy: Likelihood that the request image contains racy content. Racy
+      content may include (but is not limited to) skimpy or sheer clothing,
+      strategically covered nudity, lewd or provocative poses, or close-ups of
+      sensitive body areas.
+    spoof: Spoof likelihood. The likelihood that an modification was made to
+      the image's canonical version to make it appear funny or offensive.
+    violence: Likelihood that this image contains violent content.
+  """
+
+  class AdultValueValuesEnum(_messages.Enum):
+    r"""Represents the adult content likelihood for the image. Adult content
+    may contain elements such as nudity, pornographic images or cartoons, or
+    sexual activities.
+
+    Values:
+      UNKNOWN: Unknown likelihood.
+      VERY_UNLIKELY: It is very unlikely that the image belongs to the
+        specified vertical.
+      UNLIKELY: It is unlikely that the image belongs to the specified
+        vertical.
+      POSSIBLE: It is possible that the image belongs to the specified
+        vertical.
+      LIKELY: It is likely that the image belongs to the specified vertical.
+      VERY_LIKELY: It is very likely that the image belongs to the specified
+        vertical.
+    """
+    UNKNOWN = 0
+    VERY_UNLIKELY = 1
+    UNLIKELY = 2
+    POSSIBLE = 3
+    LIKELY = 4
+    VERY_LIKELY = 5
+
+  class MedicalValueValuesEnum(_messages.Enum):
+    r"""Likelihood that this is a medical image.
+
+    Values:
+      UNKNOWN: Unknown likelihood.
+      VERY_UNLIKELY: It is very unlikely that the image belongs to the
+        specified vertical.
+      UNLIKELY: It is unlikely that the image belongs to the specified
+        vertical.
+      POSSIBLE: It is possible that the image belongs to the specified
+        vertical.
+      LIKELY: It is likely that the image belongs to the specified vertical.
+      VERY_LIKELY: It is very likely that the image belongs to the specified
+        vertical.
+    """
+    UNKNOWN = 0
+    VERY_UNLIKELY = 1
+    UNLIKELY = 2
+    POSSIBLE = 3
+    LIKELY = 4
+    VERY_LIKELY = 5
+
+  class RacyValueValuesEnum(_messages.Enum):
+    r"""Likelihood that the request image contains racy content. Racy content
+    may include (but is not limited to) skimpy or sheer clothing,
+    strategically covered nudity, lewd or provocative poses, or close-ups of
+    sensitive body areas.
+
+    Values:
+      UNKNOWN: Unknown likelihood.
+      VERY_UNLIKELY: It is very unlikely that the image belongs to the
+        specified vertical.
+      UNLIKELY: It is unlikely that the image belongs to the specified
+        vertical.
+      POSSIBLE: It is possible that the image belongs to the specified
+        vertical.
+      LIKELY: It is likely that the image belongs to the specified vertical.
+      VERY_LIKELY: It is very likely that the image belongs to the specified
+        vertical.
+    """
+    UNKNOWN = 0
+    VERY_UNLIKELY = 1
+    UNLIKELY = 2
+    POSSIBLE = 3
+    LIKELY = 4
+    VERY_LIKELY = 5
+
+  class SpoofValueValuesEnum(_messages.Enum):
+    r"""Spoof likelihood. The likelihood that an modification was made to the
+    image's canonical version to make it appear funny or offensive.
+
+    Values:
+      UNKNOWN: Unknown likelihood.
+      VERY_UNLIKELY: It is very unlikely that the image belongs to the
+        specified vertical.
+      UNLIKELY: It is unlikely that the image belongs to the specified
+        vertical.
+      POSSIBLE: It is possible that the image belongs to the specified
+        vertical.
+      LIKELY: It is likely that the image belongs to the specified vertical.
+      VERY_LIKELY: It is very likely that the image belongs to the specified
+        vertical.
+    """
+    UNKNOWN = 0
+    VERY_UNLIKELY = 1
+    UNLIKELY = 2
+    POSSIBLE = 3
+    LIKELY = 4
+    VERY_LIKELY = 5
+
+  class ViolenceValueValuesEnum(_messages.Enum):
+    r"""Likelihood that this image contains violent content.
+
+    Values:
+      UNKNOWN: Unknown likelihood.
+      VERY_UNLIKELY: It is very unlikely that the image belongs to the
+        specified vertical.
+      UNLIKELY: It is unlikely that the image belongs to the specified
+        vertical.
+      POSSIBLE: It is possible that the image belongs to the specified
+        vertical.
+      LIKELY: It is likely that the image belongs to the specified vertical.
+      VERY_LIKELY: It is very likely that the image belongs to the specified
+        vertical.
+    """
+    UNKNOWN = 0
+    VERY_UNLIKELY = 1
+    UNLIKELY = 2
+    POSSIBLE = 3
+    LIKELY = 4
+    VERY_LIKELY = 5
+
+  adult = _messages.EnumField('AdultValueValuesEnum', 1)
+  medical = _messages.EnumField('MedicalValueValuesEnum', 2)
+  racy = _messages.EnumField('RacyValueValuesEnum', 3)
+  spoof = _messages.EnumField('SpoofValueValuesEnum', 4)
+  violence = _messages.EnumField('ViolenceValueValuesEnum', 5)
+
+
+class GoogleCloudVisionV1p2beta1Symbol(_messages.Message):
+  r"""A single symbol representation.
+
+  Fields:
+    boundingBox: The bounding box for the symbol. The vertices are in the
+      order of top-left, top-right, bottom-right, bottom-left. When a rotation
+      of the bounding box is detected the rotation is represented as around
+      the top-left corner as defined when the text is read in the 'natural'
+      orientation. For example:   * when the text is horizontal it might look
+      like:      0----1      |    |      3----2   * when it's rotated 180
+      degrees around the top-left corner it becomes:      2----3      |    |
+      1----0   and the vertice order will still be (0, 1, 2, 3).
+    confidence: Confidence of the OCR results for the symbol. Range [0, 1].
+    property: Additional information detected for the symbol.
+    text: The actual UTF-8 representation of the symbol.
+  """
+
+  boundingBox = _messages.MessageField('GoogleCloudVisionV1p2beta1BoundingPoly', 1)
+  confidence = _messages.FloatField(2, variant=_messages.Variant.FLOAT)
+  property = _messages.MessageField('GoogleCloudVisionV1p2beta1TextAnnotationTextProperty', 3)
+  text = _messages.StringField(4)
+
+
+class GoogleCloudVisionV1p2beta1TextAnnotation(_messages.Message):
+  r"""TextAnnotation contains a structured representation of OCR extracted
+  text. The hierarchy of an OCR extracted text structure is like this:
+  TextAnnotation -> Page -> Block -> Paragraph -> Word -> Symbol Each
+  structural component, starting from Page, may further have their own
+  properties. Properties describe detected languages, breaks etc.. Please
+  refer to the TextAnnotation.TextProperty message definition below for more
+  detail.
+
+  Fields:
+    pages: List of pages detected by OCR.
+    text: UTF-8 text detected on the pages.
+  """
+
+  pages = _messages.MessageField('GoogleCloudVisionV1p2beta1Page', 1, repeated=True)
+  text = _messages.StringField(2)
+
+
+class GoogleCloudVisionV1p2beta1TextAnnotationDetectedBreak(_messages.Message):
+  r"""Detected start or end of a structural component.
+
+  Enums:
+    TypeValueValuesEnum: Detected break type.
+
+  Fields:
+    isPrefix: True if break prepends the element.
+    type: Detected break type.
+  """
+
+  class TypeValueValuesEnum(_messages.Enum):
+    r"""Detected break type.
+
+    Values:
+      UNKNOWN: Unknown break label type.
+      SPACE: Regular space.
+      SURE_SPACE: Sure space (very wide).
+      EOL_SURE_SPACE: Line-wrapping break.
+      HYPHEN: End-line hyphen that is not present in text; does not co-occur
+        with `SPACE`, `LEADER_SPACE`, or `LINE_BREAK`.
+      LINE_BREAK: Line break that ends a paragraph.
+    """
+    UNKNOWN = 0
+    SPACE = 1
+    SURE_SPACE = 2
+    EOL_SURE_SPACE = 3
+    HYPHEN = 4
+    LINE_BREAK = 5
+
+  isPrefix = _messages.BooleanField(1)
+  type = _messages.EnumField('TypeValueValuesEnum', 2)
+
+
+class GoogleCloudVisionV1p2beta1TextAnnotationDetectedLanguage(_messages.Message):
+  r"""Detected language for a structural component.
+
+  Fields:
+    confidence: Confidence of detected language. Range [0, 1].
+    languageCode: The BCP-47 language code, such as "en-US" or "sr-Latn". For
+      more information, see
+      http://www.unicode.org/reports/tr35/#Unicode_locale_identifier.
+  """
+
+  confidence = _messages.FloatField(1, variant=_messages.Variant.FLOAT)
+  languageCode = _messages.StringField(2)
+
+
+class GoogleCloudVisionV1p2beta1TextAnnotationTextProperty(_messages.Message):
+  r"""Additional information detected on the structural component.
+
+  Fields:
+    detectedBreak: Detected start or end of a text segment.
+    detectedLanguages: A list of detected languages together with confidence.
+  """
+
+  detectedBreak = _messages.MessageField('GoogleCloudVisionV1p2beta1TextAnnotationDetectedBreak', 1)
+  detectedLanguages = _messages.MessageField('GoogleCloudVisionV1p2beta1TextAnnotationDetectedLanguage', 2, repeated=True)
+
+
+class GoogleCloudVisionV1p2beta1Vertex(_messages.Message):
+  r"""A vertex represents a 2D point in the image. NOTE: the vertex
+  coordinates are in the same scale as the original image.
+
+  Fields:
+    x: X coordinate.
+    y: Y coordinate.
+  """
+
+  x = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  y = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+
+
+class GoogleCloudVisionV1p2beta1WebDetection(_messages.Message):
+  r"""Relevant information for the image from the Internet.
+
+  Fields:
+    bestGuessLabels: Best guess text labels for the request image.
+    fullMatchingImages: Fully matching images from the Internet. Can include
+      resized copies of the query image.
+    pagesWithMatchingImages: Web pages containing the matching images from the
+      Internet.
+    partialMatchingImages: Partial matching images from the Internet. Those
+      images are similar enough to share some key-point features. For example
+      an original image will likely have partial matching for its crops.
+    visuallySimilarImages: The visually similar image results.
+    webEntities: Deduced entities from similar images on the Internet.
+  """
+
+  bestGuessLabels = _messages.MessageField('GoogleCloudVisionV1p2beta1WebDetectionWebLabel', 1, repeated=True)
+  fullMatchingImages = _messages.MessageField('GoogleCloudVisionV1p2beta1WebDetectionWebImage', 2, repeated=True)
+  pagesWithMatchingImages = _messages.MessageField('GoogleCloudVisionV1p2beta1WebDetectionWebPage', 3, repeated=True)
+  partialMatchingImages = _messages.MessageField('GoogleCloudVisionV1p2beta1WebDetectionWebImage', 4, repeated=True)
+  visuallySimilarImages = _messages.MessageField('GoogleCloudVisionV1p2beta1WebDetectionWebImage', 5, repeated=True)
+  webEntities = _messages.MessageField('GoogleCloudVisionV1p2beta1WebDetectionWebEntity', 6, repeated=True)
+
+
+class GoogleCloudVisionV1p2beta1WebDetectionWebEntity(_messages.Message):
+  r"""Entity deduced from similar images on the Internet.
+
+  Fields:
+    description: Canonical description of the entity, in English.
+    entityId: Opaque entity ID.
+    score: Overall relevancy score for the entity. Not normalized and not
+      comparable across different image queries.
+  """
+
+  description = _messages.StringField(1)
+  entityId = _messages.StringField(2)
+  score = _messages.FloatField(3, variant=_messages.Variant.FLOAT)
+
+
+class GoogleCloudVisionV1p2beta1WebDetectionWebImage(_messages.Message):
+  r"""Metadata for online images.
+
+  Fields:
+    score: (Deprecated) Overall relevancy score for the image.
+    url: The result image URL.
+  """
+
+  score = _messages.FloatField(1, variant=_messages.Variant.FLOAT)
+  url = _messages.StringField(2)
+
+
+class GoogleCloudVisionV1p2beta1WebDetectionWebLabel(_messages.Message):
+  r"""Label to provide extra metadata for the web detection.
+
+  Fields:
+    label: Label for extra metadata.
+    languageCode: The BCP-47 language code for `label`, such as "en-US" or
+      "sr-Latn". For more information, see
+      http://www.unicode.org/reports/tr35/#Unicode_locale_identifier.
+  """
+
+  label = _messages.StringField(1)
+  languageCode = _messages.StringField(2)
+
+
+class GoogleCloudVisionV1p2beta1WebDetectionWebPage(_messages.Message):
+  r"""Metadata for web pages.
+
+  Fields:
+    fullMatchingImages: Fully matching images on the page. Can include resized
+      copies of the query image.
+    pageTitle: Title for the web page, may contain HTML markups.
+    partialMatchingImages: Partial matching images on the page. Those images
+      are similar enough to share some key-point features. For example an
+      original image will likely have partial matching for its crops.
+    score: (Deprecated) Overall relevancy score for the web page.
+    url: The result web page URL.
+  """
+
+  fullMatchingImages = _messages.MessageField('GoogleCloudVisionV1p2beta1WebDetectionWebImage', 1, repeated=True)
+  pageTitle = _messages.StringField(2)
+  partialMatchingImages = _messages.MessageField('GoogleCloudVisionV1p2beta1WebDetectionWebImage', 3, repeated=True)
+  score = _messages.FloatField(4, variant=_messages.Variant.FLOAT)
+  url = _messages.StringField(5)
+
+
+class GoogleCloudVisionV1p2beta1Word(_messages.Message):
+  r"""A word representation.
+
+  Fields:
+    boundingBox: The bounding box for the word. The vertices are in the order
+      of top-left, top-right, bottom-right, bottom-left. When a rotation of
+      the bounding box is detected the rotation is represented as around the
+      top-left corner as defined when the text is read in the 'natural'
+      orientation. For example:   * when the text is horizontal it might look
+      like:      0----1      |    |      3----2   * when it's rotated 180
+      degrees around the top-left corner it becomes:      2----3      |    |
+      1----0   and the vertice order will still be (0, 1, 2, 3).
+    confidence: Confidence of the OCR results for the word. Range [0, 1].
+    property: Additional information detected for the word.
+    symbols: List of symbols in the word. The order of the symbols follows the
+      natural reading order.
+  """
+
+  boundingBox = _messages.MessageField('GoogleCloudVisionV1p2beta1BoundingPoly', 1)
+  confidence = _messages.FloatField(2, variant=_messages.Variant.FLOAT)
+  property = _messages.MessageField('GoogleCloudVisionV1p2beta1TextAnnotationTextProperty', 3)
+  symbols = _messages.MessageField('GoogleCloudVisionV1p2beta1Symbol', 4, repeated=True)
+
+
+class GoogleCloudVisionV1p3beta1BatchOperationMetadata(_messages.Message):
+  r"""Metadata for the batch operations such as the current state.  This is
+  included in the `metadata` field of the `Operation` returned by the
+  `GetOperation` call of the `google::longrunning::Operations` service.
+
+  Enums:
+    StateValueValuesEnum: The current state of the batch operation.
+
+  Fields:
+    endTime: The time when the batch request is finished and
+      google.longrunning.Operation.done is set to true.
+    state: The current state of the batch operation.
+    submitTime: The time when the batch request was submitted to the server.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""The current state of the batch operation.
+
+    Values:
+      STATE_UNSPECIFIED: Invalid.
+      PROCESSING: Request is actively being processed.
+      SUCCESSFUL: The request is done and at least one item has been
+        successfully processed.
+      FAILED: The request is done and no item has been successfully processed.
+      CANCELLED: The request is done after the
+        longrunning.Operations.CancelOperation has been called by the user.
+        Any records that were processed before the cancel command are output
+        as specified in the request.
+    """
+    STATE_UNSPECIFIED = 0
+    PROCESSING = 1
+    SUCCESSFUL = 2
+    FAILED = 3
+    CANCELLED = 4
+
+  endTime = _messages.StringField(1)
+  state = _messages.EnumField('StateValueValuesEnum', 2)
+  submitTime = _messages.StringField(3)
+
+
+class GoogleCloudVisionV1p3beta1BoundingPoly(_messages.Message):
+  r"""A bounding polygon for the detected image annotation.
+
+  Fields:
+    normalizedVertices: The bounding polygon normalized vertices.
+    vertices: The bounding polygon vertices.
+  """
+
+  normalizedVertices = _messages.MessageField('GoogleCloudVisionV1p3beta1NormalizedVertex', 1, repeated=True)
+  vertices = _messages.MessageField('GoogleCloudVisionV1p3beta1Vertex', 2, repeated=True)
+
+
+class GoogleCloudVisionV1p3beta1ImportProductSetsResponse(_messages.Message):
+  r"""Response message for the `ImportProductSets` method.  This message is
+  returned by the google.longrunning.Operations.GetOperation method in the
+  returned google.longrunning.Operation.response field.
+
+  Fields:
+    referenceImages: The list of reference_images that are imported
+      successfully.
+    statuses: The rpc status for each ImportProductSet request, including both
+      successes and errors.  The number of statuses here matches the number of
+      lines in the csv file, and statuses[i] stores the success or failure
+      status of processing the i-th line of the csv, starting from line 0.
+  """
+
+  referenceImages = _messages.MessageField('GoogleCloudVisionV1p3beta1ReferenceImage', 1, repeated=True)
+  statuses = _messages.MessageField('Status', 2, repeated=True)
+
+
+class GoogleCloudVisionV1p3beta1NormalizedVertex(_messages.Message):
+  r"""A vertex represents a 2D point in the image. NOTE: the normalized vertex
+  coordinates are relative to the original image and range from 0 to 1.
+
+  Fields:
+    x: X coordinate.
+    y: Y coordinate.
+  """
+
+  x = _messages.FloatField(1, variant=_messages.Variant.FLOAT)
+  y = _messages.FloatField(2, variant=_messages.Variant.FLOAT)
+
+
+class GoogleCloudVisionV1p3beta1ReferenceImage(_messages.Message):
+  r"""A `ReferenceImage` represents a product image and its associated
+  metadata, such as bounding boxes.
+
+  Fields:
+    boundingPolys: Bounding polygons around the areas of interest in the
+      reference image. Optional. If this field is empty, the system will try
+      to detect regions of interest. At most 10 bounding polygons will be
+      used.  The provided shape is converted into a non-rotated rectangle.
+      Once converted, the small edge of the rectangle must be greater than or
+      equal to 300 pixels. The aspect ratio must be 1:4 or less (i.e. 1:3 is
+      ok; 1:5 is not).
+    name: The resource name of the reference image.  Format is:  `projects/PRO
+      JECT_ID/locations/LOC_ID/products/PRODUCT_ID/referenceImages/IMAGE_ID`.
+      This field is ignored when creating a reference image.
+    uri: The Google Cloud Storage URI of the reference image.  The URI must
+      start with `gs://`.  Required.
+  """
+
+  boundingPolys = _messages.MessageField('GoogleCloudVisionV1p3beta1BoundingPoly', 1, repeated=True)
+  name = _messages.StringField(2)
+  uri = _messages.StringField(3)
+
+
+class GoogleCloudVisionV1p3beta1Vertex(_messages.Message):
+  r"""A vertex represents a 2D point in the image. NOTE: the vertex
+  coordinates are in the same scale as the original image.
+
+  Fields:
+    x: X coordinate.
+    y: Y coordinate.
+  """
+
+  x = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  y = _messages.IntegerField(2, variant=_messages.Variant.INT32)
+
+
+class Image(_messages.Message):
+  r"""Client image to perform Google Cloud Vision API tasks over.
+
+  Fields:
+    content: Image content, represented as a stream of bytes. Note: As with
       all `bytes` fields, protobuffers use a pure binary representation,
       whereas JSON representations use base64.
-    source: Google Cloud Storage image location. If both `content` and
-      `source` are provided for an image, `content` takes precedence and is
-      used to perform the image annotation request.
+    source: Google Cloud Storage image location, or publicly-accessible image
+      URL. If both `content` and `source` are provided for an image, `content`
+      takes precedence and is used to perform the image annotation request.
   """
 
   content = _messages.BytesField(1)
   source = _messages.MessageField('ImageSource', 2)
 
 
+class ImageAnnotationContext(_messages.Message):
+  r"""If an image was produced from a file (e.g. a PDF), this message gives
+  information about the source of that image.
+
+  Fields:
+    pageNumber: If the file was a PDF or TIFF, this field gives the page
+      number within the file used to produce the image.
+    uri: The URI of the file used to produce the image.
+  """
+
+  pageNumber = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  uri = _messages.StringField(2)
+
+
 class ImageContext(_messages.Message):
-  """Image context and/or feature-specific parameters.
+  r"""Image context and/or feature-specific parameters.
 
   Fields:
     cropHintsParams: Parameters for crop hints annotation request.
@@ -674,16 +2072,18 @@ class ImageContext(_messages.Message):
       (although it will be a significant hindrance if the hint is wrong). Text
       detection returns an error if one or more of the specified languages is
       not one of the [supported languages](/vision/docs/languages).
-    latLongRect: lat/long rectangle that specifies the location of the image.
+    latLongRect: Not used.
+    webDetectionParams: Parameters for web detection.
   """
 
   cropHintsParams = _messages.MessageField('CropHintsParams', 1)
   languageHints = _messages.StringField(2, repeated=True)
   latLongRect = _messages.MessageField('LatLongRect', 3)
+  webDetectionParams = _messages.MessageField('WebDetectionParams', 4)
 
 
 class ImageProperties(_messages.Message):
-  """Stores image properties, such as dominant colors.
+  r"""Stores image properties, such as dominant colors.
 
   Fields:
     dominantColors: If present, dominant colors completed successfully.
@@ -693,21 +2093,25 @@ class ImageProperties(_messages.Message):
 
 
 class ImageSource(_messages.Message):
-  """External image source (Google Cloud Storage image location).
+  r"""External image source (Google Cloud Storage or web URL image location).
 
   Fields:
-    gcsImageUri: NOTE: For new code `image_uri` below is preferred. Google
-      Cloud Storage image URI, which must be in the following form:
-      `gs://bucket_name/object_name` (for details, see [Google Cloud Storage
-      Request URIs](https://cloud.google.com/storage/docs/reference-uris)).
-      NOTE: Cloud Storage object versioning is not supported.
-    imageUri: Image URI which supports: 1) Google Cloud Storage image URI,
-      which must be in the following form: `gs://bucket_name/object_name` (for
-      details, see [Google Cloud Storage Request
-      URIs](https://cloud.google.com/storage/docs/reference-uris)). NOTE:
-      Cloud Storage object versioning is not supported. 2) Publicly accessible
-      image HTTP/HTTPS URL. This is preferred over the legacy `gcs_image_uri`
-      above. When both `gcs_image_uri` and `image_uri` are specified,
+    gcsImageUri: **Use `image_uri` instead.**  The Google Cloud Storage  URI
+      of the form `gs://bucket_name/object_name`. Object versioning is not
+      supported. See [Google Cloud Storage Request
+      URIs](https://cloud.google.com/storage/docs/reference-uris) for more
+      info.
+    imageUri: The URI of the source image. Can be either:  1. A Google Cloud
+      Storage URI of the form    `gs://bucket_name/object_name`. Object
+      versioning is not supported. See    [Google Cloud Storage Request
+      URIs](https://cloud.google.com/storage/docs/reference-uris) for more
+      info.  2. A publicly-accessible image HTTP/HTTPS URL. When fetching
+      images from    HTTP/HTTPS URLs, Google cannot guarantee that the request
+      will be    completed. Your request may fail if the specified host denies
+      the    request (e.g. due to request throttling or DOS prevention), or if
+      Google    throttles requests to the site for abuse prevention. You
+      should not    depend on externally-hosted images for production
+      applications.  When both `gcs_image_uri` and `image_uri` are specified,
       `image_uri` takes precedence.
   """
 
@@ -715,8 +2119,21 @@ class ImageSource(_messages.Message):
   imageUri = _messages.StringField(2)
 
 
+class InputConfig(_messages.Message):
+  r"""The desired input location and metadata.
+
+  Fields:
+    gcsSource: The Google Cloud Storage location to read the input from.
+    mimeType: The type of the file. Currently only "application/pdf" and
+      "image/tiff" are supported. Wildcards are not supported.
+  """
+
+  gcsSource = _messages.MessageField('GcsSource', 1)
+  mimeType = _messages.StringField(2)
+
+
 class Landmark(_messages.Message):
-  """A face-specific landmark (for example, a face feature).
+  r"""A face-specific landmark (for example, a face feature).
 
   Enums:
     TypeValueValuesEnum: Face landmark type.
@@ -727,7 +2144,7 @@ class Landmark(_messages.Message):
   """
 
   class TypeValueValuesEnum(_messages.Enum):
-    """Face landmark type.
+    r"""Face landmark type.
 
     Values:
       UNKNOWN_LANDMARK: Unknown face landmark detected. Should not be filled.
@@ -807,7 +2224,7 @@ class Landmark(_messages.Message):
 
 
 class LatLng(_messages.Message):
-  """An object representing a latitude/longitude pair. This is expressed as a
+  r"""An object representing a latitude/longitude pair. This is expressed as a
   pair of doubles representing degrees latitude and degrees longitude. Unless
   specified otherwise, this must conform to the <a
   href="http://www.unoosa.org/pdf/icg/2012/template/WGS_84.pdf">WGS84
@@ -824,7 +2241,7 @@ class LatLng(_messages.Message):
 
 
 class LatLongRect(_messages.Message):
-  """Rectangle determined by min and max `LatLng` pairs.
+  r"""Rectangle determined by min and max `LatLng` pairs.
 
   Fields:
     maxLatLng: Max lat/long pair.
@@ -835,8 +2252,21 @@ class LatLongRect(_messages.Message):
   minLatLng = _messages.MessageField('LatLng', 2)
 
 
+class ListOperationsResponse(_messages.Message):
+  r"""The response message for Operations.ListOperations.
+
+  Fields:
+    nextPageToken: The standard List next-page token.
+    operations: A list of operations that matches the specified filter in the
+      request.
+  """
+
+  nextPageToken = _messages.StringField(1)
+  operations = _messages.MessageField('Operation', 2, repeated=True)
+
+
 class LocationInfo(_messages.Message):
-  """Detected entity location information.
+  r"""Detected entity location information.
 
   Fields:
     latLng: lat/long location coordinates.
@@ -845,24 +2275,201 @@ class LocationInfo(_messages.Message):
   latLng = _messages.MessageField('LatLng', 1)
 
 
+class NormalizedVertex(_messages.Message):
+  r"""A vertex represents a 2D point in the image. NOTE: the normalized vertex
+  coordinates are relative to the original image and range from 0 to 1.
+
+  Fields:
+    x: X coordinate.
+    y: Y coordinate.
+  """
+
+  x = _messages.FloatField(1, variant=_messages.Variant.FLOAT)
+  y = _messages.FloatField(2, variant=_messages.Variant.FLOAT)
+
+
+class Operation(_messages.Message):
+  r"""This resource represents a long-running operation that is the result of
+  a network API call.
+
+  Messages:
+    MetadataValue: Service-specific metadata associated with the operation.
+      It typically contains progress information and common metadata such as
+      create time. Some services might not provide such metadata.  Any method
+      that returns a long-running operation should document the metadata type,
+      if any.
+    ResponseValue: The normal response of the operation in case of success.
+      If the original method returns no data on success, such as `Delete`, the
+      response is `google.protobuf.Empty`.  If the original method is standard
+      `Get`/`Create`/`Update`, the response should be the resource.  For other
+      methods, the response should have the type `XxxResponse`, where `Xxx` is
+      the original method name.  For example, if the original method name is
+      `TakeSnapshot()`, the inferred response type is `TakeSnapshotResponse`.
+
+  Fields:
+    done: If the value is `false`, it means the operation is still in
+      progress. If `true`, the operation is completed, and either `error` or
+      `response` is available.
+    error: The error result of the operation in case of failure or
+      cancellation.
+    metadata: Service-specific metadata associated with the operation.  It
+      typically contains progress information and common metadata such as
+      create time. Some services might not provide such metadata.  Any method
+      that returns a long-running operation should document the metadata type,
+      if any.
+    name: The server-assigned name, which is only unique within the same
+      service that originally returns it. If you use the default HTTP mapping,
+      the `name` should have the format of `operations/some/unique/name`.
+    response: The normal response of the operation in case of success.  If the
+      original method returns no data on success, such as `Delete`, the
+      response is `google.protobuf.Empty`.  If the original method is standard
+      `Get`/`Create`/`Update`, the response should be the resource.  For other
+      methods, the response should have the type `XxxResponse`, where `Xxx` is
+      the original method name.  For example, if the original method name is
+      `TakeSnapshot()`, the inferred response type is `TakeSnapshotResponse`.
+  """
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class MetadataValue(_messages.Message):
+    r"""Service-specific metadata associated with the operation.  It typically
+    contains progress information and common metadata such as create time.
+    Some services might not provide such metadata.  Any method that returns a
+    long-running operation should document the metadata type, if any.
+
+    Messages:
+      AdditionalProperty: An additional property for a MetadataValue object.
+
+    Fields:
+      additionalProperties: Properties of the object. Contains field @type
+        with type URL.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a MetadataValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  @encoding.MapUnrecognizedFields('additionalProperties')
+  class ResponseValue(_messages.Message):
+    r"""The normal response of the operation in case of success.  If the
+    original method returns no data on success, such as `Delete`, the response
+    is `google.protobuf.Empty`.  If the original method is standard
+    `Get`/`Create`/`Update`, the response should be the resource.  For other
+    methods, the response should have the type `XxxResponse`, where `Xxx` is
+    the original method name.  For example, if the original method name is
+    `TakeSnapshot()`, the inferred response type is `TakeSnapshotResponse`.
+
+    Messages:
+      AdditionalProperty: An additional property for a ResponseValue object.
+
+    Fields:
+      additionalProperties: Properties of the object. Contains field @type
+        with type URL.
+    """
+
+    class AdditionalProperty(_messages.Message):
+      r"""An additional property for a ResponseValue object.
+
+      Fields:
+        key: Name of the additional property.
+        value: A extra_types.JsonValue attribute.
+      """
+
+      key = _messages.StringField(1)
+      value = _messages.MessageField('extra_types.JsonValue', 2)
+
+    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
+
+  done = _messages.BooleanField(1)
+  error = _messages.MessageField('Status', 2)
+  metadata = _messages.MessageField('MetadataValue', 3)
+  name = _messages.StringField(4)
+  response = _messages.MessageField('ResponseValue', 5)
+
+
+class OperationMetadata(_messages.Message):
+  r"""Contains metadata for the BatchAnnotateImages operation.
+
+  Enums:
+    StateValueValuesEnum: Current state of the batch operation.
+
+  Fields:
+    createTime: The time when the batch request was received.
+    state: Current state of the batch operation.
+    updateTime: The time when the operation result was last updated.
+  """
+
+  class StateValueValuesEnum(_messages.Enum):
+    r"""Current state of the batch operation.
+
+    Values:
+      STATE_UNSPECIFIED: Invalid.
+      CREATED: Request is received.
+      RUNNING: Request is actively being processed.
+      DONE: The batch processing is done.
+      CANCELLED: The batch processing was cancelled.
+    """
+    STATE_UNSPECIFIED = 0
+    CREATED = 1
+    RUNNING = 2
+    DONE = 3
+    CANCELLED = 4
+
+  createTime = _messages.StringField(1)
+  state = _messages.EnumField('StateValueValuesEnum', 2)
+  updateTime = _messages.StringField(3)
+
+
+class OutputConfig(_messages.Message):
+  r"""The desired output location and metadata.
+
+  Fields:
+    batchSize: The max number of response protos to put into each output JSON
+      file on Google Cloud Storage. The valid range is [1, 100]. If not
+      specified, the default value is 20.  For example, for one pdf file with
+      100 pages, 100 response protos will be generated. If `batch_size` = 20,
+      then 5 json files each containing 20 response protos will be written
+      under the prefix `gcs_destination`.`uri`.  Currently, batch_size only
+      applies to GcsDestination, with potential future support for other
+      output configurations.
+    gcsDestination: The Google Cloud Storage location to write the output(s)
+      to.
+  """
+
+  batchSize = _messages.IntegerField(1, variant=_messages.Variant.INT32)
+  gcsDestination = _messages.MessageField('GcsDestination', 2)
+
+
 class Page(_messages.Message):
-  """Detected page from OCR.
+  r"""Detected page from OCR.
 
   Fields:
     blocks: List of blocks of text, images etc on this page.
-    height: Page height in pixels.
+    confidence: Confidence of the OCR results on the page. Range [0, 1].
+    height: Page height. For PDFs the unit is points. For images (including
+      TIFFs) the unit is pixels.
     property: Additional information detected on the page.
-    width: Page width in pixels.
+    width: Page width. For PDFs the unit is points. For images (including
+      TIFFs) the unit is pixels.
   """
 
   blocks = _messages.MessageField('Block', 1, repeated=True)
-  height = _messages.IntegerField(2, variant=_messages.Variant.INT32)
-  property = _messages.MessageField('TextProperty', 3)
-  width = _messages.IntegerField(4, variant=_messages.Variant.INT32)
+  confidence = _messages.FloatField(2, variant=_messages.Variant.FLOAT)
+  height = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  property = _messages.MessageField('TextProperty', 4)
+  width = _messages.IntegerField(5, variant=_messages.Variant.INT32)
 
 
 class Paragraph(_messages.Message):
-  """Structural unit of text representing a number of words in certain order.
+  r"""Structural unit of text representing a number of words in certain order.
 
   Fields:
     boundingBox: The bounding box for the paragraph. The vertices are in the
@@ -873,17 +2480,19 @@ class Paragraph(_messages.Message):
       like:      0----1      |    |      3----2   * when it's rotated 180
       degrees around the top-left corner it becomes:      2----3      |    |
       1----0   and the vertice order will still be (0, 1, 2, 3).
+    confidence: Confidence of the OCR results for the paragraph. Range [0, 1].
     property: Additional information detected for the paragraph.
     words: List of words in this paragraph.
   """
 
   boundingBox = _messages.MessageField('BoundingPoly', 1)
-  property = _messages.MessageField('TextProperty', 2)
-  words = _messages.MessageField('Word', 3, repeated=True)
+  confidence = _messages.FloatField(2, variant=_messages.Variant.FLOAT)
+  property = _messages.MessageField('TextProperty', 3)
+  words = _messages.MessageField('Word', 4, repeated=True)
 
 
 class Position(_messages.Message):
-  """A 3D position in the image, used primarily for Face detection landmarks.
+  r"""A 3D position in the image, used primarily for Face detection landmarks.
   A valid Position must have both x and y coordinates. The position
   coordinates are in the same scale as the original image.
 
@@ -899,7 +2508,7 @@ class Position(_messages.Message):
 
 
 class Property(_messages.Message):
-  """A `Property` consists of a user-supplied name/value pair.
+  r"""A `Property` consists of a user-supplied name/value pair.
 
   Fields:
     name: Name of the property.
@@ -913,7 +2522,7 @@ class Property(_messages.Message):
 
 
 class SafeSearchAnnotation(_messages.Message):
-  """Set of features pertaining to the image, computed by computer vision
+  r"""Set of features pertaining to the image, computed by computer vision
   methods over safe-search verticals (for example, adult, spoof, medical,
   violence).
 
@@ -922,6 +2531,10 @@ class SafeSearchAnnotation(_messages.Message):
       image. Adult content may contain elements such as nudity, pornographic
       images or cartoons, or sexual activities.
     MedicalValueValuesEnum: Likelihood that this is a medical image.
+    RacyValueValuesEnum: Likelihood that the request image contains racy
+      content. Racy content may include (but is not limited to) skimpy or
+      sheer clothing, strategically covered nudity, lewd or provocative poses,
+      or close-ups of sensitive body areas.
     SpoofValueValuesEnum: Spoof likelihood. The likelihood that an
       modification was made to the image's canonical version to make it appear
       funny or offensive.
@@ -933,13 +2546,17 @@ class SafeSearchAnnotation(_messages.Message):
       content may contain elements such as nudity, pornographic images or
       cartoons, or sexual activities.
     medical: Likelihood that this is a medical image.
+    racy: Likelihood that the request image contains racy content. Racy
+      content may include (but is not limited to) skimpy or sheer clothing,
+      strategically covered nudity, lewd or provocative poses, or close-ups of
+      sensitive body areas.
     spoof: Spoof likelihood. The likelihood that an modification was made to
       the image's canonical version to make it appear funny or offensive.
     violence: Likelihood that this image contains violent content.
   """
 
   class AdultValueValuesEnum(_messages.Enum):
-    """Represents the adult content likelihood for the image. Adult content
+    r"""Represents the adult content likelihood for the image. Adult content
     may contain elements such as nudity, pornographic images or cartoons, or
     sexual activities.
 
@@ -963,7 +2580,32 @@ class SafeSearchAnnotation(_messages.Message):
     VERY_LIKELY = 5
 
   class MedicalValueValuesEnum(_messages.Enum):
-    """Likelihood that this is a medical image.
+    r"""Likelihood that this is a medical image.
+
+    Values:
+      UNKNOWN: Unknown likelihood.
+      VERY_UNLIKELY: It is very unlikely that the image belongs to the
+        specified vertical.
+      UNLIKELY: It is unlikely that the image belongs to the specified
+        vertical.
+      POSSIBLE: It is possible that the image belongs to the specified
+        vertical.
+      LIKELY: It is likely that the image belongs to the specified vertical.
+      VERY_LIKELY: It is very likely that the image belongs to the specified
+        vertical.
+    """
+    UNKNOWN = 0
+    VERY_UNLIKELY = 1
+    UNLIKELY = 2
+    POSSIBLE = 3
+    LIKELY = 4
+    VERY_LIKELY = 5
+
+  class RacyValueValuesEnum(_messages.Enum):
+    r"""Likelihood that the request image contains racy content. Racy content
+    may include (but is not limited to) skimpy or sheer clothing,
+    strategically covered nudity, lewd or provocative poses, or close-ups of
+    sensitive body areas.
 
     Values:
       UNKNOWN: Unknown likelihood.
@@ -985,7 +2627,7 @@ class SafeSearchAnnotation(_messages.Message):
     VERY_LIKELY = 5
 
   class SpoofValueValuesEnum(_messages.Enum):
-    """Spoof likelihood. The likelihood that an modification was made to the
+    r"""Spoof likelihood. The likelihood that an modification was made to the
     image's canonical version to make it appear funny or offensive.
 
     Values:
@@ -1008,7 +2650,7 @@ class SafeSearchAnnotation(_messages.Message):
     VERY_LIKELY = 5
 
   class ViolenceValueValuesEnum(_messages.Enum):
-    """Likelihood that this image contains violent content.
+    r"""Likelihood that this image contains violent content.
 
     Values:
       UNKNOWN: Unknown likelihood.
@@ -1031,12 +2673,13 @@ class SafeSearchAnnotation(_messages.Message):
 
   adult = _messages.EnumField('AdultValueValuesEnum', 1)
   medical = _messages.EnumField('MedicalValueValuesEnum', 2)
-  spoof = _messages.EnumField('SpoofValueValuesEnum', 3)
-  violence = _messages.EnumField('ViolenceValueValuesEnum', 4)
+  racy = _messages.EnumField('RacyValueValuesEnum', 3)
+  spoof = _messages.EnumField('SpoofValueValuesEnum', 4)
+  violence = _messages.EnumField('ViolenceValueValuesEnum', 5)
 
 
 class StandardQueryParameters(_messages.Message):
-  """Query parameters accepted by all methods.
+  r"""Query parameters accepted by all methods.
 
   Enums:
     FXgafvValueValuesEnum: V1 error format.
@@ -1065,7 +2708,7 @@ class StandardQueryParameters(_messages.Message):
   """
 
   class AltValueValuesEnum(_messages.Enum):
-    """Data format for response.
+    r"""Data format for response.
 
     Values:
       json: Responses with Content-Type of application/json
@@ -1077,7 +2720,7 @@ class StandardQueryParameters(_messages.Message):
     proto = 2
 
   class FXgafvValueValuesEnum(_messages.Enum):
-    """V1 error format.
+    r"""V1 error format.
 
     Values:
       _1: v1 error format
@@ -1103,7 +2746,7 @@ class StandardQueryParameters(_messages.Message):
 
 
 class Status(_messages.Message):
-  """The `Status` type defines a logical error model that is suitable for
+  r"""The `Status` type defines a logical error model that is suitable for
   different programming environments, including REST APIs and RPC APIs. It is
   used by [gRPC](https://github.com/grpc). The error model is designed to be:
   - Simple to use and understand for most users - Flexible enough to meet
@@ -1151,7 +2794,7 @@ class Status(_messages.Message):
 
   @encoding.MapUnrecognizedFields('additionalProperties')
   class DetailsValueListEntry(_messages.Message):
-    """A DetailsValueListEntry object.
+    r"""A DetailsValueListEntry object.
 
     Messages:
       AdditionalProperty: An additional property for a DetailsValueListEntry
@@ -1163,7 +2806,7 @@ class Status(_messages.Message):
     """
 
     class AdditionalProperty(_messages.Message):
-      """An additional property for a DetailsValueListEntry object.
+      r"""An additional property for a DetailsValueListEntry object.
 
       Fields:
         key: Name of the additional property.
@@ -1181,7 +2824,7 @@ class Status(_messages.Message):
 
 
 class Symbol(_messages.Message):
-  """A single symbol representation.
+  r"""A single symbol representation.
 
   Fields:
     boundingBox: The bounding box for the symbol. The vertices are in the
@@ -1192,17 +2835,19 @@ class Symbol(_messages.Message):
       like:      0----1      |    |      3----2   * when it's rotated 180
       degrees around the top-left corner it becomes:      2----3      |    |
       1----0   and the vertice order will still be (0, 1, 2, 3).
+    confidence: Confidence of the OCR results for the symbol. Range [0, 1].
     property: Additional information detected for the symbol.
     text: The actual UTF-8 representation of the symbol.
   """
 
   boundingBox = _messages.MessageField('BoundingPoly', 1)
-  property = _messages.MessageField('TextProperty', 2)
-  text = _messages.StringField(3)
+  confidence = _messages.FloatField(2, variant=_messages.Variant.FLOAT)
+  property = _messages.MessageField('TextProperty', 3)
+  text = _messages.StringField(4)
 
 
 class TextAnnotation(_messages.Message):
-  """TextAnnotation contains a structured representation of OCR extracted
+  r"""TextAnnotation contains a structured representation of OCR extracted
   text. The hierarchy of an OCR extracted text structure is like this:
   TextAnnotation -> Page -> Block -> Paragraph -> Word -> Symbol Each
   structural component, starting from Page, may further have their own
@@ -1220,7 +2865,7 @@ class TextAnnotation(_messages.Message):
 
 
 class TextProperty(_messages.Message):
-  """Additional information detected on the structural component.
+  r"""Additional information detected on the structural component.
 
   Fields:
     detectedBreak: Detected start or end of a text segment.
@@ -1232,8 +2877,8 @@ class TextProperty(_messages.Message):
 
 
 class Vertex(_messages.Message):
-  """A vertex represents a 2D point in the image. NOTE: the vertex coordinates
-  are in the same scale as the original image.
+  r"""A vertex represents a 2D point in the image. NOTE: the vertex
+  coordinates are in the same scale as the original image.
 
   Fields:
     x: X coordinate.
@@ -1244,10 +2889,70 @@ class Vertex(_messages.Message):
   y = _messages.IntegerField(2, variant=_messages.Variant.INT32)
 
 
-class WebDetection(_messages.Message):
-  """Relevant information for the image from the Internet.
+class VisionLocationsOperationsGetRequest(_messages.Message):
+  r"""A VisionLocationsOperationsGetRequest object.
 
   Fields:
+    name: The name of the operation resource.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class VisionOperationsCancelRequest(_messages.Message):
+  r"""A VisionOperationsCancelRequest object.
+
+  Fields:
+    cancelOperationRequest: A CancelOperationRequest resource to be passed as
+      the request body.
+    name: The name of the operation resource to be cancelled.
+  """
+
+  cancelOperationRequest = _messages.MessageField('CancelOperationRequest', 1)
+  name = _messages.StringField(2, required=True)
+
+
+class VisionOperationsDeleteRequest(_messages.Message):
+  r"""A VisionOperationsDeleteRequest object.
+
+  Fields:
+    name: The name of the operation resource to be deleted.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class VisionOperationsGetRequest(_messages.Message):
+  r"""A VisionOperationsGetRequest object.
+
+  Fields:
+    name: The name of the operation resource.
+  """
+
+  name = _messages.StringField(1, required=True)
+
+
+class VisionOperationsListRequest(_messages.Message):
+  r"""A VisionOperationsListRequest object.
+
+  Fields:
+    filter: The standard list filter.
+    name: The name of the operation's parent resource.
+    pageSize: The standard list page size.
+    pageToken: The standard list page token.
+  """
+
+  filter = _messages.StringField(1)
+  name = _messages.StringField(2, required=True)
+  pageSize = _messages.IntegerField(3, variant=_messages.Variant.INT32)
+  pageToken = _messages.StringField(4)
+
+
+class WebDetection(_messages.Message):
+  r"""Relevant information for the image from the Internet.
+
+  Fields:
+    bestGuessLabels: Best guess text labels for the request image.
     fullMatchingImages: Fully matching images from the Internet. Can include
       resized copies of the query image.
     pagesWithMatchingImages: Web pages containing the matching images from the
@@ -1259,15 +2964,27 @@ class WebDetection(_messages.Message):
     webEntities: Deduced entities from similar images on the Internet.
   """
 
-  fullMatchingImages = _messages.MessageField('WebImage', 1, repeated=True)
-  pagesWithMatchingImages = _messages.MessageField('WebPage', 2, repeated=True)
-  partialMatchingImages = _messages.MessageField('WebImage', 3, repeated=True)
-  visuallySimilarImages = _messages.MessageField('WebImage', 4, repeated=True)
-  webEntities = _messages.MessageField('WebEntity', 5, repeated=True)
+  bestGuessLabels = _messages.MessageField('WebLabel', 1, repeated=True)
+  fullMatchingImages = _messages.MessageField('WebImage', 2, repeated=True)
+  pagesWithMatchingImages = _messages.MessageField('WebPage', 3, repeated=True)
+  partialMatchingImages = _messages.MessageField('WebImage', 4, repeated=True)
+  visuallySimilarImages = _messages.MessageField('WebImage', 5, repeated=True)
+  webEntities = _messages.MessageField('WebEntity', 6, repeated=True)
+
+
+class WebDetectionParams(_messages.Message):
+  r"""Parameters for web detection request.
+
+  Fields:
+    includeGeoResults: Whether to include results derived from the geo
+      information in the image.
+  """
+
+  includeGeoResults = _messages.BooleanField(1)
 
 
 class WebEntity(_messages.Message):
-  """Entity deduced from similar images on the Internet.
+  r"""Entity deduced from similar images on the Internet.
 
   Fields:
     description: Canonical description of the entity, in English.
@@ -1282,7 +2999,7 @@ class WebEntity(_messages.Message):
 
 
 class WebImage(_messages.Message):
-  """Metadata for online images.
+  r"""Metadata for online images.
 
   Fields:
     score: (Deprecated) Overall relevancy score for the image.
@@ -1293,20 +3010,43 @@ class WebImage(_messages.Message):
   url = _messages.StringField(2)
 
 
-class WebPage(_messages.Message):
-  """Metadata for web pages.
+class WebLabel(_messages.Message):
+  r"""Label to provide extra metadata for the web detection.
 
   Fields:
+    label: Label for extra metadata.
+    languageCode: The BCP-47 language code for `label`, such as "en-US" or
+      "sr-Latn". For more information, see
+      http://www.unicode.org/reports/tr35/#Unicode_locale_identifier.
+  """
+
+  label = _messages.StringField(1)
+  languageCode = _messages.StringField(2)
+
+
+class WebPage(_messages.Message):
+  r"""Metadata for web pages.
+
+  Fields:
+    fullMatchingImages: Fully matching images on the page. Can include resized
+      copies of the query image.
+    pageTitle: Title for the web page, may contain HTML markups.
+    partialMatchingImages: Partial matching images on the page. Those images
+      are similar enough to share some key-point features. For example an
+      original image will likely have partial matching for its crops.
     score: (Deprecated) Overall relevancy score for the web page.
     url: The result web page URL.
   """
 
-  score = _messages.FloatField(1, variant=_messages.Variant.FLOAT)
-  url = _messages.StringField(2)
+  fullMatchingImages = _messages.MessageField('WebImage', 1, repeated=True)
+  pageTitle = _messages.StringField(2)
+  partialMatchingImages = _messages.MessageField('WebImage', 3, repeated=True)
+  score = _messages.FloatField(4, variant=_messages.Variant.FLOAT)
+  url = _messages.StringField(5)
 
 
 class Word(_messages.Message):
-  """A word representation.
+  r"""A word representation.
 
   Fields:
     boundingBox: The bounding box for the word. The vertices are in the order
@@ -1317,14 +3057,16 @@ class Word(_messages.Message):
       like:      0----1      |    |      3----2   * when it's rotated 180
       degrees around the top-left corner it becomes:      2----3      |    |
       1----0   and the vertice order will still be (0, 1, 2, 3).
+    confidence: Confidence of the OCR results for the word. Range [0, 1].
     property: Additional information detected for the word.
     symbols: List of symbols in the word. The order of the symbols follows the
       natural reading order.
   """
 
   boundingBox = _messages.MessageField('BoundingPoly', 1)
-  property = _messages.MessageField('TextProperty', 2)
-  symbols = _messages.MessageField('Symbol', 3, repeated=True)
+  confidence = _messages.FloatField(2, variant=_messages.Variant.FLOAT)
+  property = _messages.MessageField('TextProperty', 3)
+  symbols = _messages.MessageField('Symbol', 4, repeated=True)
 
 
 encoding.AddCustomJsonFieldMapping(
