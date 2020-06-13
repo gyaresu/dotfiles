@@ -119,14 +119,14 @@ alias c='clear'
 #export PATH="/Users/gyaresu/miniconda2/bin:$PATH"
 
 # added by Miniconda3 installer
-export PATH="/Users/gyaresu/miniconda3/bin:$PATH"
+#export PATH="/Users/gyaresu/miniconda3/bin:$PATH"
 
 # conda python setup alias
-ml () {
-  cd ~/programming/insights
-  source activate ml
-  jupyter lab
-}
+#ml () {
+#  cd ~/programming/insights
+#  source activate ml
+#  jupyter lab
+#}
 
 test () {
   echo "one"
