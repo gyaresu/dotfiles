@@ -144,8 +144,8 @@ set mouse=a
 
 " http://ethanschoonover.com/solarized/vim-colors-solarized
 set background=dark
-"colorscheme solarized
-colorscheme base16-default-dark
+colorscheme mustang
+"colorscheme base16-default-dark
 "colorscheme Solarized
 
 " osx copy/paste
