@@ -27,8 +27,10 @@ export PKG_CONFIG_PATH=/opt/X11/lib/pkgconfig
 # Look in ~/.oh-my-zsh/themes/
 # Optionally, if you set this to "random", it'll load a random theme each
 # time that oh-my-zsh is loaded.
-ZSH_THEME="pygmalion"
-#ZSH_THEME="agnoster"
+#ZSH_THEME="pygmalion"
+ZSH_THEME="dstufft"
+#ZSH_THEME="dogenpunk"
+#ZSH_THEME="cloud"
 
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
