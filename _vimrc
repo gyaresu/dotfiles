@@ -1,29 +1,112 @@
 " Of course
 set nocompatible
+syntax on
+filetype off
 
 " Required Vundle setup
-filetype off
-set runtimepath+=~/.vim/bundle/vundle
-call vundle#rc()
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
 
-Bundle 'gmarik/vundle'
-Bundle 'davidhalter/jedi-vim'
-Bundle 'scrooloose/nerdtree'
-Bundle "myusuf3/numbers.vim"
-Bundle 'rodjek/vim-puppet'
-Bundle 'scrooloose/syntastic'
-Bundle 'godlygeek/tabular'
-"Bundle 'altercation/vim-colors-solarized'
-"Bundle 'dbb/vim-gummybears-colorscheme'
-Bundle 'nanotech/jellybeans.vim'
-Bundle 'jelera/vim-javascript-syntax'
-Bundle 'Lokaltog/vim-powerline'
-Bundle 'tpope/vim-surround'
+" let Vundle manage Vundle, required
+Plugin 'VundleVim/Vundle.vim'
+Plugin 'davidhalter/jedi-vim'
+Plugin 'scrooloose/nerdtree'
+Plugin 'jistr/vim-nerdtree-tabs'
+Plugin 'myusuf3/numbers.vim'
+Plugin 'rodjek/vim-puppet'
+Plugin 'scrooloose/syntastic'
+Plugin 'godlygeek/tabular'
+Plugin 'nanotech/jellybeans.vim'
+Plugin 'Lokaltog/vim-powerline'
+Plugin 'tpope/vim-surround'
+Plugin 'elzr/vim-json'
+Plugin 'chriskempson/base16-vim'
+Plugin 'rizzatti/dash.vim' " https://github.com/rizzatti/dash.vim#readme
+" plugin for opening header files automatically
+" Simply type :AT to open up the alternate file
+" (i.e., cache.h)
+Plugin 'vim-scripts/a.vim'
+" https://github.com/jez/vim-as-an-ide/commit/1e5757e2e76acda61d02d27af38d8c6b531cbc05
+" git add                  --> :Gwrite
+" git commit               --> :Gcommit
+" git push                 --> :Gpush
+" git checkout <file name> --> :Gread
+" git blame                --> :Gblame
+Plugin 'airblade/vim-gitgutter'
+Plugin 'tpope/vim-fugitive'
+Plugin 'Raimondi/delimitMate'
+Plugin 'jez/vim-superman'
+Plugin 'christoomey/vim-tmux-navigator'
+Plugin 'sheerun/vim-polyglot'
+Plugin 'Valloric/YouCompleteMe'
+"Plugin 'Solarized'
+Plugin 'altercation/vim-colors-solarized'
+Plugin 'vim-airline/vim-airline'
+Plugin 'vim-airline/vim-airline-themes'
+call vundle#end()
+filetype plugin indent on
+
+" --- General Settings ---
+
+" --- Airline Themes ---
+let g:airline_theme='powerlineish'
+
+" --- YouCompleteMe Settings ---
+let g:ycm_global_ycm_extra_conf = '~/.ycm_extra_conf.py'
+
+" ----- jez/vim-superman settings -----
+" better man page support
+noremap K :SuperMan <cword><CR>
+
+" https://github.com/junegunn/fzf
+set rtp+=~/.fzf
+
+" --- delimitMate settings ---
+let delimitMate_expand_cr = 1
+augroup mydelimitMate
+  au!
+  au FileType markdown let b:delimitMate_nesting_quotes = ["`"]
+  au FileType tex let b:delimitMate_quotes = ""
+  au FileType tex let b:delimitMate_matchpairs = "(:),[:],{:},`:'"
+  au FileType python let b:delimitMate_nesting_quotes = ['"', "'"]
+augroup END
+
+" NERDTree and NERDTree tabs
+" https://github.com/jez/vim-as-an-ide/commit/b7ff90c6ca88c97398fd9457ae7ffcab41a079e9
+let g:airline#extensions#tabline#enabled = 1
+let g:nerdtree_tabs_open_on_console_startup = 0
+
+" Uncomment to open tagbar automatically whenever possible
+" autocmd BufEnter * nested :call tagbar#autoopen(0)
+
+" ----- airblade/vim-gitgutter settings -----
+" Required after having changed the colorscheme
+hi clear SignColumn
+" In vim-airline, only display "hunks" if the diff is non-zero
+let g:airline#extensions#hunks#non_zero_only = 1
+
+" Javascript Syntax
+"let g:syntastic_javascript_checkers='jshint'
+
+" --- scrooloose/syntastic settings ---
+let g:syntastic_error_symbol = '✘'
+let g:syntastic_warning_symbol = "▲"
+augroup mySyntastic
+  au!
+  au FileType tex let b:syntastic_mode = "passive"
+augroup END
+
+function! ESLintArgs()
+    let rules = findfile('.eslintrules', '.;')
+    return rules != '' ? '--rulesdir ' . shellescape(fnamemodify(rules, ':p:h')) : ''
+endfunction
+
+autocmd FileType javascript let b:syntastic_javascript_eslint_args = ESLintArgs()
 
 " Let's figure fuzzyfinder and it's deps out later
-"Bundle 'L9'
-"Bundle 'FuzzyFinder'
-"Bundle 'Align'
+"Plugin 'L9'
+"Plugin 'FuzzyFinder'
+"Plugin 'Align'
 
 "" START SirVer/ultisnips
  
@@ -43,20 +126,15 @@ let g:UltiSnipsEditSplit="vertical"
 
 "" END SirVer/ultisnips
 
-" Plugins
-Plugin 'elzr/vim-json'
-
 " http://learnvimscriptthehardway.stevelosh.com/chapters/10.html
 " https://danielmiessler.com/blog/enhancements-to-shell-and-vim-productivity/
-inoremap jj <ESC>
-"
+inoremap jk <ESC>
+
 " https://github.com/tpope/vim-pathogen
 "call pathogen#infect()
 
 "This bellow is to support 256 color terminal with syntax highlighting
 set t_Co=256
-syntax on
-filetype plugin indent on
 
 " Enable mouse in the terminal
 set mouse=a
@@ -66,9 +144,9 @@ set mouse=a
 
 " http://ethanschoonover.com/solarized/vim-colors-solarized
 set background=dark
-colorscheme jellybeans
-"colorscheme gummybears
-"colorscheme monokai
+colorscheme mustang
+"colorscheme base16-default-dark
+"colorscheme Solarized
 
 " osx copy/paste
 set clipboard=unnamed
@@ -146,6 +224,16 @@ set encoding=utf8
 " Map SPACE to remove search highlighting
 nmap <SPACE> <SPACE>:noh<CR>
 
+" Commenting blocks of code.
+autocmd FileType c,cpp,java,scala let b:comment_leader = '// '
+autocmd FileType sh,ruby,python   let b:comment_leader = '# '
+autocmd FileType conf,fstab       let b:comment_leader = '# '
+autocmd FileType tex              let b:comment_leader = '% '
+autocmd FileType mail             let b:comment_leader = '> '
+autocmd FileType vim              let b:comment_leader = '" '
+noremap <silent> ,cc :<C-B>silent <C-E>s/^/<C-R>=escape(b:comment_leader,'\/')<CR>/<CR>:nohlsearch<CR>
+noremap <silent> ,cu :<C-B>silent <C-E>s/^\V<C-R>=escape(b:comment_leader,'\/')<CR>//e<CR>:nohlsearch<CR>'
+
 " No backups. Most stuff is in git.
 set nobackup
 set nowb
@@ -157,8 +245,8 @@ set expandtab
 set smarttab
 "set shiftwidth=2
 "set tabstop=2
-set shiftwidth=4
-set tabstop=4
+set shiftwidth=2
+set tabstop=2
 set lbr
 set tw=500
 set ai "Auto indent

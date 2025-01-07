@@ -8,7 +8,7 @@
 
 dir=~/dotfiles                    # dotfiles directory
 olddir=~/dotfiles_old             # old dotfiles backup directory
-files="bashrc vimrc vim zshrc"    # list of files/folders to symlink in homedir
+files=".bashrc .vimrc vim .zshrc .tmux.conf"    # list of files/folders to symlink in homedir
 
 ##########
 
@@ -25,7 +25,13 @@ echo "...done"
 # move any existing dotfiles in homedir to dotfiles_old directory, then create symlinks 
 for file in $files; do
     echo "Moving any existing dotfiles from ~ to $olddir"
-    mv ~/.$file ~/dotfiles_old/
+    mv ~/$file ~/dotfiles_old/
     echo "Creating symlink to $file in home directory."
     ln -s $dir/_$file ~/.$file
 done
+
+# install Vundle Plugins
+echo "Installing Vundle. Now just open vim and do :PluginInstall"
+git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
+echo "...done"
+

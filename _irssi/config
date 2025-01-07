@@ -1,8 +1,8 @@
 servers = (
   {
-    address = "irc.freenode.net";
-    chatnet = "freenode";
-    port = "7000";
+    address = "104.236.161.134";
+    chatnet = "asdf";
+    port = "12345";
     use_ssl = "yes";
     ssl_verify = "yes";
     ssl_capath = "~/.irssi/ssl";
