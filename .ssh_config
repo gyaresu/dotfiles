@@ -1,0 +1,201 @@
+Host *
+    UseKeychain yes
+
+Host bigrig
+    Hostname 192.168.1.2
+    Port 22
+    User me
+
+Host devnet
+  #Hostname 207.216.160.178
+  # Hostname 207.194.135.24
+  #  Hostname 207.194.135.6
+  #  Hostname 207.194.135.63
+  #  Hostname 207.194.135.51
+    Hostname 206.116.57.79
+    Port 22
+    User gareth
+
+Host conman
+    Hostname conman.nli.gl3
+    Port 22
+    User gareth
+
+Host pi
+    Hostname raspberrypi.local
+    Port 22
+    User pi
+    IdentityFile ~/.ssh/id_rsa
+
+Host monster
+    Hostname 192.168.2.4
+    Port 22
+    User gyaresu
+    IdentityFile ~/.ssh/id_rsa
+
+Host pibrella
+    Hostname 192.168.2.5
+    Port  22
+    User pi
+    IdentityFile ~/.ssh/id_rsa
+
+Host openiam
+    Hostname 188.226.195.133
+    Port 22
+    User root
+    IdentityFile ~/.ssh/id_rsa
+
+Host textual
+    Hostname 95.85.29.138
+    LocalForward 6667 127.0.0.1:6667
+    Port 42
+    User root
+    IdentityFile ~/.ssh/id_rsa
+
+Host vsphere
+    Hostname zaphod.int.gl3
+    Port 22
+    LocalForward 2001 10.1.200.40:3389
+    User gareth
+
+Host seareach
+    Hostname 95.85.29.138
+    Port 42
+    User root
+
+Host 42
+    Hostname 42ninjas.net
+    Port 42
+    User gyaresu
+
+Host ec2
+    Hostname ec2-107-20-61-89.compute-1.amazonaws.com
+    Port 22
+    User root
+    IdentityFile ~/.ssh/gyaresuKey.pem
+
+Host webtraining
+    Hostname webtraining.com.au
+    Port 22
+    User gyaresu
+
+Host centos
+    Hostname 192.168.56.2
+    Port 22
+    User root
+
+Host gpiserver
+    Hostname gpiserver.int.gl3
+    Port 22
+    User gareth
+
+Host gateway
+    Hostname 192.168.200.17
+    Port 22
+    User root
+
+Host bb
+    Hostname bb.int.gl3
+    Port 22
+    User root
+
+Host bbx
+    Hostname bbx.int.gl3
+    Port 22
+    User root
+
+Host ghidorah
+    Hostname 192.168.200.31
+    Port 22
+    User helpme
+
+Host india
+    Hostname 192.168.91.2
+    Port 22
+    User root
+
+Host czech
+    Hostname 192.168.42.4
+    Port 22
+    User root
+
+Host bob
+    Hostname localhost
+    Port 14395
+    User vi-admin
+
+Host zaphod
+    Hostname 192.168.200.1
+    Port 22 
+    User gareth
+
+Host cacti
+    Hostname 192.168.200.252
+    Port 22
+    User gareth
+
+Host frances
+    Hostname frances.raywalker.it
+    Port 42
+    User gyaresu
+
+Host james
+    Hostname james.raywalker.it
+    Port 42
+    User gyaresu
+
+Host bean
+    Hostname bean.raywalker.it
+    Port 42
+    User gyaresu
+
+Host asdf
+    Hostname 104.236.161.134
+    Port 42
+    User gyaresu
+
+Host debian
+    Hostname debian.local
+    Port 22 
+    User gareth
+
+Host odroid
+    Hostname 192.168.0.124
+    Port 22
+    User root
+
+Host intel
+    Hostname 192.168.178.30
+    Port 22
+    User annette
+
+Host snow
+    Hostname 192.168.212.168
+    Port 22
+    User raven
+
+Host raven
+    Hostname 192.168.212.167
+    Port 22
+    User raven
+
+Host gnuradio
+    Hostname 192.168.0.162
+    Port 22
+    User gareth
+
+Host streisand
+    Hostname 159.203.244.119
+    User forward
+    Port 22
+    IdentityFile ~/.ssh/streisand_rsa
+
+Host gparabic
+    Hostname greenpeacearabic.org
+    User me
+    Port 22
+
+Host doorbox
+    Hostname 192.168.190.151
+    User doorcam
+    Port 22
