@@ -1,5 +1,5 @@
 [user]
-	email = me@gareth.codes
+	email = gareth@passbolt.com
 	name = Gareth
 	username = gyaresu
 [credential]
@@ -33,3 +33,14 @@
 	lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
 [gui]
 	recentrepo = /Users/gyaresu/programming/stm32-discovery
+[init]
+	defaultBranch = main
+
+[user]
+	signingkey = E913F9DDAE27E8C20F4BDE4B6504DA502B9816F2
+[gpg "ssh"]
+    program = "/Applications/1Password.app/Contents/MacOS/op-ssh-sign"
+
+[commit]
+	gpgsign = true
+

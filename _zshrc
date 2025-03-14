@@ -11,8 +11,17 @@ export PATH="$HOME/bin:/opt/homebrew/bin:$PATH"
 # Path to your oh-my-zsh installation.
 export ZSH="/Users/gareth/.oh-my-zsh"
 
+# Brew warning about cache clean
+export HOMEBREW_NO_ENV_HINTS=1
+
+# alias for updating/upgrading brew
+alias brewup="brew update && brew upgrade"
+
+# alis for UTM.app server command
+alias utm="utmctl"
+
 # Powerlevel10k
-typeset -g POWERLEVEL9K_INSTANT_PROMPT=quiet
+#typeset -g POWERLEVEL9K_INSTANT_PROMPT=quiet
 
 # Python Brew path
 export PATH="/usr/local/opt/python/libexec/bin:$PATH"
@@ -21,7 +30,7 @@ export PATH="/usr/local/opt/python/libexec/bin:$PATH"
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
 #ZSH_THEME="robbyrussell"
-ZSH_THEME="powerlevel10k/powerlevel10k"
+#ZSH_THEME="powerlevel10k/powerlevel10k"
 
 # curl function to see domain certificates
 function seecert () {
@@ -90,7 +99,8 @@ export PATH="/Users/gareth/go/bin:$PATH"
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git)
+plugins=(git virtualenv)
+#POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=(status virtualenv)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -120,6 +130,9 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
+# clear screen with control + l
+bindkey "^L" clear-screen
+
 # mvim is a replacement as vim
 alias vim="mvim -v"
 alias vi="mvim -v"
@@ -129,6 +142,12 @@ alias vi="mvim -v"
 # brew install chruby ruby-install
 source /opt/homebrew/opt/chruby/share/chruby/chruby.sh
 source /opt/homebrew/opt/chruby/share/chruby/auto.sh
+
+# 1Password ssh agent
+export SSH_AUTH_SOCK=~/Library/Group\ Containers/2BUA8C4S2C.com.1password/t/agent.sock
+
+# vagrant aliases
+alias vm="cd ~/code/support-tools/infra && VAGRANT_DEFAULT_PROVIDER=parallels ./run-vagrant.sh"
 
 # pip search
 # https://github.com/victorgarric/pip_search
@@ -154,3 +173,13 @@ complete -o nospace -C /opt/homebrew/bin/terraform terraform
 
 # Created by `pipx` on 2024-11-05 07:41:51
 export PATH="$PATH:/Users/gareth/.local/bin"
+
+# 2025-01-23 removing powerlevel10k
+eval "$(starship init zsh)"
+
+# Hishtory Config:
+export PATH="$PATH:/Users/gareth/.hishtory"
+source /Users/gareth/.hishtory/config.zsh
+
+test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
+

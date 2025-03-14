@@ -241,12 +241,12 @@ set noswapfile
 
 " text, tab and indent
 set expandtab
-"set softtabstop=4 " makes the spaces feel like real tabs
+set softtabstop=4 " makes the spaces feel like real tabs
 set smarttab
 "set shiftwidth=2
 "set tabstop=2
-set shiftwidth=2
-set tabstop=2
+set shiftwidth=4
+set tabstop=4
 set lbr
 set tw=500
 set ai "Auto indent
@@ -289,6 +289,8 @@ set laststatus=2
 
 " Format the status line
 "set statusline=\ %{HasPaste()}%F%m%r%h\ %w\ \ CWD:\ %r%{getcwd()}%h\ \ \ Line:\ %l
+"set statusline=%#PmenuSel#\ %F\ %m%r%h%w\ %#LineNr#CWD:\ %r%{getcwd()}%h\ %#CursorLineNr#Line:\ %l/%L\ Col:\ %c
+
 
 function! HasPaste()
     if &paste
