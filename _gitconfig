@@ -9,7 +9,7 @@
 	default = matching
 [core]
 	excludesfile = /Users/gyaresu/.gitignore_global
-	editor = /usr/bin/vim
+	editor = /Users/gareth/bin/mvim-editor.sh
 [difftool "sourcetree"]
 	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
 	path = 

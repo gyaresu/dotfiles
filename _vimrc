@@ -12,7 +12,7 @@ Plugin 'VundleVim/Vundle.vim'
 Plugin 'davidhalter/jedi-vim'
 Plugin 'scrooloose/nerdtree'
 Plugin 'jistr/vim-nerdtree-tabs'
-Plugin 'myusuf3/numbers.vim'
+"Plugin 'myusuf3/numbers.vim'
 Plugin 'rodjek/vim-puppet'
 Plugin 'scrooloose/syntastic'
 Plugin 'godlygeek/tabular'
@@ -38,7 +38,7 @@ Plugin 'Raimondi/delimitMate'
 Plugin 'jez/vim-superman'
 Plugin 'christoomey/vim-tmux-navigator'
 Plugin 'sheerun/vim-polyglot'
-Plugin 'Valloric/YouCompleteMe'
+"Plugin 'Valloric/YouCompleteMe'
 "Plugin 'Solarized'
 Plugin 'altercation/vim-colors-solarized'
 Plugin 'vim-airline/vim-airline'
@@ -50,6 +50,8 @@ filetype plugin indent on
 
 " --- Airline Themes ---
 let g:airline_theme='powerlineish'
+let g:airline_powerline_fonts = 1
+
 
 " --- YouCompleteMe Settings ---
 let g:ycm_global_ycm_extra_conf = '~/.ycm_extra_conf.py'
@@ -219,7 +221,9 @@ set novisualbell
 set t_vb=
 set tm=500
 
-set encoding=utf8
+" Set encoding for Vim 2025-03-26
+set encoding=utf-8
+set termencoding=utf-8
 
 " Map SPACE to remove search highlighting
 nmap <SPACE> <SPACE>:noh<CR>

@@ -90,6 +90,7 @@ export PATH="/Users/gareth/go/bin:$PATH"
 # or set a custom format using the strftime function format specifications,
 # see 'man strftime' for details.
 # HIST_STAMPS="mm/dd/yyyy"
+HIST_STAMPS="yyyy-mm-dd"
 
 # Would you like to use another custom folder than $ZSH/custom?
 # ZSH_CUSTOM=/path/to/new-custom-folder
@@ -118,6 +119,11 @@ source $ZSH/oh-my-zsh.sh
 #   export EDITOR='mvim'
 # fi
 
+mvim_editor() {
+    mvim -v "$@"
+}
+export EDITOR=mvim_editor
+
 # Compilation flags
 # export ARCHFLAGS="-arch x86_64"
 
@@ -134,8 +140,8 @@ source $ZSH/oh-my-zsh.sh
 bindkey "^L" clear-screen
 
 # mvim is a replacement as vim
-alias vim="mvim -v"
-alias vi="mvim -v"
+#alias vim="mvim -v"
+#alias vi="mvim -v"
 
 # 2023-05-07
 # Adding options for ruby
