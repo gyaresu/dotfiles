@@ -1,3 +1,5 @@
+Include /Users/gareth/.colima/ssh_config
+
 Host *
     UseKeychain yes
 
