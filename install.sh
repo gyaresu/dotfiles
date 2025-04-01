@@ -64,9 +64,10 @@ if [ ! -d "$HOME/.hishtory" ]; then
     if [[ "$OSTYPE" == "darwin"* ]]; then
         brew install hishtory
     else
-        # Download hishtory binary
-        curl -sS https://hishtory.dev/install.sh | sh
+        # Download and run hishtory installer
+        curl https://hishtory.dev/install.py | python3 -
     fi
+    echo "Note: After installation, you need to run 'hishtory init $YOUR_HISHTORY_SECRET' to set up your hishtory account"
 fi
 
 # Set zsh as default shell if not already
