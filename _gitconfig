@@ -4,7 +4,7 @@
 	username = gyaresu
 
 [credential]
-	helper = osxkeychain
+	helper = cache
 
 [alias]
 [push]
@@ -12,7 +12,7 @@
 
 [core]
 	excludesfile = $HOME/.gitignore_global
-	editor = $HOME/bin/mvim-editor.sh
+	editor = vim
 
 [filter "lfs"]
 	clean = git-lfs clean -- %f
