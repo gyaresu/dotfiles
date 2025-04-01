@@ -150,9 +150,9 @@ Host bean
     User gyaresu
 
 Host asdf
-    Hostname 104.236.161.134
-    Port 42
-    User gyaresu
+    Hostname static.154.136.69.159.clients.your-server.de
+    Port 22
+    User gareth
 
 Host debian
     Hostname debian.local
