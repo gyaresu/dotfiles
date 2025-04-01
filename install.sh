@@ -30,6 +30,52 @@ if [ ! -f "$(basename "$0")" ]; then
     exit 1
 fi
 
+# Check if zsh is installed
+if ! command -v zsh &> /dev/null; then
+    echo "Installing zsh..."
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        brew install zsh
+    else
+        sudo apt-get update
+        sudo apt-get install -y zsh
+    fi
+fi
+
+# Install Oh My Zsh if not already installed
+if [ ! -d "$HOME/.oh-my-zsh" ]; then
+    echo "Installing Oh My Zsh..."
+    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+fi
+
+# Install starship if not already installed
+if ! command -v starship &> /dev/null; then
+    echo "Installing starship..."
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        brew install starship
+    else
+        # Download starship binary
+        curl -sS https://starship.rs/install.sh | sh
+    fi
+fi
+
+# Install hishtory if not already installed
+if [ ! -d "$HOME/.hishtory" ]; then
+    echo "Installing hishtory..."
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        brew install hishtory
+    else
+        # Download hishtory binary
+        curl -sS https://hishtory.dev/install.sh | sh
+    fi
+fi
+
+# Set zsh as default shell if not already
+if [ "$SHELL" != "$(which zsh)" ]; then
+    echo "Setting zsh as default shell..."
+    chsh -s $(which zsh)
+    echo "Please restart your terminal for the changes to take effect."
+fi
+
 # create dotfiles_old in homedir
 echo "Creating $olddir for backup of any existing dotfiles in ~"
 mkdir -p "$olddir"
