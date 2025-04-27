@@ -179,7 +179,7 @@ class CreateBeta(Create):
         information on time formats.
         """)
 
-    for instance_type in ('master', 'worker'):
+    for instance_type in ('main', 'worker'):
       help_msg = """\
       Attaches accelerators (e.g. GPUs) to the {instance_type}
       instance(s).
@@ -211,10 +211,10 @@ class CreateBeta(Create):
   @staticmethod
   def ValidateArgs(args):
     super(CreateBeta, CreateBeta).ValidateArgs(args)
-    if args.master_accelerator and 'type' not in args.master_accelerator:
+    if args.main_accelerator and 'type' not in args.main_accelerator:
       raise exceptions.InvalidArgumentException(
-          '--master-accelerator', 'accelerator type must be specified. '
-          'e.g. --master-accelerator type=nvidia-tesla-k80,count=2')
+          '--main-accelerator', 'accelerator type must be specified. '
+          'e.g. --main-accelerator type=nvidia-tesla-k80,count=2')
     if args.worker_accelerator and 'type' not in args.worker_accelerator:
       raise exceptions.InvalidArgumentException(
           '--worker-accelerator', 'accelerator type must be specified. '
