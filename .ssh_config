@@ -2,202 +2,134 @@ Include /Users/gareth/.colima/ssh_config
 
 Host *
     UseKeychain yes
-
-Host bigrig
-    Hostname 192.168.1.2
-    Port 22
-    User me
-
-Host devnet
-  #Hostname 207.216.160.178
-  # Hostname 207.194.135.24
-  #  Hostname 207.194.135.6
-  #  Hostname 207.194.135.63
-  #  Hostname 207.194.135.51
-    Hostname 206.116.57.79
-    Port 22
-    User gareth
-
-Host conman
-    Hostname conman.nli.gl3
-    Port 22
-    User gareth
-
-Host pi
-    Hostname raspberrypi.local
-    Port 22
-    User pi
-    IdentityFile ~/.ssh/id_rsa
-
-Host monster
-    Hostname 192.168.2.4
-    Port 22
-    User gyaresu
-    IdentityFile ~/.ssh/id_rsa
-
-Host pibrella
-    Hostname 192.168.2.5
-    Port  22
-    User pi
-    IdentityFile ~/.ssh/id_rsa
-
-Host openiam
-    Hostname 188.226.195.133
-    Port 22
-    User root
-    IdentityFile ~/.ssh/id_rsa
-
-Host textual
-    Hostname 95.85.29.138
-    LocalForward 6667 127.0.0.1:6667
-    Port 42
-    User root
-    IdentityFile ~/.ssh/id_rsa
-
-Host vsphere
-    Hostname zaphod.int.gl3
-    Port 22
-    LocalForward 2001 10.1.200.40:3389
-    User gareth
-
-Host seareach
-    Hostname 95.85.29.138
-    Port 42
-    User root
-
-Host 42
-    Hostname 42ninjas.net
-    Port 42
-    User gyaresu
-
-Host ec2
-    Hostname ec2-107-20-61-89.compute-1.amazonaws.com
-    Port 22
-    User root
-    IdentityFile ~/.ssh/gyaresuKey.pem
-
-Host webtraining
-    Hostname webtraining.com.au
-    Port 22
-    User gyaresu
-
-Host centos
-    Hostname 192.168.56.2
-    Port 22
-    User root
-
-Host gpiserver
-    Hostname gpiserver.int.gl3
-    Port 22
-    User gareth
-
-Host gateway
-    Hostname 192.168.200.17
-    Port 22
-    User root
-
-Host bb
-    Hostname bb.int.gl3
-    Port 22
-    User root
-
-Host bbx
-    Hostname bbx.int.gl3
-    Port 22
-    User root
-
-Host ghidorah
-    Hostname 192.168.200.31
-    Port 22
-    User helpme
-
-Host india
-    Hostname 192.168.91.2
-    Port 22
-    User root
-
-Host czech
-    Hostname 192.168.42.4
-    Port 22
-    User root
-
-Host bob
-    Hostname localhost
-    Port 14395
-    User vi-admin
-
-Host zaphod
-    Hostname 192.168.200.1
-    Port 22 
-    User gareth
-
-Host cacti
-    Hostname 192.168.200.252
-    Port 22
-    User gareth
-
-Host frances
-    Hostname frances.raywalker.it
-    Port 42
-    User gyaresu
-
-Host james
-    Hostname james.raywalker.it
-    Port 42
-    User gyaresu
-
-Host bean
-    Hostname bean.raywalker.it
-    Port 42
-    User gyaresu
+    ForwardAgent yes
+    IdentityAgent "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
 
 Host asdf
     Hostname static.154.136.69.159.clients.your-server.de
     Port 22
     User gareth
 
-Host debian
-    Hostname debian.local
-    Port 22 
-    User gareth
+# Base configuration for all VMs
+Host 192.168.*.* *.local
+  StrictHostKeyChecking no
+  UserKnownHostsFile /dev/null
+  IdentityFile ~/.vagrant.d/insecure_private_key
+  ForwardAgent no
 
-Host odroid
-    Hostname 192.168.0.124
-    Port 22
-    User root
+# RHEL specific configuration
+Host rhel8 rhel9 pro.rhel8.local pro.rhel9.local ce.rhel8.local ce.rhel9.local
+  Hostname 192.168.56.17
+  User vagrant
+  IdentityFile /Users/jc/.ssh/id_rhel
+  Hostkeyalgorithms rsa-sha2-512,rsa-sha2-256
 
-Host intel
-    Hostname 192.168.178.30
-    Port 22
-    User annette
+# Debian 10
+Host debian10 pro.debian10.local ce.debian10.local
+  Hostname 192.168.56.13
+  User vagrant
 
-Host snow
-    Hostname 192.168.212.168
-    Port 22
-    User raven
+# Ubuntu 20.04
+Host ubuntu2004 pro.ubuntu2004.local ce.ubuntu2004.local
+  Hostname 192.168.56.14
+  User vagrant
 
-Host raven
-    Hostname 192.168.212.167
-    Port 22
-    User raven
+# CentOS 7
+Host centos7 pro.centos7.local ce.centos7.local
+  Hostname 192.168.56.15
+  User vagrant
 
-Host gnuradio
-    Hostname 192.168.0.162
-    Port 22
-    User gareth
+# CentOS 8
+Host centos8 pro.centos8.local ce.centos8.local
+  Hostname 192.168.56.16
+  User vagrant
 
-Host streisand
-    Hostname 159.203.244.119
-    User forward
-    Port 22
-    IdentityFile ~/.ssh/streisand_rsa
+# OpenSUSE 42
+Host opensuse42 pro.opensuse42.local ce.opensuse42.local
+  Hostname 192.168.56.18
+  User vagrant
 
-Host gparabic
-    Hostname greenpeacearabic.org
-    User me
-    Port 22
+# OpenSUSE 15
+Host opensuse15 pro.opensuse15.local ce.opensuse15.local
+  Hostname 192.168.56.19
+  User vagrant
 
-Host doorbox
-    Hostname 192.168.190.151
-    User doorcam
-    Port 22
+# Rocky Linux 8
+Host rockylinux8 pro.rockylinux8.local ce.rockylinux8.local
+  Hostname 192.168.56.20
+  User vagrant
+
+# Oracle Linux 7
+Host oracle7 pro.oracle7.local ce.oracle7.local
+  Hostname 192.168.56.21
+  User vagrant
+
+# Oracle Linux 8
+Host oracle8 pro.oracle8.local ce.oracle8.local
+  Hostname 192.168.56.22
+  User vagrant
+
+# Fedora 34
+Host fedora34 pro.fedora34.local ce.fedora34.local
+  Hostname 192.168.56.23
+  User vagrant
+
+# Debian 11
+Host debian11 pro.debian11.local ce.debian11.local
+  Hostname 192.168.56.24
+  User vagrant
+
+# AlmaLinux 8
+Host almalinux8 pro.almalinux8.local ce.almalinux8.local
+  Hostname 192.168.56.25
+  User vagrant
+
+# Fedora 35
+Host fedora35 pro.fedora35.local ce.fedora35.local
+  Hostname 192.168.56.27
+  User vagrant
+
+# Red Hat 8
+Host redhat8 pro.redhat8.local ce.redhat8.local
+  Hostname 192.168.56.28
+  User vagrant
+
+# Ubuntu 22.04
+Host ubuntu2204 pro.ubuntu2204.local ce.ubuntu2204.local
+  Hostname 192.168.56.29
+  User vagrant
+
+# Red Hat 9
+Host redhat9 pro.redhat9.local ce.redhat9.local
+  Hostname 192.168.56.30
+  User vagrant
+
+# AlmaLinux 9
+Host almalinux9 pro.almalinux9.local ce.almalinux9.local
+  Hostname 192.168.56.31
+  User vagrant
+
+# Oracle Linux 9
+Host oracle9 pro.oracle9.local ce.oracle9.local
+  Hostname 192.168.56.32
+  User vagrant
+
+# Rocky Linux 9
+Host rockylinux9 pro.rockylinux9.local ce.rockylinux9.local
+  Hostname 192.168.56.33
+  User vagrant
+
+# Fedora 36
+Host fedora36 pro.fedora36.local ce.fedora36.local
+  Hostname 192.168.56.34
+  User vagrant
+
+# Debian 12
+Host debian12 pro.debian12.local ce.debian12.local
+  Hostname 192.168.56.35
+  User vagrant
+
+# Ubuntu 24.04
+Host ubuntu2404 pro.ubuntu2404.local ce.ubuntu2404.local
+  Hostname 192.168.56.36
+  User vagrant

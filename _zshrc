@@ -122,6 +122,13 @@ plugins=(git virtualenv)
 source $ZSH/oh-my-zsh.sh
 
 # User configuration
+#
+# Docker alias
+alias updown="docker compose down && docker compose up -d"
+
+# erdtree alias
+#
+alias tree="erd"
 
 # export MANPATH="/usr/local/man:$MANPATH"
 
@@ -172,6 +179,8 @@ fi
 
 # vagrant aliases
 alias vm="cd ~/code/support-tools/infra && VAGRANT_DEFAULT_PROVIDER=parallels ./run-vagrant.sh"
+alias vms="./run-vagrant.sh -a start -e debian12"
+alias vmd="./run-vagrant.sh -a destroy -e debian12"
 
 # pip search
 # https://github.com/victorgarric/pip_search
@@ -215,3 +224,4 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 fi
 
+export DOCKER_HOST=unix://${HOME}/.colima/default/docker.sock

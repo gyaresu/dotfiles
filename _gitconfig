@@ -8,7 +8,8 @@
 
 [alias]
 [push]
-	default = matching
+	default = simple
+	autosetupremote = true
 
 [core]
 	excludesfile = $HOME/.gitignore_global
@@ -30,6 +31,7 @@
     dump = cat-file -p
     a   = add -A
 	lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+	fixup = !git add -A && git commit --amend --no-edit && git push --force-with-lease
 
 [gui]
 	recentrepo = $HOME/programming/stm32-discovery

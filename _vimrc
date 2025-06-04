@@ -263,10 +263,10 @@ set nolist " list disables linebreak
 set textwidth=0
 set wrapmargin=0
 
+" The directory to store the undo history
+set undodir=~/.vim/undodir/
 " Tell vim to use an undo file
 set undofile
-" The directory to store the undo history
-set undodir=~/.vimundo/
 
 " moving
 map j gj
