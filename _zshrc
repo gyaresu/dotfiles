@@ -172,13 +172,25 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
     source /opt/homebrew/opt/chruby/share/chruby/auto.sh
 fi
 
-# 1Password ssh agent (macOS only)
+# SSH agent configuration
 if [[ "$OSTYPE" == "darwin"* ]]; then
+    # 1Password ssh agent (macOS only)
     export SSH_AUTH_SOCK=~/Library/Group\ Containers/2BUA8C4S2C.com.1password/t/agent.sock
+else
+    # Linux ssh agent
+    if [ -z "$SSH_AUTH_SOCK" ]; then
+        export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
+    fi
 fi
 
-# vagrant aliases
-alias vm="cd ~/code/support-tools/infra && VAGRANT_DEFAULT_PROVIDER=parallels ./run-vagrant.sh"
+# Vagrant configuration
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS Vagrant configuration
+    alias vm="cd ~/code/support-tools/infra && VAGRANT_DEFAULT_PROVIDER=parallels ./run-vagrant.sh"
+else
+    # Linux Vagrant configuration
+    alias vm="cd ~/code/support-tools/infra && VAGRANT_DEFAULT_PROVIDER=virtualbox ./run-vagrant.sh"
+fi
 alias vms="./run-vagrant.sh -a start -e debian12"
 alias vmd="./run-vagrant.sh -a destroy -e debian12"
 
@@ -194,19 +206,28 @@ alias pip='function _pip(){
 # rust https://rust-lang.github.io/rustup/installation/index.html
 fpath+=~/.zfunc
 
-# VSCode (macOS only)
+# VSCode configuration
 if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS VSCode path
     export PATH="/Applications/Visual Studio Code.app/Contents/Resources/app/bin:$PATH"
+else
+    # Linux VSCode path
+    export PATH="/usr/share/code/bin:$PATH"
 fi
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-# Terraform completion (macOS only)
+# Terraform completion
 if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS Terraform path
     export PATH="/opt/homebrew/sbin:$PATH"
     autoload -U +X bashcompinit && bashcompinit
     complete -o nospace -C /opt/homebrew/bin/terraform terraform
+else
+    # Linux Terraform path
+    autoload -U +X bashcompinit && bashcompinit
+    complete -o nospace -C /usr/bin/terraform terraform
 fi
 
 # Local bin path
@@ -219,9 +240,25 @@ eval "$(starship init zsh)"
 export PATH="$PATH:$HOME/.hishtory"
 source "$HOME/.hishtory/config.zsh"
 
-# iTerm2 integration (macOS only)
+# Terminal integration
 if [[ "$OSTYPE" == "darwin"* ]]; then
+    # iTerm2 integration (macOS only)
     test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
+else
+    # Linux terminal integration
+    if [ -n "$GNOME_TERMINAL_SCREEN" ]; then
+        # GNOME Terminal
+        source /etc/profile.d/vte.sh 2>/dev/null
+    fi
 fi
 
-export DOCKER_HOST=unix://${HOME}/.colima/default/docker.sock
+# Docker configuration
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS Docker configuration (Colima)
+    export DOCKER_HOST=unix://${HOME}/.colima/default/docker.sock
+else
+    # Linux Docker configuration
+    if [ -S /var/run/docker.sock ]; then
+        export DOCKER_HOST=unix:///var/run/docker.sock
+    fi
+fi

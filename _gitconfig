@@ -4,7 +4,7 @@
 	username = gyaresu
 
 [credential]
-	helper = cache
+	helper = osxkeychain
 
 [alias]
 [push]
@@ -12,8 +12,9 @@
 	autosetupremote = true
 
 [core]
-	excludesfile = $HOME/.gitignore_global
+	excludesfile = ~/.gitignore_global
 	editor = vim
+	autocrlf = input
 
 [filter "lfs"]
 	clean = git-lfs clean -- %f
@@ -32,6 +33,9 @@
     a   = add -A
 	lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
 	fixup = !git add -A && git commit --amend --no-edit && git push --force-with-lease
+	unstage = reset HEAD --
+	last = log -1 HEAD
+	visual = !gitk
 
 [gui]
 	recentrepo = $HOME/programming/stm32-discovery
@@ -45,6 +49,43 @@
 [commit]
 	gpgsign = true
 
+[color]
+	ui = auto
+
+[color "branch"]
+	current = yellow reverse
+	local = yellow
+	remote = green
+
+[color "diff"]
+	meta = yellow bold
+	frag = magenta bold
+	old = red bold
+	new = green bold
+
+[color "status"]
+	added = yellow
+	changed = green
+	untracked = cyan
+
+[help]
+	autoCorrect = 1
+
+[url "git@github.com:"]
+	insteadOf = https://github.com/
+
+[url "git@gitlab.com:"]
+	insteadOf = https://gitlab.com/
+
+[url "git@bitbucket.org:"]
+	insteadOf = https://bitbucket.org/
+
 [include]
     path = ~/.gitconfig.darwin
+
+[gpg]
+	format = ssh
+
+[tag]
+	gpgsign = true
 
