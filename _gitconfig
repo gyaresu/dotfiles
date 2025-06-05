@@ -27,7 +27,7 @@
     ci = commit
     st = status
     br = branch
-    hist = log --pretty=format:\"%h %ad | %s%d [%an]\" --graph --date=short
+    hist = log --pretty=format:"%h %ad | %s%d [%an]" --graph --date=short
     type = cat-file -t
     dump = cat-file -p
     a   = add -A
@@ -42,12 +42,6 @@
 
 [init]
 	defaultBranch = main
-
-[user]
-	signingkey = E913F9DDAE27E8C20F4BDE4B6504DA502B9816F2
-
-[commit]
-	gpgsign = true
 
 [color]
 	ui = auto
@@ -83,9 +77,10 @@
 [include]
     path = ~/.gitconfig.darwin
 
-[gpg]
-	format = ssh
+# Temporarily disabled GPG signing
+# [gpg]
+#     format = ssh
 
-[tag]
-	gpgsign = true
+# [tag]
+#     gpgsign = true
 

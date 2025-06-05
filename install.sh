@@ -248,53 +248,31 @@ handle_darwin_file() {
 # move any existing dotfiles in homedir to dotfiles_old directory, then create symlinks 
 for file in $files; do
     echo "Processing $file..."
-    
-    # Handle directories
-    if [ -d "$file" ]; then
-        handle_symlink "$file" "$file"
-    # Handle regular files
-    elif [ -f "$file" ]; then
-        handle_symlink "$file" "$file"
-    else
-        echo "Warning: $file not found in dotfiles directory"
-    fi
+    handle_symlink "$file" "$file"
 done
 
 # Handle darwin-specific files
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    for file in $darwin_files; do
-        echo "Processing darwin-specific file: $file..."
-        if [ -f "$file" ]; then
-            handle_darwin_file "$file"
-        else
-            echo "Warning: $file not found in dotfiles directory"
-        fi
-    done
-fi
+for file in $darwin_files; do
+    echo "Processing $file..."
+    handle_darwin_file "$file"
+done
 
-# Install Vundle Plugins
+# Install Vundle
 echo "Installing Vundle..."
-if ! command -v git &> /dev/null; then
-    echo "Error: git is not installed. Please install git first."
-    exit 1
-fi
-
-# Create .vim directory if it doesn't exist
 if [ "$DRY_RUN" = true ]; then
-    echo "[DRY RUN] Would create directory: ~/.vim/bundle"
+    echo "[DRY RUN] Would install Vundle"
 else
-    mkdir -p ~/.vim/bundle
+    if [ ! -d "$HOME/.vim/bundle/Vundle.vim" ]; then
+        git clone https://github.com/VundleVim/Vundle.vim.git "$HOME/.vim/bundle/Vundle.vim"
+    fi
 fi
 
-if [ ! -d ~/.vim/bundle/Vundle.vim ]; then
-    if [ "$DRY_RUN" = true ]; then
-        echo "[DRY RUN] Would clone Vundle repository"
-    else
-        git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
-        echo "...done"
-    fi
+# Install Vim plugins
+echo "Installing Vim plugins..."
+if [ "$DRY_RUN" = true ]; then
+    echo "[DRY RUN] Would install Vim plugins"
 else
-    echo "Vundle is already installed"
+    vim +PluginInstall +qall
 fi
 
 # Handle OS-specific configurations
@@ -309,7 +287,6 @@ fi
 if [ "$DRY_RUN" = true ]; then
     echo "Dry run complete! No changes were made."
 else
-    echo "Installation complete! Please open vim and run :PluginInstall to install plugins."
-    echo "Note: You may need to restart your shell for all changes to take effect."
+    echo "Installation complete!"
 fi
 

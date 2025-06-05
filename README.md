@@ -1,109 +1,156 @@
 # Dotfiles
 
-My personal dotfiles configuration for both macOS and Linux systems. This repository contains configurations for various tools and applications I use daily.
+This repository contains my personal dotfiles and configuration files for macOS and Linux systems.
 
 ## Features
 
-- Cross-platform support (macOS and Linux)
-- Zsh configuration with Oh My Zsh and Starship prompt
-- Vim configuration with Vundle
+- ZSH configuration with Oh My Zsh
+- Vim configuration
 - Tmux configuration
-- Git configuration with OS-specific settings
-- Various development tools and utilities
-- Hishtory shell history
+- Git configuration
+- SSH configuration
 - Custom scripts and utilities
-
-## Prerequisites
-
-### macOS
-- Homebrew (will be installed automatically if not present)
-- Xcode Command Line Tools (will be installed automatically if not present)
-
-### Linux
-- A supported package manager (apt, dnf, or yum)
-- sudo privileges
+- Hishtory shell history
 
 ## Installation
 
-1. Clone this repository:
+### Prerequisites
+
+- Git
+- ZSH
+- Python 3
+- Ruby (for some utilities)
+- Go (for some utilities)
+
+### macOS Installation
+
+1. Clone the repository:
    ```bash
-   git clone https://github.com/gyaresu/dotfiles.git ~/dotfiles
+   git clone https://github.com/yourusername/dotfiles.git ~/dotfiles
    cd ~/dotfiles
    ```
 
 2. Run the installation script:
    ```bash
-   # To see what would happen without making changes:
-   ./install.sh --dry-run
-   
-   # To perform the actual installation:
    ./install.sh
    ```
 
-The script will:
-- Install required dependencies for your OS
-- Create backups of existing dotfiles
-- Set up symlinks to the new configurations
-- Install and configure various tools
+   To see what would happen without making changes:
+   ```bash
+   ./install.sh --dry-run
+   ```
 
-## Repository Structure
+3. Restart your terminal
 
-- `_bin/` - Custom scripts and utilities
-- `_custom/` - Custom configurations
-- `_grunt-init/` - Grunt.js templates
-- `_irssi/` - IRC client configuration
-- `_vim/` - Vim configuration and plugins
-- `Brewfile` - Homebrew package definitions for macOS
-- `install.sh` - Main installation script
-- `install_linux_packages.sh` - Linux package installation script
+4. Set up Hishtory:
+   - Install Hishtory:
+     ```bash
+     curl https://hishtory.dev/install.py | python3 -
+     ```
+   - Initialize with your secret key:
+     ```bash
+     hishtory init $YOUR_HISHTORY_SECRET
+     ```
+
+### Linux Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/dotfiles.git ~/dotfiles
+   cd ~/dotfiles
+   ```
+
+2. Run the installation script:
+   ```bash
+   ./install.sh
+   ```
+
+   To see what would happen without making changes:
+   ```bash
+   ./install.sh --dry-run
+   ```
+
+3. Restart your terminal
+
+4. Set up Hishtory:
+   - Install Hishtory:
+     ```bash
+     curl https://hishtory.dev/install.py | python3 -
+     ```
+   - Initialize with your secret key:
+     ```bash
+     hishtory init $YOUR_HISHTORY_SECRET
+     ```
 
 ## What Gets Installed
 
-### Core Tools
-- Zsh with Oh My Zsh
-- Starship prompt
-- Hishtory shell history
-- Vim with Vundle
-- Tmux
+### macOS Packages (via Homebrew)
+- Development tools (git, python, ruby, go)
+- Shell utilities (zsh, tmux, starship)
+- Network tools (wget, curl, nmap)
+- Text editors (vim)
+- And more...
 
-### Development Tools
-- Python (3.9 and 3.13 on macOS, 3.x on Linux)
-- Ruby with chruby
-- Go
-- Rust
-- Docker
-- Terraform
-- VSCode (macOS)
+### Linux Packages
+- Development tools (git, python, ruby, go)
+- Shell utilities (zsh, tmux, starship)
+- Network tools (wget, curl, nmap)
+- Text editors (vim)
+- And more...
 
-### System Tools
-- Various command-line utilities
-- Network tools
-- Development libraries
+## Configuration Files
+
+- `_zshrc`: ZSH configuration
+- `_vimrc`: Vim configuration
+- `_tmux.conf`: Tmux configuration
+- `_gitconfig`: Git configuration
+- `_ssh_config`: SSH configuration
+- `_bin/`: Custom scripts and utilities
 
 ## Customization
 
-- Place custom configurations in the `_custom` directory
-- Modify the appropriate configuration files in the root directory
-- Add new packages to `Brewfile` (macOS) or `install_linux_packages.sh` (Linux)
-
-## Updating
-
-To update your dotfiles:
-
-```bash
-cd ~/dotfiles
-git pull
-./install.sh
-```
+1. Fork this repository
+2. Modify the configuration files to suit your needs
+3. Update the installation scripts if necessary
+4. Install using the instructions above
 
 ## Troubleshooting
 
-If you encounter any issues:
+### Common Issues
 
-1. Check the error messages during installation
-2. Ensure you have the necessary permissions
-3. Verify that all prerequisites are installed
-4. Check the OS-specific configuration files
+1. **Symlink errors**: If you get permission errors during installation, make sure you have the necessary permissions in your home directory.
+
+2. **Package installation failures**: 
+   - On macOS: Make sure Homebrew is installed and up to date
+   - On Linux: Make sure you have sudo privileges and your package manager is up to date
+
+3. **Shell not changing to ZSH**:
+   - Make sure ZSH is installed
+   - Try running `chsh -s $(which zsh)` manually
+   - Log out and log back in
+
+4. **Hishtory not working**:
+   - Make sure you've initialized it with your secret key
+   - Check that the Hishtory directory exists in your home directory
+   - Verify that the Hishtory configuration is being sourced in your `.zshrc`
+
+### Getting Help
+
+If you encounter any issues:
+1. Check the troubleshooting section above
+2. Look for similar issues in the repository
+3. Create a new issue with:
+   - Your operating system
+   - The steps you followed
+   - The error message you received
+   - Any relevant logs
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
 
 ## License
 
@@ -114,5 +161,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - [Oh My Zsh](https://ohmyz.sh/)
 - [Starship](https://starship.rs/)
 - [Hishtory](https://hishtory.dev/)
-- [Vundle](https://github.com/VundleVim/Vundle.vim)
-- [Homebrew](https://brew.sh/)
+- And all other open-source projects used in this configuration

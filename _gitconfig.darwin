@@ -1,9 +1,16 @@
 [credential]
 	helper = osxkeychain
 
-[gpg]
-	format = ssh
-	sshSigningKey = ~/.ssh/id_ed25519
+# Temporarily disabled GPG signing
+# [gpg]
+# 	format = ssh
+# 	sshSigningKey = ~/.ssh/id_ed25519
+
+# [user]
+# 	signingkey = E913F9DDAE27E8C20F4BDE4B6504DA502B9816F2
+
+# [commit]
+# 	gpgsign = true
 
 [difftool "sourcetree"]
 	cmd = /Applications/Sourcetree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\"
