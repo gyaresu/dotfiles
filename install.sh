@@ -30,11 +30,11 @@ done
 # Define files to symlink based on OS
 if [[ "$OSTYPE" == "darwin"* ]]; then
     # macOS specific files
-    files="_zshrc _vimrc _vim _tmux.conf _tmux.conf.local _gitconfig _eslintrc _gdbinit _pastebinit.xml _irssi _grunt-init _bin _custom _ssh_config"
+    files="_zshrc _vimrc _vim _tmux.conf.local _gitconfig _eslintrc _gdbinit _pastebinit.xml _irssi _grunt-init _bin _custom _ssh_config"
     darwin_files="_gitconfig.darwin"
 else
     # Linux specific files
-    files="_zshrc _vimrc _vim _tmux.conf _tmux.conf.local _gitconfig _eslintrc _gdbinit _pastebinit.xml _irssi _grunt-init _bin _custom _ssh_config"
+    files="_zshrc _vimrc _vim _tmux.conf.local _gitconfig _eslintrc _gdbinit _pastebinit.xml _irssi _grunt-init _bin _custom _ssh_config"
     darwin_files=""
 fi
 
@@ -67,7 +67,7 @@ create_dir() {
 # Install OS-specific dependencies
 if [[ "$OSTYPE" == "darwin"* ]]; then
     echo "Installing macOS dependencies..."
-    
+
     # Check if Homebrew is installed
     if ! command -v brew &> /dev/null; then
         echo "Installing Homebrew..."
@@ -77,7 +77,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
             /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
         fi
     fi
-    
+
     # Install Homebrew packages
     echo "Installing Homebrew packages..."
     if [ "$DRY_RUN" = true ]; then
@@ -146,7 +146,7 @@ if [ ! -d "$HOME/.hishtory" ]; then
             curl https://hishtory.dev/install.py | python3 -
         fi
     fi
-    echo "Note: After installation, you need to run 'hishtory init $YOUR_HISHTORY_SECRET' to set up your hishtory account"
+    echo "Note: After installation, you need to run 'hishtory init \$YOUR_HISHTORY_SECRET' to set up your hishtory account"
 fi
 
 # Set zsh as default shell if not already
@@ -174,36 +174,27 @@ echo "...done"
 handle_symlink() {
     local source="$1"
     local target="$2"
-    
+
     # Remove leading underscore from target name
     local target_name="${target#_}"
-    
+
     if [ "$DRY_RUN" = true ]; then
-        # Handle the case where the file doesn't exist
         if [ -e ~/."$target_name" ]; then
             echo "[DRY RUN] Would move ~/.$target_name to $olddir/"
         fi
-        
-        # Handle the case where the symlink already exists
         if [ -L ~/."$target_name" ]; then
             echo "[DRY RUN] Would remove existing symlink ~/.$target_name"
         fi
-        
         echo "[DRY RUN] Would create symlink from $dir/$source to ~/.$target_name"
     else
-        # Handle the case where the file doesn't exist
         if [ -e ~/."$target_name" ]; then
             echo "Moving existing .$target_name from ~ to $olddir"
             mv ~/."$target_name" "$olddir/"
         fi
-        
-        # Handle the case where the symlink already exists
         if [ -L ~/."$target_name" ]; then
             echo "Removing existing symlink ~/.$target_name"
             rm ~/."$target_name"
         fi
-        
-        # Create the symlink
         echo "Creating symlink to $target in home directory."
         ln -s "$dir/$source" ~/."$target_name"
     fi
@@ -213,39 +204,30 @@ handle_symlink() {
 handle_darwin_file() {
     local source="$1"
     local target="${source#_}"
-    
+
     if [ "$DRY_RUN" = true ]; then
-        # Handle the case where the file doesn't exist
         if [ -e ~/."$target" ]; then
             echo "[DRY RUN] Would move ~/.$target to $olddir/"
         fi
-        
-        # Handle the case where the file already exists
         if [ -f ~/."$target" ]; then
             echo "[DRY RUN] Would remove existing file ~/.$target"
         fi
-        
         echo "[DRY RUN] Would copy $dir/$source to ~/.$target"
     else
-        # Handle the case where the file doesn't exist
         if [ -e ~/."$target" ]; then
             echo "Moving existing .$target from ~ to $olddir"
             mv ~/."$target" "$olddir/"
         fi
-        
-        # Handle the case where the file already exists
         if [ -f ~/."$target" ]; then
             echo "Removing existing file ~/.$target"
             rm ~/."$target"
         fi
-        
-        # Copy the file instead of symlinking
         echo "Copying $target to home directory."
         cp "$dir/$source" ~/."$target"
     fi
 }
 
-# move any existing dotfiles in homedir to dotfiles_old directory, then create symlinks 
+# move any existing dotfiles in homedir to dotfiles_old directory, then create symlinks
 for file in $files; do
     echo "Processing $file..."
     handle_symlink "$file" "$file"
@@ -256,6 +238,12 @@ for file in $darwin_files; do
     echo "Processing $file..."
     handle_darwin_file "$file"
 done
+
+# Check for correct .tmux.conf symlink
+if [ ! -L "$HOME/.tmux.conf" ] || [[ "$(readlink ~/.tmux.conf)" != "$HOME/.tmux/.tmux.conf" ]]; then
+    echo "WARNING: ~/.tmux.conf is not symlinked to ~/.tmux/.tmux.conf"
+    echo "You should run: ln -s ~/.tmux/.tmux.conf ~/.tmux.conf"
+fi
 
 # Install Vundle
 echo "Installing Vundle..."
@@ -278,10 +266,8 @@ fi
 # Handle OS-specific configurations
 if [[ "$OSTYPE" == "darwin"* ]]; then
     echo "Setting up macOS specific configurations..."
-    # Add any macOS specific setup here
 else
     echo "Setting up Linux specific configurations..."
-    # Add any Linux specific setup here
 fi
 
 if [ "$DRY_RUN" = true ]; then
@@ -289,4 +275,3 @@ if [ "$DRY_RUN" = true ]; then
 else
     echo "Installation complete!"
 fi
-

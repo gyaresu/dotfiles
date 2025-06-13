@@ -183,6 +183,15 @@ else
     fi
 fi
 
+# QEMU vm
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    alias ova_up='(cd ~/virtualmachines/ova/ && qemu-system-x86_64 -m 4096 -hda pbp.qcow2 -netdev user,id=net0,hostfwd=tcp::2222-:22,hostfwd=tcp::4433-:443,hostfwd=tcp::8080-:80,hostfwd=tcp::9025-:8025 -device e1000,netdev=net0)'
+else
+    # only for macos
+    alias ova_up='echo "ova_up is only supported on macOS"'
+fi
+
+
 # Vagrant configuration
 if [[ "$OSTYPE" == "darwin"* ]]; then
     # macOS Vagrant configuration
