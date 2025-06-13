@@ -361,6 +361,9 @@ bind c new-window -c "#{pane_current_path}"
 # increase history size
 set -g history-limit 100000
 
+# start window at "0"
+set -g base-index 0
+
 # start with mouse mode enabled
 set -g mouse on
 

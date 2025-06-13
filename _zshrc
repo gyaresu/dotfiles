@@ -192,6 +192,42 @@ else
 fi
 
 
+# ==================================================
+# Colima multi-arch aliases for Gareth's M4 MacBook
+# Profile paths: ~/.colima/x86 and ~/.colima/_lima/colima-x86
+# Context names: colima-x86 (x86_64), default (ARM64)
+# ==================================================
+
+# Start Colima x86 profile (x86_64 QEMU VM, pure Docker)
+alias colima-x86='colima start --profile x86 --runtime docker --kubernetes false --arch x86_64 --cpu 8 --memory 12 --disk 100 --vm-type qemu --mount-type sshfs'
+
+# Start Colima ARM profile (default ARM64 VM, native vz or QEMU)
+alias colima-arm='colima start --profile default'
+
+# Docker CLI aliases (context-based)
+alias dockerx86='docker --context colima-x86'
+alias dockerarm='docker --context default'
+
+# Lazydocker aliases (DOCKER_HOST-based, avoids context conflicts)
+alias lazydocker-x86='DOCKER_HOST=unix://${HOME}/.colima/x86/docker.sock lazydocker'
+alias lazydocker-arm='DOCKER_HOST=unix://${HOME}/.colima/default/docker.sock lazydocker'
+
+# One-time helper to disable k3s inside x86 VM
+ alias colima-x86-clean-k3s='colima ssh --profile x86 -- sudo systemctl disable --now k3s'
+#
+# # Optional helper to check current Docker architecture
+ alias dockerarch='docker info --format "{{.Architecture}}"'
+
+# ==================================================
+# Usage:
+# colima-x86         # Start x86 profile
+# colima-arm         # Start ARM profile
+# dockerx86 info     # Show Docker info for x86 profile
+# dockerarm info     # Show Docker info for ARM profile
+# lazydocker-x86     # Inspect x86 Docker containers/images
+# lazydocker-arm     # Inspect ARM Docker containers/images
+# ==================================================
+
 # Vagrant configuration
 if [[ "$OSTYPE" == "darwin"* ]]; then
     # macOS Vagrant configuration
@@ -258,16 +294,5 @@ else
     if [ -n "$GNOME_TERMINAL_SCREEN" ]; then
         # GNOME Terminal
         source /etc/profile.d/vte.sh 2>/dev/null
-    fi
-fi
-
-# Docker configuration
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    # macOS Docker configuration (Colima)
-    export DOCKER_HOST=unix://${HOME}/.colima/default/docker.sock
-else
-    # Linux Docker configuration
-    if [ -S /var/run/docker.sock ]; then
-        export DOCKER_HOST=unix:///var/run/docker.sock
     fi
 fi
